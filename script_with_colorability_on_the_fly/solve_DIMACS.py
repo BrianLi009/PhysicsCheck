@@ -92,11 +92,14 @@ def solve_cnf_pickle(file, num_vertices, solver_type): #example: solver = Lingel
                 except:
                     num_1_dict[count_1(coloring)] = 1
                 colorability_constraint = coloring_to_constraint(coloring)
+                #print ("coloring:" + str(coloring))
+                #print ("generated constraint: " + str(colorability_constraint))
                 s.add_clause(colorability_constraint)
             #pickle.dump(edges,outfile)
             #print (timeit.default_timer())
+            #print ("solution: " + str(solution[:num_edges]))
             assumption = [ -i for i in solution[:num_edges] ] #we should block the graph regardless if it's colorable or not
-            #s.add_clause(assumption)
+            s.add_clause(assumption)
             if total_count%5000 == 0:
                 print (num_1_dict)
         else:
@@ -109,4 +112,4 @@ def solve_cnf_pickle(file, num_vertices, solver_type): #example: solver = Lingel
     outfile.close()
     return stop-start
 
-solve_cnf_pickle("fly_version_all_constraints_12", 12, 1)
+solve_cnf_pickle("fly_version_all_constraints_10", 10, 1)
