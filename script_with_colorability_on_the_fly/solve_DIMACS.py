@@ -112,4 +112,4 @@ def solve_cnf_pickle(file, num_vertices, solver_type): #example: solver = Lingel
     outfile.close()
     return stop-start
 
-solve_cnf_pickle("fly_version_all_constraints_10", 10, 1)
+solve_cnf_pickle("fly_version_all_constraints_18", 18, 1)
