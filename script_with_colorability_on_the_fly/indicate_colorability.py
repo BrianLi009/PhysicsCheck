@@ -66,6 +66,7 @@ def coloring_to_constraint(coloring):
     counter = 1
     vertices_lst = list(range(1, n+1))
     edge_lst = list(itertools.combinations(vertices_lst, 2))
+    edge_lst.sort(key=lambda x:x[1]) #this is all we have to do to switch the order of edge_lst
     extra_var_count = len(edge_lst)+1
     extra_var_dict = {}
     for triangle in list(itertools.combinations(vertices_lst, 3)):

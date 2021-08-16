@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 import timeit
 from indicate_colorability import *
-
+from matching import *
 from pysat.formula import CNF
 from pysat.solvers import *
 
@@ -14,6 +14,7 @@ def construct_graph(solution, num_vertices):
     into Sage to construct a graph"""
     vertices_lst = list(range(1, num_vertices+1))
     edge_lst = list(itertools.combinations(vertices_lst, 2))
+    edge_lst.sort(key=lambda x:x[1]) #this is all we have to do to switch the order of edge_lst
     true_edge_lst = []
     for i in range(len(edge_lst)):
         edge = edge_lst[i]
@@ -34,6 +35,7 @@ def solve_cnf_pickle(file, num_vertices, solver_type): #example: solver = Lingel
     solver_type: int
     """
     print ("solving...")
+    matches = matching(num_vertices)
     num_1_dict = {}
     start = timeit.default_timer()
     num_edges = int(np.math.factorial(num_vertices)/(np.math.factorial(2)*np.math.factorial(num_vertices-2)))
@@ -94,6 +96,7 @@ def solve_cnf_pickle(file, num_vertices, solver_type): #example: solver = Lingel
                 colorability_constraint = coloring_to_constraint(coloring)
                 #print ("coloring:" + str(coloring))
                 #print ("generated constraint: " + str(colorability_constraint))
+                #colorability_constraint = relabel_from_matching(colorability_constraint, matches)
                 s.add_clause(colorability_constraint)
             #pickle.dump(edges,outfile)
             #print (timeit.default_timer())
@@ -111,5 +114,3 @@ def solve_cnf_pickle(file, num_vertices, solver_type): #example: solver = Lingel
     print (num_1_dict)
     outfile.close()
     return stop-start
-
-solve_cnf_pickle("fly_version_all_constraints_18", 18, 1)
