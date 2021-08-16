@@ -1,4 +1,5 @@
 import itertools
+import math
 
 def non_colorable(n):
     constraint = []
@@ -14,7 +15,8 @@ def non_colorable(n):
     for edge in edge_lst:
         edge_dict[edge] = counter
         counter += 1
-    for i in range(1, 9): #this is a testing for 17 vertices, where we only block graphs with 5 label-1 vertices in advance
+    maximum = math.ceil(n/3)+1
+    for i in range(1, maximum+1): #this is a testing for 17 vertices, where we only block graphs with 5 label-1 vertices in advance
         #get all possible combinations of i vertices
         possible_comb = list(itertools.combinations(vertices_lst, i))
         for choice in possible_comb: #we pick i vertices to be labeled
