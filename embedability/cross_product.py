@@ -34,7 +34,7 @@ def find_triangle(edge_lst):
             return triangle
     return False
 
-def output_clause(relations, filename):
+def output_clause(relations, filename, triangle):
     """take input from the output of embedability() function, write to executable python file"""
     f = open(filename + ".py", "w")
     f.write('from z3 import * \n')
@@ -98,7 +98,6 @@ def output_clause(relations, filename):
             equation_6 = ' '*4+"s.add(" + double_cross[1] + '==0) \n'
             equation_7 = ' '*4+"s.add(" + double_cross[2] + '==0) \n'
             clauses = clauses + equation_5 + equation_6 + equation_7
-    triangle = find_triangle(edge_lst)
     if triangle != False:
         tri_1 = triangle[0]
         tri_2 = triangle[1]
@@ -134,7 +133,7 @@ output_clause(relations, 'testing')"""
         #result = row[2]
         edge_lst = g6_to_edge(g6_string)
         relations = embedability(edge_lst)
-        output_clause(relations, str(count))"""
+        output_clause(relations, str(count), find_triangle(edge_lst))"""
 
 with open('small_graph.csv') as csv_file:
     starttime = timeit.default_timer()

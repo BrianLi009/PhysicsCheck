@@ -1,4 +1,6 @@
 import itertools
+from collections import Counter, OrderedDict
+from itertools import repeat, chain
 
 def all_neighbors(edge_lst, v):
     neighbors = []
@@ -23,6 +25,14 @@ def find_ortho(edge_lst, unassigned, assigned):
         break
     return dict
 
+def sort_by_degree(edge_lst):
+    """given an edge_lst, return a list based on number of degrees"""
+    """edge_lst starts from 0"""
+    edge_lst = list(sum(edge_lst, ()))
+    edge_lst = list(chain.from_iterable(repeat(i, c) for i,c in Counter(edge_lst).most_common()))
+    edge_lst =  list(OrderedDict.fromkeys(edge_lst))
+    return edge_lst
+
 def embedability(edge_lst):
     orthogonal_relations = []
     colinear_relations = []
@@ -30,11 +40,11 @@ def embedability(edge_lst):
     unassigned_edges = edge_lst.copy()
     assigned_edges = []
     vertices_lst = list(set([item for sublist in edge_lst for item in sublist]))
-    unassigned = vertices_lst.copy()
+    unassigned = sort_by_degree(edge_lst)
     assigned = [] #at the very beginning, all vertices are unassigned
     potential_edges = list(itertools.combinations(vertices_lst,2))
     while unassigned != []:
-        vertex = unassigned[0]
+        vertex = unassigned[0] #here we probably want to pick vertices with the highest degrees
         assignment[vertex] = [vertex]
         assigned.append(unassigned.pop(unassigned.index(vertex))) #mark vertex as free
         orthogonal_dict = find_ortho(edge_lst, unassigned, assigned) #a dictionary
