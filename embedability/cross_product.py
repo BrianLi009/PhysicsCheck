@@ -5,6 +5,8 @@ from embedability import embedability
 import networkx as nx
 import itertools
 import csv
+import subprocess
+import os 
 
 def Reverse(tuples):
     new_tup = tuples[::-1]
@@ -38,7 +40,9 @@ def output_clause(relations, filename, triangle):
     """take input from the output of embedability() function, write to executable python file"""
     f = open(filename + ".py", "w")
     f.write('from z3 import * \n')
+    f.write('import multiprocessing \n')
     f.write('def test_embed(): \n')
+    f.write(' '*4 + 'f = open("embed_result.txt", "a") \n')
     clauses = ''
     orthogonal_relations = relations[0]
     colinear_relations = relations[1]
@@ -113,8 +117,21 @@ def output_clause(relations, filename, triangle):
         equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
         clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16
     f.write(clauses)
-    f.write(' '*4+"return (s.check()) \n")
-    f.write("print(test_embed())")
+    f.write(' '*4 + 'dir = __file__\n')
+    f.write(' '*4 + "dir = dir.split('\\\\')\n")
+    f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
+    f.write(' '*4 + "f.write(str(row) + ', ' + str(s.check()) + '   ')\n")
+    f.write("if __name__ == '__main__': \n")
+    f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
+    f.write(' '*4 + "p.start() \n")
+    f.write(' '*4 + "p.join(3) \n")
+    f.write(' '*4 + "if p.is_alive(): \n")
+    f.write(' '*8 + "print (" + str(filename) + ")" + "\n")
+    f.write(' '*8 + "p.terminate() \n")
+    f.write(' '*8 + "p.join() \n")
+    f.write(' '*4 + "else: \n")
+    f.write(' '*8 + "p.terminate() \n")
+    f.write(' '*8 + "p.join() \n")
     f.close()
 
 """g6_string = 'IqKaK?X@w'
@@ -122,7 +139,7 @@ edge_lst = g6_to_edge(g6_string)
 relations = embedability(edge_lst)
 output_clause(relations, 'testing')"""
 
-"""with open('small_graph.csv') as csv_file:
+"""with open('small_graph_new.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     count = 0
     next(csv_reader)
@@ -135,7 +152,7 @@ output_clause(relations, 'testing')"""
         relations = embedability(edge_lst)
         output_clause(relations, str(count), find_triangle(edge_lst))"""
 
-with open('small_graph.csv') as csv_file:
+with open('small_graph_new.csv') as csv_file:
     starttime = timeit.default_timer()
     csv_reader = csv.reader(csv_file, delimiter=',')
     #f = open('embedability_result.csv', 'w')
@@ -144,12 +161,9 @@ with open('small_graph.csv') as csv_file:
     next(csv_reader)
     for row in csv_reader:
         count += 1
-        if count % 10 == 0:
-            print (count)
-        try:
-            exec(open(str(count) + ".py").read())
-        except:
-            continue
+        os.system(str(count)+'.py')
     #f.close()
     print ("total graphs: " + str(count))
     print("Runtime :", timeit.default_timer() - starttime)
+
+"""we can write our result into a file, preferably the same csv file, we can implement that in each separate number.py file through cross_product"""

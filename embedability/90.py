@@ -1,5 +1,7 @@
 from z3 import * 
+import multiprocessing 
 def test_embed(): 
+    f = open("embed_result.txt", "a") 
     s = Solver() 
     x_0 = Real('x_0')
     y_0 = Real('y_0')
@@ -124,5 +126,18 @@ def test_embed():
     s.add(((z_3*x_5-x_3*z_5)*z_10-(x_3*y_5-y_3*x_5)*y_10)==0) 
     s.add(((x_3*y_5-y_3*x_5)*x_10-(y_3*z_5-z_3*y_5)*z_10)==0) 
     s.add(((y_3*z_5-z_3*y_5)*y_10-(z_3*x_5-x_3*z_5)*x_10)==0) 
-    return (s.check()) 
-print(test_embed())
+    dir = __file__
+    dir = dir.split('\\')
+    row = int(dir[-1][:-3])
+    f.write(str(row) + ', ' + str(s.check()) + '   ')
+if __name__ == '__main__': 
+    p = multiprocessing.Process(target=test_embed) 
+    p.start() 
+    p.join(3) 
+    if p.is_alive(): 
+        print (90)
+        p.terminate() 
+        p.join() 
+    else: 
+        p.terminate() 
+        p.join() 

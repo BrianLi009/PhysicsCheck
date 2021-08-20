@@ -60,5 +60,5 @@ def generate_dimacs(n):
         constraint = relabel_from_matching(constraint, matches)
         cnf.append(constraint)
     print ("isomorphism blocked")
-    cnf.to_file('all_constraints_original_' + str(n))
+    cnf.to_file('constraints_' + str(n))
     #cnf.to_file('no_trig_all_constraints_' + str(n))

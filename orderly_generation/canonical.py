@@ -1,7 +1,11 @@
 import numpy as np
 import itertools
-from math import comb
+from math import comb, perm
+
+from numpy.core.fromnumeric import var
 from cubic import *
+from relabel import *
+import sys
 
 def matching(v):
     num_edges = comb(v, 2)
@@ -24,8 +28,21 @@ def matching(v):
                 i += 1
     return matching
 
+def sol_to_lst(solution):
+    """given string of solution, return in a list"""
+    lst = []
+    g = solution.split()
+    if 'a' in g:
+        g.remove('a')
+    if '0' in g:
+        g.remove('0')
+    for variable in g:
+        lst.append(int(variable))
+    return lst
+
 def row_to_col(solution, v):
     """input string of solutions in row matrix, then output string solutions in column matrix in a list"""
+    """NEED TO FIX"""
     new_assignment = []
     g = solution.split()
     if 'a' in g:
@@ -64,7 +81,7 @@ def produce_matrix(solutions, v):
     matrix = np.zeros((v, v)) #first start with a zero matrix with the right size
     lst = list(range(0, v))
     entries = list(itertools.combinations(lst, 2))
-    entries.sort(key=lambda x:x[1]) #sort it column by column
+    #entries.sort(key=lambda x:x[1]) #sort it column by column
     for i in range(len(entries)):
         position = entries[i]
         value = solutions[i]
@@ -112,15 +129,93 @@ def compare_two_matrix(m1, m2):
             return m2 
     return m1
 
+def generate_canonical_clauses(n):
+    clauses = []
+    A_dict = {}
+    B_dict = {}
+    perm_dict = {}
+    total_variables = 1
+    #vertices_lst = list(range(1, n+1))
+    #edge_lst = list(itertools.combinations(vertices_lst, 2))
+    #edge_lst.sort(key=lambda x:x[1]) #this is all we have to do to switch the order of edge_lst
+    #generate all of A's entries as variables
+    for i in range(1, n+1):
+        for j in range(1, n+1):
+            #if i < j:
+            A_dict[(i, j)] = total_variables
+            total_variables += 1
+    #generate all of B's entries as variables
+    for i in range(1, n+1):
+        for j in range(1, n+1):
+            #if i < j:
+            B_dict[(i, j)] = total_variables
+            total_variables += 1
+    #generate all possible permutations as variables
+    for i in range(1, n+1):
+        for j in range(1, n+1):
+            perm_dict[(i, j)] = total_variables
+            total_variables += 1
+    for i in range(1, n+1):
+        constraint_1 = []
+        constraint_2 = []
+        for j in range(1, n+1):
+            constraint_1.append(perm_dict[(i, j)])
+            constraint_2.append(perm_dict[(j,i)])
+        clauses = clauses + [constraint_1] + [constraint_2]
+        for j in range(1, n+1):
+            for j_prime in range(1, n+1):
+                if j != j_prime:
+                    constraint_3 = [-perm_dict[(i, j)], -perm_dict[(i, j_prime)]]
+                    constraint_4 = [-perm_dict[(j, i)], -perm_dict[(j_prime, i)]]
+                    clauses = clauses + [constraint_3] + [constraint_4]
+    for i in range(1, n+1):
+        for j in range(1, n+1):
+            for i_prime in range(1, n+1):
+                for j_prime in range(1, n+1):
+                    #if i_prime < j_prime:
+                    constraint_5 = [-A_dict[(i,j)], -perm_dict[(i, i_prime)], -perm_dict[(j, j_prime)], B_dict[(i_prime,j_prime)]]
+                    constraint_6 = [-B_dict[(i_prime,j_prime)], -perm_dict[(i, i_prime)], -perm_dict[(j, j_prime)], A_dict[(i,j)]]
+                clauses = clauses + [constraint_5] + [constraint_6]
+    for i in range(1, n+1):
+        for j in range(1, n+1):
+            if i == j:
+                constraint_11 = [-A_dict[(i,j)]]
+                constraint_12 = [-B_dict[(i,j)]]
+                clauses = clauses + [constraint_11] + [constraint_12]
+            constraint_7 = [-A_dict[(i,j)], A_dict[(j,i)]]
+            constraint_8 = [A_dict[(i,j)], -A_dict[(j,i)]]
+            constraint_9 = [-B_dict[(i,j)], B_dict[(j,i)]]
+            constraint_10 = [B_dict[(i,j)], -B_dict[(j,i)]]
+            clauses = clauses + [constraint_7] + [constraint_8] + [constraint_9] + [constraint_10]
+    return clauses
 
-"""cubic_encoding_19 = block_iso(5) #original row format
-cubic_encoding_19_col = row_to_col_cubic(cubic_encoding_19, 5) #now it's in column format"""
-#print(matching(5))
+def merge_canonical_cubic(n, canonical_clauses, cubic_clauses):
+    """we will relabel the extra clauses of canonical to follow after the cubic clauses"""
+    #matches = matching(n)
+    total_clauses = []
+    max_label = math.comb(n, 2)*2
+    relabeled_dict = {}
+    for constraint in canonical_clauses:
+        relabelled = relabel_3(constraint, n, max_label, relabeled_dict)
+        #print (constraint)
+        constraint = relabelled[0]
+        #print (constraint)
+        max_label = relabelled[1]
+        relabeled_dict = relabelled[2]
+        total_clauses = total_clauses + [constraint]
+    relabeled_dict = {}
+    """for constraint in cubic_clauses:
+        relabelled = relabel_2(constraint, n, max_label, relabeled_dict)
+        print (constraint)
+        constraint = relabelled[0]
+        print (constraint)
+        max_label = relabelled[1]
+        relabeled_dict = relabelled[2]
+        total_clauses = total_clauses + [constraint]"""
+    return total_clauses
 
-"""m1 = produce_matrix([-1, -2, -3, 4, -5, -6, -7, -8, -9, -10], 5)
-m2 = produce_matrix([-1, -2, -3, 4, 5, 6, -7, -8, -9, -10], 5)
-print (m1)
-print (m2)
-print (compare_two_matrix(m1, m2))"""
-
-print (findRank("0011"))
+#(generate_canonical_clauses(5))
+#(merge_canonical_cubic(5, generate_canonical_clauses(5), block_iso(5)))
+#print (row_to_col_cubic(block_iso(5),5))
+#print (merge_canonical_cubic(17, generate_canonical_clauses(17), block_iso(17)))
+print(matching(5))
