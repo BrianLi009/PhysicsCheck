@@ -62,3 +62,5 @@ def generate_dimacs(n):
     print ("isomorphism blocked")
     cnf.to_file('constraints_' + str(n))
     #cnf.to_file('no_trig_all_constraints_' + str(n))
+
+generate_dimacs(17)
