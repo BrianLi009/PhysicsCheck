@@ -4,7 +4,7 @@ def encode_min_three_2(n):
     """Using a second approach for encoding minimum degree 3, only need the edge variables"""
     vertices_lst = list(range(1, n+1))
     edge_dict = {}
-    counter = 0
+    counter = 1
     constraint = []
     edge_lst = list(itertools.combinations(vertices_lst, 2))
     for edge in edge_lst:
@@ -20,4 +20,3 @@ def encode_min_three_2(n):
                 constraint_1.append(edge_dict[edge])
             constraint = constraint + [constraint_1]
     return constraint
-    
