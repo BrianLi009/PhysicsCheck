@@ -3,6 +3,7 @@ from canonical import *
 import itertools
 from collections import Counter
 from relabel import *
+import math
 
 def findRank(s): 
     #source: https://www.geeksforgeeks.org/lexicographic-rank-of-a-binary-string/
@@ -57,12 +58,30 @@ def produce_matrix(solutions, v):
     matrix = matrix.astype(int)
     return matrix
 
-"""file1 = open('17.exhaust', 'r')
+def findLexicographicRank(str):
+    # rank starts from 1
+    rank = 1
+ 
+    for i in range(len(str) - 1):
+        # count all smaller characters than `str[i]` to the right of `i`
+        count = 0
+        for j in range(i + 1, len(str)):
+            if str[i] > str[j]:
+                count += 1
+ 
+        # add the current count to the rank
+        rank += count * math.factorial(len(str) - 1 - i)
+ 
+    return rank
+
+"""file1 = open('19-unique-sols.txt', 'r')
 Lines = file1.readlines()
 count = 1
 lex_dict = {}
 for solution in Lines:
     solution = preprocess_maplesat(solution)
+    solution = relabel_from_matching(solution, matching(19))
+    solution = sorted(solution, key=abs)
     matrix_form = []
     for entry in solution:
         if entry > 0:
@@ -72,8 +91,10 @@ for solution in Lines:
     concat_list = [str(int) for int in matrix_form]
     matrix_in_string = ""
     matrix_in_string = matrix_in_string.join(concat_list)
-    lex_order = int(matrix_in_string)
+    #print (matrix_in_string)
+    lex_order = findLexicographicRank(matrix_in_string)
+    #print (lex_order)
     lex_dict[count] = lex_order
     count += 1
-max_lex = max(lex_dict, key=lex_dict.get)
-print (max_lex)"""
+lex_lst = sorted(lex_dict, key=lex_dict.get)[:100]
+print (lex_lst)"""

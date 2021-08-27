@@ -33,4 +33,4 @@ def generate_encoding(n):
     cnf.to_file('orderly_cubic' + str(n))
     return total_clause
 
-generate_encoding(17)
+#generate_encoding(17)

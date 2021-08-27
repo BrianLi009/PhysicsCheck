@@ -8,6 +8,8 @@ from minthree import *
 from cubic import *
 from relabel import *
 from matching import *
+from minthree_2 import *
+import timeit
 
 def generate_dimacs(n):
     """
@@ -40,13 +42,16 @@ def generate_dimacs(n):
     print ("constraint_3 added")
     #add the non-010 constraint here
     #we want to disable this constraint for now to generate non-colorable constraint on the fly
-    for constraint in encode_min_three(n): #each vertex has minimum degree 3, contain extrvariables
+    """for constraint in encode_min_three(n): #each vertex has minimum degree 3, contain extrvariables
         #print (constraint)
         relabelled = relabel(constraint, num_of_edges, max_label, relabeled_dict)
         constraint = relabelled[0]
         #print (constraint)
         max_label = relabelled[1]
         relabeled_dict = relabelled[2]
+        constraint = relabel_from_matching(constraint, matches)
+        cnf.append(constraint)"""
+    for constraint in encode_min_three_2(n):
         constraint = relabel_from_matching(constraint, matches)
         cnf.append(constraint)
     print ("constraint_4 added")
@@ -60,7 +65,5 @@ def generate_dimacs(n):
         constraint = relabel_from_matching(constraint, matches)
         cnf.append(constraint)
     print ("isomorphism blocked")
-    cnf.to_file('constraints_' + str(n))
+    cnf.to_file('constraints_min2_' + str(n))
     #cnf.to_file('no_trig_all_constraints_' + str(n))
-
-generate_dimacs(17)
