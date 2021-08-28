@@ -10,6 +10,8 @@ import random
 import networkx as nx
 import shutil
 
+from networkx.algorithms.operators.unary import complement
+
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
     graph_dict = {}
@@ -164,50 +166,114 @@ def find_assignments(g):
     # the least number of orthogonallity requirements.
     completed.sort(key=lambda f: (f.nvar, len(f.eqs), len(f.ortho)))
     return completed
-eqs=[(((((2, 0), 0), ((2, 1), 1)), ((2, 1), 2)), (((2, 0), 0), ((2, 1), 2)))]
-def check_sphere_embeddability(g, assignment, guess=False):
-    """ Checks whether g is sphere embeddable using the given assignment.
-        Use `find_assignments' to generate assignments.
-        If `guess' is True, the function will guess the position of some
-        of the points.  It will not be able to determine whether a graph
-        is not embeddable.  However, if a graph is embeddable, it might
-        find out, and if it does, it will be quite a bit faster than
-        without guessing. """
-    # Generate the reduce script.
-    edges = set()
-    for v in g:
-        for w in g[v]:
-            edges.add((v,w))
-    f = assignment
-    io = StringIO()
-    io.write(textwrap.dedent("""
-            from z3 import * 
-            import multiprocessing  
-            f = open("embed_result.txt", "a") 
-            s = Solver() 
-                """))
-    for i in range(len(f.var)):
-        io.write(textwrap.dedent("""
-    x{i} = Real('x_{i}')""".format(i=i))) #assign the starting variables
-    vertex_assignment = assignment.assign
-    sort_vertex = dict(sorted(vertex_assignment.items(), key=lambda item: depth(item)))
-    vertex_relation_dict = {}
-    print (sort_vertex)
-    for v in sort_vertex: #assign the rest of the variables in terms of the starting variables
-        if isinstance(vertex_assignment[v], int):
-            vertex_relation_dict[v] = vertex_assignment[v]
-        else:
-            v1 = vertex_assignment[v][0]
-            v2 = vertex_assignment[v][1]
-            while not isinstance(vertex_assignment[v1], int):
-                vertex_assignment[v1] = vertex_assignment[v1]
-            while not isinstance(vertex_assignment[v2], int):
-                vertex_relation_dict[v2] = vertex_assignment[v2]
-    print (vertex_relation_dict)
 
-    with open('file', 'w') as fd:
-        io.seek(0)
-        shutil.copyfileobj(io, fd)
+def generate_z3(G, assignment_1, filename):
+    """
+    generate z3 script
+    """
+    f = open(filename + ".py", "w")
+    f.write('from z3 import * \n')
+    f.write('import multiprocessing \n')
+    f.write('def test_embed(): \n')
+    f.write(' '*4 + 'f = open("embed_result.txt", "a") \n')
+    clauses = ''
+    assignment = translation(assignment_1)
+    n = len(set(list(assignment.keys())))
+    variable_lst = []
+    v_lst = range(0, n) #we can either do (0, n) or (1, n+1) depending on whether the edge list starts from 0 or 1
+    for v in v_lst: 
+        x_v = 'x' + '_' + str(v)
+        y_v = 'y' + '_' + str(v)
+        z_v = 'z' + '_' + str(v)
+        variable_lst += [x_v, y_v, z_v]
+    for variable in variable_lst:
+        clause = ' '*4+ variable + ' = Real(' + '\''  + variable + '\'' + ')' + '\n'
+        clauses = clauses + clause
+    f.write(' '*4+'s = Solver() \n')
+    original_assign = assignment_1.assign
+    for pair in assignment_1.ortho:
+        #their dot product is 0
+        v_1 = pair[0]
+        v_2 = pair[1]
+        label_1 = list(original_assign.keys())[list(original_assign.values()).index(v_1)]
+        label_2 = list(original_assign.keys())[list(original_assign.values()).index(v_2)]
+        equation_1 = ' '*4+"s.add(" + 'x_' + str(label_1) +'*'+'x_' + str(label_2)+'+'+ 'y_' + str(label_1) +'*'+'y_' + str(label_2)+'+'+'z_' + str(label_1)+'*'+'z_' + str(label_2)+' == 0' + ")" + '\n'
+        clauses = clauses + equation_1
+    for pair in list(complement(G).edges()):
+        #their cross product is not the zero vector
+        v_1 = pair[0]
+        v_2 = pair[1]
+        x_1 = 'x_' + str(v_1)
+        y_1 = 'y_' + str(v_1)
+        z_1 = 'z_' + str(v_1)
+        x_2 = 'x_' + str(v_2)
+        y_2 = 'y_' + str(v_2)
+        z_2 = 'z_' + str(v_2)
+        vector_3 = cross_product(x_1, y_1, z_1, x_2, y_2, z_2)
+        x_3 = vector_3[0]
+        y_3 = vector_3[1]
+        z_3 = vector_3[2]
+        equation_2 = ' '*4+"s.add("+ 'Or(' + 'Not(' + x_3 + '==0)'+ ', Not(' + y_3 + '==0)' + ', Not(' + z_3 + '==0))) \n'
+        clauses = clauses + equation_2
+    for vertex in assignment.keys():
+        if isinstance(assignment[vertex], tuple):
+            #assignment[vertex][0] cross assignment[vertex][1] = vertex or -vertex
+            v_1 = assignment[vertex][0]
+            v_2 = assignment[vertex][1]
+            x_1 = 'x_' + str(v_1)
+            y_1 = 'y_' + str(v_1)
+            z_1 = 'z_' + str(v_1)
+            x_2 = 'x_' + str(v_2)
+            y_2 = 'y_' + str(v_2)
+            z_2 = 'z_' + str(v_2)
+            vector_3 = cross_product(x_1, y_1, z_1, x_2, y_2, z_2)
+            #vector_3 cross (x_3,y_3,z_3) should be 0 vector
+            x_3 = 'x_' + str(vertex)
+            y_3 = 'y_' + str(vertex)
+            z_3 = 'z_' + str(vertex)
+            double_cross = cross_product(vector_3[0], vector_3[1], vector_3[2], x_3, y_3, z_3)
+            equation_5 = ' '*4+"s.add(" + double_cross[0] + '==0) \n'
+            equation_6 = ' '*4+"s.add(" + double_cross[1] + '==0) \n'
+            equation_7 = ' '*4+"s.add(" + double_cross[2] + '==0) \n'
+            clauses = clauses + equation_5 + equation_6 + equation_7
+    for i in list(G.nodes()):
+        equation_1 = ' '*4+"s.add(" + 'x_' + str(i) + "**2+" + 'y_' + str(i) + "**2+" + 'z_' + str(i) + "**2" + " == 1" + ")" + '\n'
+        equation_2 = ' '*4+"s.add(" + 'z_' + str(i) + ' >= 0' + ")" + '\n'
+        equation_3 = ' '*4+"s.add(" + "Implies(" + 'z_' + str(i) + " == 0, " + 'y_' + str(i) + " > 0))" + '\n'
+        clauses = clauses + equation_1 + equation_2 + equation_3
+    """if triangle != False:
+        tri_1 = triangle[0]
+        tri_2 = triangle[1]
+        tri_3 = triangle[2]
+        equation_8 = ' '*4+"s.add(" + 'x_' + str(tri_1) + " == 0) \n"
+        equation_9 = ' '*4+"s.add(" + 'y_' + str(tri_1) + " == 0) \n"
+        equation_10 = ' '*4+"s.add(" + 'z_' + str(tri_1) + " == 1) \n" 
+        equation_11 = ' '*4+"s.add(" + 'x_' + str(tri_2) + " == 0) \n"
+        equation_12 = ' '*4+"s.add(" + 'y_' + str(tri_2) + " == 1) \n"
+        equation_13 = ' '*4+"s.add(" + 'z_' + str(tri_2) + " == 0) \n" 
+        equation_14 = ' '*4+"s.add(" + 'x_' + str(tri_3) + " == 1) \n"
+        equation_15 = ' '*4+"s.add(" + 'y_' + str(tri_3) + " == 0) \n"
+        equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
+        clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16"""
+    f.write(clauses)
+    f.write(' '*4 + 'dir = __file__\n')
+    f.write(' '*4 + "dir = dir.split('\\\\')\n")
+    f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
+    f.write(' '*4 + "f.write(str(row) + ', ' + str(s.check()) + '   ')\n")
+    f.write("if __name__ == '__main__': \n")
+    f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
+    f.write(' '*4 + "p.start() \n")
+    f.write(' '*4 + "p.join(10) \n")
+    f.write(' '*4 + "if p.is_alive(): \n")
+    f.write(' '*8 + "print (" + str(filename) + ")" + "\n")
+    f.write(' '*8 + "p.terminate() \n")
+    f.write(' '*8 + "p.join() \n")
+    f.write(' '*4 + "else: \n")
+    f.write(' '*8 + "p.terminate() \n")
+    f.write(' '*8 + "p.join() \n")
+    f.close()
+
+    
 
 def cross_product(x_1, y_1, z_1, x_2, y_2, z_2):
     x_3 = '(' + y_1 + '*' + z_2 + '-' + z_1 + '*' + y_2 + ')'
@@ -225,10 +291,30 @@ def depth(t):
     except:
         return 0
 
+def translation(assignment):
+    """
+    transition a nested assignment dictionary to non-nested
+    """
+    assign_dict = {}
+    dict = assignment.assign
+    d = 0 #n is the max nested tuple depth
+    entered = True
+    while entered == True:
+        entered =  False
+        for keys in dict.keys():
+            if depth(dict[keys]) == d and d < 1:
+                entered = True
+                assign_dict[keys] = list(dict.keys())[list(dict.values()).index(dict[keys])]
+            if depth(dict[keys]) == d and d >= 1:
+                entered = True
+                assign_dict[keys] = (list(dict.keys())[list(dict.values()).index(dict[keys][0])], list(dict.keys())[list(dict.values()).index(dict[keys][1])])
+        d += 1
+    return assign_dict
+    
 
-g = g6_to_dict("P?AAD@OI@aP_AcooBCbH_Da_")
-assignment = find_assignments(g)
-assignment_1 = assignment[0]
-print (assignment_1)
-check_sphere_embeddability(g, assignment_1, guess=False)
+graph_dict = g6_to_dict("IpD?GUbV?")
+assignment = find_assignments(graph_dict)
+assignment_1 = assignment[1]
+G = nx.from_graph6_bytes(bytes("IpD?GUbV?", encoding='ascii'))
+generate_z3(G, assignment_1, "1")
         

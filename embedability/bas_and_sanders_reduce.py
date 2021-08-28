@@ -320,6 +320,6 @@ def g6_to_dict(g6):
             check_sphere_embeddability(g, assignment_1, str(count), guess=False)
         count += 1"""
 
-g = g6_to_dict("IsP@OkWHG")
+g = g6_to_dict("IpD?GUbV?")
 assignment = find_assignments(g)
 print (assignment[0])

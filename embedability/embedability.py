@@ -75,3 +75,5 @@ def embedability(edge_lst):
     for edges in unassigned_edges:
         orthogonal_relations.append(edges)
     return [orthogonal_relations, colinear_relations, assignment]
+
+print (embedability([(1,2),(1,3),(2,3)]))
