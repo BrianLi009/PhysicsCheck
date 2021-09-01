@@ -2,7 +2,7 @@ from pysat.formula import CNF
 from pysat.solvers import Maplesat
 from relabel import *
 
-file = 'orderly_cubic_19'
+"""file = 'orderly_without_cubic17'
 cnf = CNF()
 cnf.from_file(file)
 s = Maplesat()
@@ -11,4 +11,4 @@ solution = "a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 15 16 17 18 -19 -20
 assumption = preprocess_maplesat(solution)
 assumption = relabel_from_matching(assumption, matching(19))
 print (s.solve(assumptions = assumption))
-print(s.get_model())
+print(s.get_model())"""

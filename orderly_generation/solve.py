@@ -14,25 +14,24 @@ def solve(file, assumption, count):
         print (count)
         print (False)
     else:
-        #print (True)
-        if count % 100 == 0:
-            print (count)
-        #solution = s.get_model()
-        #n=19
+        print (True)
+        print (count)
+        solution = s.get_model()
+        n=17
         #print(solution[: int(n*(n-1))])
         #print(produce_matrix(solution[int(n*(n-1)/2) : int(n*(n-1))], 19))
         
 
-file1 = open('19-unique-sols.txt', 'r')
+file1 = open('17.exhaust', 'r')
 Lines = file1.readlines()
 count = 1
-file = 'orderly_cubic_19'
+file = 'orderly_cubic_17'
 for solution in Lines:
-    if count > 57300: #
+    if count > 1: #
     	assumption = preprocess_maplesat(solution)
-    	assumption = relabel_from_matching(assumption, matching(19))
+    	#assumption = relabel_from_matching(assumption, matching(17))
     	assumption = sorted(assumption, key=abs)
     	#print (assumption)
-    	#print (produce_matrix(assumption, 19))
+    	#print (produce_matrix(assumption, 17))
     	solve(file, assumption, count)
     count += 1

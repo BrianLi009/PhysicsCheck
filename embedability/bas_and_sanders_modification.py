@@ -7,10 +7,14 @@ import threading
 from io import StringIO
 import textwrap
 import random
+import os
 import networkx as nx
 import shutil
+import csv
+from networkx.algorithms.clique import enumerate_all_cliques
 
 from networkx.algorithms.operators.unary import complement
+from z3.z3printer import _ASSOC_OPS
 
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
@@ -191,14 +195,34 @@ def generate_z3(G, assignment_1, filename):
         clauses = clauses + clause
     f.write(' '*4+'s = Solver() \n')
     original_assign = assignment_1.assign
-    for pair in assignment_1.ortho:
+    for v_1, v_2 in assignment_1.ortho:
         #their dot product is 0
-        v_1 = pair[0]
-        v_2 = pair[1]
         label_1 = list(original_assign.keys())[list(original_assign.values()).index(v_1)]
         label_2 = list(original_assign.keys())[list(original_assign.values()).index(v_2)]
         equation_1 = ' '*4+"s.add(" + 'x_' + str(label_1) +'*'+'x_' + str(label_2)+'+'+ 'y_' + str(label_1) +'*'+'y_' + str(label_2)+'+'+'z_' + str(label_1)+'*'+'z_' + str(label_2)+' == 0' + ")" + '\n'
         clauses = clauses + equation_1
+    cross_dict = translate_cross(assignment_1.eqs, {})
+    for vertex in cross_dict.keys():
+        v_1 = cross_dict[vertex][0]
+        v_2 = cross_dict[vertex][1]
+        label_1 = list(original_assign.keys())[list(original_assign.values()).index(v_1)]
+        label_2 = list(original_assign.keys())[list(original_assign.values()).index(v_2)]
+        x_1 = 'x_' + str(label_1)
+        y_1 = 'y_' + str(label_1)
+        z_1 = 'z_' + str(label_1)
+        x_2 = 'x_' + str(label_2)
+        y_2 = 'y_' + str(label_2)
+        z_2 = 'z_' + str(label_2)
+        vector_3 = cross_product(x_1, y_1, z_1, x_2, y_2, z_2)
+        v = list(original_assign.keys())[list(original_assign.values()).index(vertex)]
+        x_3 = 'x_' + str(v)
+        y_3 = 'y_' + str(v)
+        z_3 = 'z_' + str(v)
+        double_cross = cross_product(vector_3[0], vector_3[1], vector_3[2], x_3, y_3, z_3)
+        equation_5 = ' '*4+"s.add(" + double_cross[0] + '==0) \n'
+        equation_6 = ' '*4+"s.add(" + double_cross[1] + '==0) \n'
+        equation_7 = ' '*4+"s.add(" + double_cross[2] + '==0) \n'
+        clauses = clauses + equation_5 + equation_6 + equation_7
     for pair in list(complement(G).edges()):
         #their cross product is not the zero vector
         v_1 = pair[0]
@@ -236,30 +260,31 @@ def generate_z3(G, assignment_1, filename):
             equation_6 = ' '*4+"s.add(" + double_cross[1] + '==0) \n'
             equation_7 = ' '*4+"s.add(" + double_cross[2] + '==0) \n'
             clauses = clauses + equation_5 + equation_6 + equation_7
+    triangle = find_triangle(G)[0]
+    tri_1 = triangle[0]
+    tri_2 = triangle[1]
+    tri_3 = triangle[2]
+    equation_8 = ' '*4+"s.add(" + 'x_' + str(tri_1) + " == 0) \n"
+    equation_9 = ' '*4+"s.add(" + 'y_' + str(tri_1) + " == 0) \n"
+    equation_10 = ' '*4+"s.add(" + 'z_' + str(tri_1) + " == 1) \n" 
+    equation_11 = ' '*4+"s.add(" + 'x_' + str(tri_2) + " == 0) \n"
+    equation_12 = ' '*4+"s.add(" + 'y_' + str(tri_2) + " == 1) \n"
+    equation_13 = ' '*4+"s.add(" + 'z_' + str(tri_2) + " == 0) \n" 
+    equation_14 = ' '*4+"s.add(" + 'x_' + str(tri_3) + " == 1) \n"
+    equation_15 = ' '*4+"s.add(" + 'y_' + str(tri_3) + " == 0) \n"
+    equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
+    clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16
     for i in list(G.nodes()):
-        equation_1 = ' '*4+"s.add(" + 'x_' + str(i) + "**2+" + 'y_' + str(i) + "**2+" + 'z_' + str(i) + "**2" + " == 1" + ")" + '\n'
-        equation_2 = ' '*4+"s.add(" + 'z_' + str(i) + ' >= 0' + ")" + '\n'
-        equation_3 = ' '*4+"s.add(" + "Implies(" + 'z_' + str(i) + " == 0, " + 'y_' + str(i) + " > 0))" + '\n'
-        clauses = clauses + equation_1 + equation_2 + equation_3
-    """if triangle != False:
-        tri_1 = triangle[0]
-        tri_2 = triangle[1]
-        tri_3 = triangle[2]
-        equation_8 = ' '*4+"s.add(" + 'x_' + str(tri_1) + " == 0) \n"
-        equation_9 = ' '*4+"s.add(" + 'y_' + str(tri_1) + " == 0) \n"
-        equation_10 = ' '*4+"s.add(" + 'z_' + str(tri_1) + " == 1) \n" 
-        equation_11 = ' '*4+"s.add(" + 'x_' + str(tri_2) + " == 0) \n"
-        equation_12 = ' '*4+"s.add(" + 'y_' + str(tri_2) + " == 1) \n"
-        equation_13 = ' '*4+"s.add(" + 'z_' + str(tri_2) + " == 0) \n" 
-        equation_14 = ' '*4+"s.add(" + 'x_' + str(tri_3) + " == 1) \n"
-        equation_15 = ' '*4+"s.add(" + 'y_' + str(tri_3) + " == 0) \n"
-        equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
-        clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16"""
+        if i not in triangle:
+            equation_1 = ' '*4+"s.add(" + 'x_' + str(i) + "**2+" + 'y_' + str(i) + "**2+" + 'z_' + str(i) + "**2" + " == 1" + ")" + '\n'
+            equation_2 = ' '*4+"s.add(" + 'z_' + str(i) + ' >= 0' + ")" + '\n'
+            equation_3 = ' '*4+"s.add(" + "Implies(" + 'z_' + str(i) + " == 0, " + 'y_' + str(i) + " > 0))" + '\n'
+            clauses = clauses + equation_1 + equation_2 + equation_3
     f.write(clauses)
     f.write(' '*4 + 'dir = __file__\n')
     f.write(' '*4 + "dir = dir.split('\\\\')\n")
     f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
-    f.write(' '*4 + "f.write(str(row) + ', ' + str(s.check()) + '   ')\n")
+    f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check()) + '  ')\n")
     f.write("if __name__ == '__main__': \n")
     f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
     f.write(' '*4 + "p.start() \n")
@@ -272,8 +297,6 @@ def generate_z3(G, assignment_1, filename):
     f.write(' '*8 + "p.terminate() \n")
     f.write(' '*8 + "p.join() \n")
     f.close()
-
-    
 
 def cross_product(x_1, y_1, z_1, x_2, y_2, z_2):
     x_3 = '(' + y_1 + '*' + z_2 + '-' + z_1 + '*' + y_2 + ')'
@@ -310,11 +333,51 @@ def translation(assignment):
                 assign_dict[keys] = (list(dict.keys())[list(dict.values()).index(dict[keys][0])], list(dict.keys())[list(dict.values()).index(dict[keys][1])])
         d += 1
     return assign_dict
-    
 
-graph_dict = g6_to_dict("IpD?GUbV?")
+def translate_ortho(ortho, dot_lst):
+    for i in ortho:
+        if not isinstance(i, int):
+            dot_lst.append((i[0], i[1]))
+            translate_ortho(i, dot_lst)
+    return (dot_lst)
+
+def find_triangle(G):
+    triangle_cliques = []
+    for clique in enumerate_all_cliques(G):
+        if len(clique) == 3:
+            triangle_cliques.append(clique)
+    return triangle_cliques
+
+def translate_cross(eqs, cross_dict):
+    for i, eq in enumerate(eqs):
+        cross_dict[eq[1]] = eq[0]
+    return (cross_dict)
+    
+with open('small_graph_new.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    count = 0
+    next(csv_reader)
+    for row in csv_reader:
+        count += 1
+        g6_string = row[0]
+        graph_dict = g6_to_dict(g6_string)
+        G = nx.from_graph6_bytes(bytes(g6_string, encoding='ascii'))
+        if find_triangle(G) == []:
+            continue
+        for assignment in find_assignments(graph_dict):
+            print (assignment)
+            generate_z3(G, assignment, str(count))
+            os.system(str(count)+'.py')
+            with open('embed_result.txt') as f:
+                if ('  ' + str(count) + ', ' in f.read()):
+                    print (str(count) + ' solved')
+                    break
+
+"""graph_dict = g6_to_dict("IpD?GUbV?")
 assignment = find_assignments(graph_dict)
 assignment_1 = assignment[1]
 G = nx.from_graph6_bytes(bytes("IpD?GUbV?", encoding='ascii'))
-generate_z3(G, assignment_1, "1")
-        
+print (assignment_1.assign)
+print (assignment_1.eqs)
+print (translate_cross(assignment_1.eqs, {}))"""
+

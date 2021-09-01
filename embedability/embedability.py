@@ -33,14 +33,13 @@ def sort_by_degree(edge_lst):
     edge_lst =  list(OrderedDict.fromkeys(edge_lst))
     return edge_lst
 
-def embedability(edge_lst):
+def embedability(edge_lst, vertices_lst):
     orthogonal_relations = []
     colinear_relations = []
     assignment = {}
     unassigned_edges = edge_lst.copy()
     assigned_edges = []
-    vertices_lst = list(set([item for sublist in edge_lst for item in sublist]))
-    unassigned = sort_by_degree(edge_lst)
+    unassigned = vertices_lst
     assigned = [] #at the very beginning, all vertices are unassigned
     potential_edges = list(itertools.combinations(vertices_lst,2))
     while unassigned != []:
@@ -76,4 +75,3 @@ def embedability(edge_lst):
         orthogonal_relations.append(edges)
     return [orthogonal_relations, colinear_relations, assignment]
 
-print (embedability([(1,2),(1,3),(2,3)]))

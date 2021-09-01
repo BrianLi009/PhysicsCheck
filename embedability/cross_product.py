@@ -1,7 +1,7 @@
 import timeit
-
+import networkx as nx
 from networkx.algorithms.cluster import triangles
-from embedability import embedability
+from embedability import embedability, sort_by_degree
 import networkx as nx
 import itertools
 import csv
@@ -102,29 +102,28 @@ def output_clause(relations, filename, triangle):
             equation_6 = ' '*4+"s.add(" + double_cross[1] + '==0) \n'
             equation_7 = ' '*4+"s.add(" + double_cross[2] + '==0) \n'
             clauses = clauses + equation_5 + equation_6 + equation_7
-    if triangle != False:
-        tri_1 = triangle[0]
-        tri_2 = triangle[1]
-        tri_3 = triangle[2]
-        equation_8 = ' '*4+"s.add(" + 'x_' + str(tri_1) + " == 0) \n"
-        equation_9 = ' '*4+"s.add(" + 'y_' + str(tri_1) + " == 0) \n"
-        equation_10 = ' '*4+"s.add(" + 'z_' + str(tri_1) + " == 1) \n" 
-        equation_11 = ' '*4+"s.add(" + 'x_' + str(tri_2) + " == 0) \n"
-        equation_12 = ' '*4+"s.add(" + 'y_' + str(tri_2) + " == 1) \n"
-        equation_13 = ' '*4+"s.add(" + 'z_' + str(tri_2) + " == 0) \n" 
-        equation_14 = ' '*4+"s.add(" + 'x_' + str(tri_3) + " == 1) \n"
-        equation_15 = ' '*4+"s.add(" + 'y_' + str(tri_3) + " == 0) \n"
-        equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
-        clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16
+    tri_1 = triangle[0]
+    tri_2 = triangle[1]
+    tri_3 = triangle[2]
+    equation_8 = ' '*4+"s.add(" + 'x_' + str(tri_1) + " == 0) \n"
+    equation_9 = ' '*4+"s.add(" + 'y_' + str(tri_1) + " == 0) \n"
+    equation_10 = ' '*4+"s.add(" + 'z_' + str(tri_1) + " == 1) \n" 
+    equation_11 = ' '*4+"s.add(" + 'x_' + str(tri_2) + " == 0) \n"
+    equation_12 = ' '*4+"s.add(" + 'y_' + str(tri_2) + " == 1) \n"
+    equation_13 = ' '*4+"s.add(" + 'z_' + str(tri_2) + " == 0) \n" 
+    equation_14 = ' '*4+"s.add(" + 'x_' + str(tri_3) + " == 1) \n"
+    equation_15 = ' '*4+"s.add(" + 'y_' + str(tri_3) + " == 0) \n"
+    equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
+    clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16
     f.write(clauses)
     f.write(' '*4 + 'dir = __file__\n')
     f.write(' '*4 + "dir = dir.split('\\\\')\n")
     f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
-    f.write(' '*4 + "f.write(str(row) + ', ' + str(s.check()) + '   ')\n")
+    f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check()) + '  ')\n")
     f.write("if __name__ == '__main__': \n")
     f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
     f.write(' '*4 + "p.start() \n")
-    f.write(' '*4 + "p.join(3) \n")
+    f.write(' '*4 + "p.join(5) \n")
     f.write(' '*4 + "if p.is_alive(): \n")
     f.write(' '*8 + "print (" + str(filename) + ")" + "\n")
     f.write(' '*8 + "p.terminate() \n")
@@ -134,36 +133,51 @@ def output_clause(relations, filename, triangle):
     f.write(' '*8 + "p.join() \n")
     f.close()
 
-"""g6_string = 'IqKaK?X@w'
-edge_lst = g6_to_edge(g6_string)
-relations = embedability(edge_lst)
-output_clause(relations, 'testing')"""
-
-"""with open('small_graph_new.csv') as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
-    count = 0
-    next(csv_reader)
-    for row in csv_reader:
-        count += 1
-        print (count)
-        g6_string = row[0]
-        #result = row[2]
-        edge_lst = g6_to_edge(g6_string)
-        relations = embedability(edge_lst)
-        output_clause(relations, str(count), find_triangle(edge_lst))"""
+def find_triangle(G):
+    triangle_cliques = []
+    for clique in nx.enumerate_all_cliques(G):
+        if len(clique) == 3:
+            triangle_cliques.append(clique)
+    return triangle_cliques
 
 with open('small_graph_new.csv') as csv_file:
-    starttime = timeit.default_timer()
     csv_reader = csv.reader(csv_file, delimiter=',')
-    #f = open('embedability_result.csv', 'w')
-    #writer = csv.writer(f)
     count = 0
     next(csv_reader)
     for row in csv_reader:
         count += 1
-        os.system(str(count)+'.py')
-    #f.close()
-    print ("total graphs: " + str(count))
-    print("Runtime :", timeit.default_timer() - starttime)
+        g6_string = row[0]
+        G = nx.from_graph6_bytes(bytes(g6_string, encoding='ascii'))
+        edge_lst = g6_to_edge(g6_string)
+        degree_sorted = sorted(G.degree, key=lambda x: x[1], reverse=False)
+        vertices_lst = []
+        for vertex in degree_sorted:
+            vertices_lst.append(vertex[0])
+        assignment = embedability(edge_lst, vertices_lst)
+        if find_triangle(G) == []:
+            continue
+        for triangle in find_triangle(G):
+            print ("generating for " + str(count))
+            output_clause(assignment, str(count), triangle)
+            os.system(str(count)+'.py')
+            with open('embed_result.txt') as f:
+                if ('  ' + str(count) + ', ' in f.read()):
+                    print (str(count) + ' solved')
+                    break
 
-"""we can write our result into a file, preferably the same csv file, we can implement that in each separate number.py file through cross_product"""
+"""g6_string = "M{D?GO_??c_eAT?y?"
+G = nx.from_graph6_bytes(bytes(g6_string, encoding='ascii'))
+edge_lst = g6_to_edge(g6_string)
+degree_sorted = sorted(G.degree, key=lambda x: x[1], reverse=True)
+vertices_lst = []
+for vertex in degree_sorted:
+    vertices_lst.append(vertex[0])
+assignment = embedability(edge_lst, vertices_lst)
+count = 6637
+for triangle in find_triangle(G):
+    output_clause(assignment, str(count), triangle)
+    os.system(str(count)+'.py')
+    with open('embed_result.txt') as f:
+        if ('  ' + str(count) + ', ' in f.read()):
+            print (str(count) + ' solved')
+            break"""

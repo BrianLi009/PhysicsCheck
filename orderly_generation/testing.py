@@ -74,7 +74,7 @@ def findLexicographicRank(str):
  
     return rank
 
-"""file1 = open('19-unique-sols.txt', 'r')
+"""file1 = open('17.exhaust', 'r')
 Lines = file1.readlines()
 count = 1
 lex_dict = {}
