@@ -80,7 +80,7 @@ count = 1
 lex_dict = {}
 for solution in Lines:
     solution = preprocess_maplesat(solution)
-    solution = relabel_from_matching(solution, matching(19))
+    #solution = relabel_from_matching(solution, matching(19))
     solution = sorted(solution, key=abs)
     matrix_form = []
     for entry in solution:
@@ -96,5 +96,5 @@ for solution in Lines:
     #print (lex_order)
     lex_dict[count] = lex_order
     count += 1
-lex_lst = sorted(lex_dict, key=lex_dict.get)[:100]
+lex_lst = sorted(lex_dict, key=lex_dict.get)
 print (lex_lst)"""

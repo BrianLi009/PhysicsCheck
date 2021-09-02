@@ -5,13 +5,11 @@ from pysat.formula import CNF
 
 def generate_encoding(n):
     cnf = CNF()
-    total_clause = []
     canonical = generate_canonical_clauses(n)
     #cubic = block_iso(n)
     #max_label = math.comb(n,2)*2+n**2+(math.comb(n,2)-1)
     #relabeled_dict = {}
     for constraint in canonical:
-        total_clause = total_clause + [constraint]
         cnf.append(constraint)
     """for constraint in cubic:
         #print ("original:")
@@ -31,6 +29,5 @@ def generate_encoding(n):
         #print (constraint)
         cnf.append(constraint)"""
     cnf.to_file('orderly_without_cubic' + str(n))
-    return total_clause
 
 #generate_encoding(17)

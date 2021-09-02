@@ -45,7 +45,7 @@ def generate_canonical_clauses(n):
     perm_lst = []
     for perm in perm_dict.keys():
         perm_lst.append(perm)
-    for possible_perm in list(itertools.combinations(perm_lst, 2)):
+    for possible_perm in list(itertools.permutations(perm_lst, 2)):
         i = possible_perm[0][0]
         i_prime = possible_perm[0][1]
         j = possible_perm[1][0]
@@ -59,18 +59,16 @@ def generate_canonical_clauses(n):
     B_edges = list(B_dict.keys())
     lex_variables = list(range(total_variables+1, total_variables+len(A_edges)))
     for k in range(1, len(lex_variables)):
-        constraint_7 = [-A_dict[A_edges[k]], B_dict[B_edges[k]], -lex_variables[k-1]]
-        constraint_8 = [-A_dict[A_edges[k]], lex_variables[k], -lex_variables[k-1]]
-        constraint_9 = [B_dict[B_edges[k]], lex_variables[k], -lex_variables[k-1]]
+        constraint_7 = [-B_dict[B_edges[k]], A_dict[A_edges[k]], -lex_variables[k-1]]
+        constraint_8 = [-B_dict[B_edges[k]], lex_variables[k], -lex_variables[k-1]]
+        constraint_9 = [A_dict[A_edges[k]], lex_variables[k], -lex_variables[k-1]]
         clauses = clauses + [constraint_7] + [constraint_8] + [constraint_9]
-    constraint_10 = [B_dict[B_edges[-1]], -lex_variables[-1]]
-    constraint_11 = [-A_dict[A_edges[-1]], -lex_variables[-1]]
-    constraint_12 = [-A_dict[A_edges[0]], B_dict[B_edges[0]]] #a_0 ommited
-    constraint_13 = [-A_dict[A_edges[0]], lex_variables[0]]
-    constraint_14 = [-B_dict[B_edges[0]], lex_variables[0]]
-    clauses = clauses + [constraint_10] + [constraint_11] + [constraint_12] + [constraint_13] + [constraint_14]
-    #print (A_dict)
-    #print (B_dict)
+    constraint_10 = [-B_dict[B_edges[0]], A_dict[A_edges[0]]]
+    constraint_11 = [-B_dict[B_edges[0]], lex_variables[0]]
+    constraint_12 = [A_dict[A_edges[0]], lex_variables[0]]
+    constraint_13 = [-lex_variables[-1], -B_dict[B_edges[-1]]]
+    constraint_14 = [-lex_variables[-1], A_dict[A_edges[-1]]]    
+    clauses = clauses + [constraint_10] + [constraint_11]+[constraint_12] + [constraint_13]+[constraint_14]
     return clauses
 
-#(generate_canonical_clauses(17))
+#print (generate_canonical_clauses(5))
