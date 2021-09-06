@@ -55,10 +55,10 @@ def block_iso(n):
                     constraint = constraint + [constraint_1, constraint_2, constraint_3]
             constraint_4 = [-dict[A_ij[-1]], dict[A_ji[-1]], -dict[(i,j,len(A_ij)-1)]]
             constraint = constraint + [constraint_4]
-    for i in range(size):
+    """for i in range(size):
         constraint = constraint + [[-dict[adj_matrix[i][i]]]]
         for j in range(size):
             constraint = constraint + [[-dict[adj_matrix[i][j]], dict[adj_matrix[j][i]]]]#make sure it's symmetric
-            constraint = constraint + [[dict[adj_matrix[i][j]], -dict[adj_matrix[j][i]]]]
+            constraint = constraint + [[dict[adj_matrix[i][j]], -dict[adj_matrix[j][i]]]]"""
     #print (dict)
     return constraint

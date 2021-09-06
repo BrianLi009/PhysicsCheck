@@ -15,7 +15,7 @@ def automate(min_n, max_n, solver_lst):
     for n in range(min_n, max_n+1):
         print ("solving for " + str(n))
         generate_dimacs(n) #produce and save the dimacs file
-        file = "all_constraints_original_" + str(n)
+        file = "constraints_" + str(n)
         for solver_type in solver_lst:
             runtime = solve_cnf_pickle(file, n, solver_type)
             try:
