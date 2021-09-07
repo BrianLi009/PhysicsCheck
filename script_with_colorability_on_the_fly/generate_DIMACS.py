@@ -9,6 +9,7 @@ from cubic import *
 from relabel import *
 import math
 from matching import *
+from minthree_2 import *
 
 def generate_dimacs(n):
     """
@@ -40,13 +41,7 @@ def generate_dimacs(n):
     print ("constraint_3 added")
     #add the non-010 constraint here
     #we want to disable this constraint for now to generate non-colorable constraint on the fly
-    for constraint in encode_min_three(n): #each vertex has minimum degree 3, contain extrvariables
-        #print (constraint)
-        relabelled = relabel(constraint, num_of_edges, max_label, relabeled_dict)
-        constraint = relabelled[0]
-        #print (constraint)
-        max_label = relabelled[1]
-        relabeled_dict = relabelled[2]
+    for constraint in encode_min_three_2(n):
         constraint = relabel_from_matching(constraint, matches)
         cnf.append(constraint)
     print ("constraint_4 added")

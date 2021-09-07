@@ -15,24 +15,28 @@ def non_colorable(n):
     for edge in edge_lst:
         edge_dict[edge] = counter
         counter += 1
-    maximum = math.ceil(n/3)+1
-    for i in range(1, maximum+1): #this is a testing for 17 vertices, where we only block graphs with 5 label-1 vertices in advance
+    #maximum = math.ceil(n/3)+1
+    number_1 = math.floor(n/3)
+    number_2 = math.floor(n/3-1)
+    number_3 = math.floor(n/3+1)
+    for i in range(1, n): #this is a testing for 17 vertices, where we only block graphs with 5 label-1 vertices in advance
         #get all possible combinations of i vertices
-        possible_comb = list(itertools.combinations(vertices_lst, i))
-        for choice in possible_comb: #we pick i vertices to be labeled
-            constraint_1 = []
-            trig_vertices = []
-            for v in vertices_lst:
-                if v not in choice:
-                    trig_vertices.append(v)
-            all_edges = list(itertools.combinations(choice, 2))
-            for e in all_edges:
-                constraint_1.append(edge_dict[e])
-            if len(trig_vertices) > 2:
-                all_triangle  = list(itertools.combinations(trig_vertices, 3))
-                for triangle in all_triangle: 
-                    constraint_1.append(extra_var_dict[triangle])
-            constraint = constraint + [constraint_1]
+        if i != number_1 and i != number_2:
+            possible_comb = list(itertools.combinations(vertices_lst, i))
+            for choice in possible_comb: #we pick i vertices to be labeled
+                constraint_1 = []
+                trig_vertices = []
+                for v in vertices_lst:
+                    if v not in choice:
+                        trig_vertices.append(v)
+                all_edges = list(itertools.combinations(choice, 2))
+                for e in all_edges:
+                    constraint_1.append(edge_dict[e])
+                if len(trig_vertices) > 2:
+                    all_triangle  = list(itertools.combinations(trig_vertices, 3))
+                    for triangle in all_triangle: 
+                        constraint_1.append(extra_var_dict[triangle])
+                constraint = constraint + [constraint_1]
     tri_constraint = []
     for triangle in extra_var_dict.keys():
         v_1 = triangle[0]
