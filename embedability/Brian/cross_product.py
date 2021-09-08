@@ -184,7 +184,7 @@ def find_triangle(G):
 
 #import from maplesat output
 
-file1 = open('canonical_subgraphs\canonical-19.out', 'r')
+"""file1 = open('canonical_subgraphs\canonical-19.out', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
@@ -218,5 +218,6 @@ for line in Lines:
             with open('embed_result_subgraph.txt') as f:
                 if ('  ' + str(count) + ', ' in f.read()):
                     print (str(count) + ' solved')
-                    break
+                    break"""
     
+os.system('1.py')

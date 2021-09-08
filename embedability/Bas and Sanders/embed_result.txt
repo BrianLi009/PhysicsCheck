@@ -1,1 +1,0 @@
-  1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, sat    1, unsat    1, unsat    1, unsat    1, sat    1, sat    1, sat    1, sat  
