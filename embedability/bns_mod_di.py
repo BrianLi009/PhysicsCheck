@@ -1,10 +1,14 @@
+from io import StringIO
 from z3 import *
 import os
 import csv
 import networkx as nx
 import collections
-from helper import *
+from helper import cross, dot, nested_cross
 import timeit
+import multiprocessing
+import time
+from func_timeout import func_timeout, FunctionTimedOut
 
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
@@ -160,27 +164,22 @@ def find_assignments(g):
     completed.sort(key=lambda f: (f.nvar, len(f.eqs), len(f.ortho)))
     return completed
 
-def determine_embed(g, assignment, filename):
-    f = open(filename + ".py", "w")
-    f.write('from z3 import * \n')
-    f.write('from helper import cross, dot, nested_cross \n')
-    f.write('import multiprocessing \n')
-    f.write('def test_embed(): \n')
-    f.write(' '*4 + 'f = open("embed_result.txt", "a") \n')
-    f.write(' '*4+'s = Solver() \n')
+def determine_embed(g, assignment, label):
+    io = StringIO()
+    io.write("s = Solver()\n")
     v_dict = {}
     for i in range(len(assignment.var)):
-        f.write(' '*4 + 'v'+str(i)+'c1 = Real("v'+ str(i) + 'c1")\n')
-        f.write(' '*4 + 'v'+str(i)+'c2 = Real("v'+ str(i) + 'c2")\n')
-        f.write(' '*4 + 'v'+str(i)+'c3 = Real("v'+ str(i) + 'c3")\n')
-        f.write(' '*4 + 'v' + str(i) + '= (' + 'v' + str(i) + 'c1, v' + str(i) + 'c2, v' + str(i) + 'c3)\n')
+        io.write( 'v'+str(i)+'c1 = Real("v'+ str(i) + 'c1")\n')
+        io.write( 'v'+str(i)+'c2 = Real("v'+ str(i) + 'c2")\n')
+        io.write( 'v'+str(i)+'c3 = Real("v'+ str(i) + 'c3")\n')
+        io.write( 'v' + str(i) + '= (' + 'v' + str(i) + 'c1, v' + str(i) + 'c2, v' + str(i) + 'c3)\n')
         v_dict[i] = ('v'+str(i)+'c1', 'v'+str(i)+'c2', 'v'+str(i)+'c3') #{0: (v0c1, v0c2, v0c3)}
-    f.write(' '*4 +'s.add('+v_dict[0][0] +'== 1) \n')
-    f.write(' '*4 +'s.add('+v_dict[0][1] +'== 0) \n')
-    f.write(' '*4 +'s.add('+v_dict[0][2] +'== 0) \n')
-    f.write(' '*4 +'s.add('+v_dict[1][0] +'== 0) \n')
-    f.write(' '*4 +'s.add('+v_dict[1][1] +'== 1) \n')
-    f.write(' '*4 +'s.add('+v_dict[1][2] +'== 0) \n')
+    io.write('s.add('+v_dict[0][0] +'== 1) \n')
+    io.write('s.add('+v_dict[0][1] +'== 0) \n')
+    io.write('s.add('+v_dict[0][2] +'== 0) \n')
+    io.write('s.add('+v_dict[1][0] +'== 0) \n')
+    io.write('s.add('+v_dict[1][1] +'== 1) \n')
+    io.write('s.add('+v_dict[1][2] +'== 0) \n')
     x = assignment.var[0]
     y = assignment.var[1]
     fvars = set()
@@ -193,19 +192,19 @@ def determine_embed(g, assignment, filename):
         fvars.add(v_dict[i][1])
         fvars.add(v_dict[i][2])
         if x in g[assignment.var[i]]:
-            f.write(' '*4 +'s.add('+v_dict[i][0]+' == 0)\n')
+            io.write('s.add('+v_dict[i][0]+' == 0)\n')
             fvars.remove(v_dict[i][0])
         elif y in g[assignment.var[i]]:
-            f.write(' '*4 +'s.add('+v_dict[i][1]+' == 0)\n')
+            io.write('s.add('+v_dict[i][1]+' == 0)\n')
             fvars.remove(v_dict[i][1])
         elif z in g[assignment.var[i]]:
-            f.write(' '*4 +'s.add('+v_dict[i][2]+' == 0)\n')
+            io.write('s.add('+v_dict[i][2]+' == 0)\n')
             fvars.remove(v_dict[i][2])
     try:
         cross_product = nested_cross(assignment.eqs[0])
-        f.write(' '*4 + 's.add(' + cross_product + '[0] == 0) \n')
-        f.write(' '*4 + 's.add(' + cross_product + '[1] == 0) \n')
-        f.write(' '*4 + 's.add(' + cross_product + '[2] == 0) \n')
+        io.write('s.add(' + cross_product + '[0] == 0) \n')
+        io.write('s.add(' + cross_product + '[1] == 0) \n')
+        io.write('s.add(' + cross_product + '[2] == 0) \n')
     except:
         pass
     edges = set()
@@ -223,62 +222,19 @@ def determine_embed(g, assignment, filename):
                 continue
             had.add((v1, v2))
             cross_product = nested_cross((assignment.assign[v1], assignment.assign[v2]))
-            f.write(' '*4 + 's.add(Or(Not(' + cross_product + '[0] == 0), Not(' + cross_product + '[1] == 0), Not(' + cross_product + '[2] == 0)))\n')
+            io.write('s.add(Or(Not(' + cross_product + '[0] == 0), Not(' + cross_product + '[1] == 0), Not(' + cross_product + '[2] == 0)))\n')
     for dot_relation in assignment.ortho:
         v = nested_cross(dot_relation[0])
         w = nested_cross(dot_relation[1])
-        f.write(' '*4 + 's.add(' + dot(v,w) + '== 0) \n')
-    f.write(' '*4 + 'dir = __file__\n')
-    f.write(' '*4 + "dir = dir.split('\\\\')\n")
-    f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
+        io.write('s.add(' + dot(v,w) + '== 0) \n')
     num_vertices = len(g)
     num_edges = int(len(edges)/2)
-    f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check())+ '  ' +" + 'str(' + str(num_vertices) + ')' + "+" + " '  ' " + '+' + 'str(' + str(num_edges) + ")+" + repr('\n') + ')\n')
-    f.write(' '*4 + 'f.close()\n')
-    f.write("if __name__ == '__main__': \n")
-    f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
-    f.write(' '*4 + "p.start() \n")
-    f.write(' '*4 + "p.join(5) \n")
-    f.write(' '*4 + "if p.is_alive(): \n")
-    f.write(' '*8 + "print (" + str(filename) + ")" + "\n")
-    f.write(' '*8 + "p.terminate() \n")
-    f.write(' '*8 + "p.join() \n")
-    f.write(' '*4 + "else: \n")
-    f.write(' '*8 + "p.terminate() \n")
-    f.write(' '*8 + "p.join() \n")
-    f.close()
-
-#graph from graph6 csv
-"""with open('small_graph_new.csv') as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
-    count = 0
-    next(csv_reader)
-    for row in csv_reader:
-        count += 1
-        g6_string = row[0]
-        graph_dict = g6_to_dict(g6_string)
-        assignments = find_assignments(graph_dict)
-        for assignment in assignments:
-            print ("generating for " + str(count))
-            determine_embed(graph_dict, assignment, str(count))
-            os.system(str(count) + '.py')
-            with open('embed_result.txt') as f:
-                if ('  ' + str(count) + ', ' in f.read()):
-                    print (str(count) + ' solved')
-                    break"""
-
-#individual graph
-"""g6_string = "S????CCA?`b_GUI`GTI_GW?eDEC_OE?@G" #20 vertices
-graph_dict = g6_to_dict(g6_string)
-assignments = find_assignments(graph_dict)
-for assignment in assignments:
-    print ("generating for " + str(10000))
-    determine_embed(graph_dict, assignment, str(10000))
-    os.system(str(10000) + '.py')
-    with open('embed_result.txt') as f:
-        if ('  ' + str(10000) + ', ' in f.read()):
-            print (str(10000) + ' solved')
-            break"""
+    io.write('f = open("embed_result.txt", "a") \n')
+    io.write("f.write('  ' + str(label) + ', ' + str(s.check()) + ' ' + str(num_vertices) + ' ' + str(num_edges) )\n")
+    try:
+        exec(io.getvalue())
+    except:
+        pass
 
 #graph in sat labeling format
 
@@ -296,27 +252,50 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-"""file1 = open('canonical_subgraphs\canonical-19.out', 'r')
+
+#individual graph
+"""edge_lst = maple_to_edges('a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20 -21 -22 -23 -24 -25 -26 -27 -28 -29 -30 -31 -32 -33 -34 -35 -36 -37 -38 -39 -40 41 42 43 44 45 0', 19)
+G = nx.Graph()
+G.add_edges_from(edge_lst)
+graph_dict = {}
+for v in list(G.nodes()):
+    graph_dict[v] = (list(G.neighbors(v)))
+assignments = find_assignments(graph_dict)
+
+try:
+    doitReturnValue = func_timeout(2, determine_embed, args=(graph_dict, assignments[0], 1))
+except FunctionTimedOut:
+    print ("timeout")"""
+
+
+        
+#this version doesn't have timeout
+file1 = open('canonical_subgraphs\canonical-19.out', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
     count += 1
-    if count > 11740:
+    if count > 15547:
         edge_lst = maple_to_edges(line, 19)
         G = nx.Graph()
         G.add_edges_from(edge_lst)
         graph_dict = {}
         for v in list(G.nodes()):
             graph_dict[v] = (list(G.neighbors(v)))
-        assignments = find_assignments(graph_dict)
         start = timeit.default_timer()
+        assignments = find_assignments(graph_dict)
         for assignment in assignments:
             print ("generating for " + str(count))
-            determine_embed(graph_dict, assignment, str(count))
-            os.system(str(count) + '.py')
-            with open('embed_result.txt', 'r+') as f:
-                if ('  ' + str(count) + ', ' in f.read()):
-                    stop = timeit.default_timer()
-                    f.write(str(stop-start) + '\n')
-                    print (str(count) + ' solved')
-                    break"""
+            try:
+                doitReturnValue = func_timeout(100, determine_embed, args=(graph_dict, assignment, str(count)))
+                with open('embed_result.txt', 'r+') as f:
+                    if ('  ' + str(count) + ', ' in f.read()):
+                        stop = timeit.default_timer()
+                        f.write('\n' + str(stop-start) + '\n')
+                        print (str(count) + ' solved')
+                        break
+            except FunctionTimedOut:
+                print ("timeout")
+            except Exception as e:
+                print ("unexpected exception")
+         
