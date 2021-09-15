@@ -284,8 +284,57 @@ for line in Lines:
             graph_dict[v] = (list(G.neighbors(v)))
         start = timeit.default_timer()
         assignments = find_assignments(graph_dict)
+<<<<<<< HEAD
+        print ("assignments found")
+        try:
+            assignment = assignments[0]
+            determine_embed(graph_dict, assignment, str(count))
+            with open('embed_result.txt', 'r+') as f:
+                if ('  ' + str(count) + ', ' in f.read()):
+                    stop = timeit.default_timer()
+                    f.write('\n' + str(stop-start) + '\n')
+                    print (str(count) + ' solved')
+        except:
+            print ("empty graph")"""
+
+
+def check_squarefree(graph):
+    vertices_lst = list(graph.nodes())
+    possible_c4 = list(itertools.combinations(vertices_lst, 4))
+    for c4 in possible_c4:
+        #print (c4)
+        edge_lst = graph.subgraph(list(c4)).edges()
+        #print (edge_lst)
+        if len(edge_lst) >= 4:
+            res = Counter(itertools.chain(*edge_lst))
+            #print (res)
+            del res[None]
+            value_lst = []
+            for value in res.values():
+                value_lst.append(value)
+            if 1 not in value_lst and 0 not in value_lst:
+                return False
+    return True
+
+file1 = open('graph10c.g6', 'r')
+Lines = file1.readlines()
+count = 0
+for line in Lines:
+    count += 1
+    if count > 8144747:
+        g6_string = line[:-1]
+        print (g6_string)
+        graph_dict = g6_to_dict(g6_string)
+        G = nx.from_graph6_bytes(bytes(g6_string, encoding='ascii'))
+        if check_squarefree(G):
+            start = timeit.default_timer()
+            print ("finding assignment")
+            assignments = find_assignments(graph_dict)
+            print ("assignment found")
+=======
         for assignment in assignments:
             print ("generating for " + str(count))
+>>>>>>> parent of 3eaf90b7 (update)
             try:
                 doitReturnValue = func_timeout(100, determine_embed, args=(graph_dict, assignment, str(count)))
                 with open('embed_result.txt', 'r+') as f:
@@ -293,9 +342,18 @@ for line in Lines:
                         stop = timeit.default_timer()
                         f.write('\n' + str(stop-start) + '\n')
                         print (str(count) + ' solved')
+<<<<<<< HEAD
+            except:
+                print (str(count) + " cannot be generated")
+
+
+#I?qa``eeO
+#ICOedPKL?
+=======
                         break
             except FunctionTimedOut:
                 print ("timeout")
             except Exception as e:
                 print ("unexpected exception")
          
+>>>>>>> parent of 3eaf90b7 (update)
