@@ -1,4 +1,5 @@
 from io import StringIO
+from networkx.algorithms.cycles import find_cycle
 from z3 import *
 import os
 import csv
@@ -6,9 +7,26 @@ import networkx as nx
 import collections
 from helper import cross, dot, nested_cross
 import timeit
-import multiprocessing
-import time
-from func_timeout import func_timeout, FunctionTimedOut
+import multiprocessing.pool
+import functools
+import itertools
+from collections import Counter
+#from func_timeout import func_timeout, FunctionTimedOut
+
+def timeout(max_timeout):
+    """Timeout decorator, parameter in seconds."""
+    def timeout_decorator(item):
+        """Wrap the original function."""
+        @functools.wraps(item)
+        def func_wrapper(*args, **kwargs):
+            """Closure for function."""
+            pool = multiprocessing.pool.ThreadPool(processes=1)
+            async_result = pool.apply_async(item, args, kwargs)
+            # raises a TimeoutError if execution exceeds max_timeout
+            return async_result.get(max_timeout)
+        return func_wrapper
+    return timeout_decorator
+#from func_timeout import func_timeout, FunctionTimedOut
 
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
@@ -231,10 +249,8 @@ def determine_embed(g, assignment, label):
     num_edges = int(len(edges)/2)
     io.write('f = open("embed_result.txt", "a") \n')
     io.write("f.write('  ' + str(label) + ', ' + str(s.check()) + ' ' + str(num_vertices) + ' ' + str(num_edges) )\n")
-    try:
-        exec(io.getvalue())
-    except:
-        pass
+    exec(io.getvalue())
+    
 
 #graph in sat labeling format
 
@@ -254,28 +270,31 @@ def maple_to_edges(input, v):
 
 
 #individual graph
-"""edge_lst = maple_to_edges('a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20 -21 -22 -23 -24 -25 -26 -27 -28 -29 -30 -31 -32 -33 -34 -35 -36 -37 -38 -39 -40 41 42 43 44 45 0', 19)
-G = nx.Graph()
-G.add_edges_from(edge_lst)
-graph_dict = {}
-for v in list(G.nodes()):
-    graph_dict[v] = (list(G.neighbors(v)))
-assignments = find_assignments(graph_dict)
 
-try:
-    doitReturnValue = func_timeout(2, determine_embed, args=(graph_dict, assignments[0], 1))
-except FunctionTimedOut:
-    print ("timeout")"""
+    
+"""if __name__ == '__main__':
+    edge_lst = maple_to_edges('a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20 21 -22 -23 -24 -25 26 -27 28 -29 -30 -31 32 -33 -34 35 36 -37 -38 -39 40 41 42 -43 -44 -45 -46 -47 48 -49 -50 51 -52 -53 -54 -55 -56 -57 58 -59 60 -61 -62 -63 -64 65 -66 -67 -68 69 70 -71 -72 -73 -74 75 -76 77 -78 -79 80 -81 -82 -83 84 -85 -86 -87 -88 89 -90 -91 0', 19)
+    G = nx.Graph()
+    G.add_edges_from(edge_lst)
+    graph_dict = {}
+    for v in list(G.nodes()):
+        graph_dict[v] = (list(G.neighbors(v)))
+    assignments = find_assignments(graph_dict)
+    # Start bar as a process
+    @timeout(5,0)
+    determine_embed(graph_dict, assignments[0], '1')"""
+
+
 
 
         
 #this version doesn't have timeout
-file1 = open('canonical_subgraphs\canonical-19.out', 'r')
+"""file1 = open('canonical_subgraphs\canonical-19.out', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
     count += 1
-    if count > 15547:
+    if count > 37807:
         edge_lst = maple_to_edges(line, 19)
         G = nx.Graph()
         G.add_edges_from(edge_lst)
@@ -284,7 +303,6 @@ for line in Lines:
             graph_dict[v] = (list(G.neighbors(v)))
         start = timeit.default_timer()
         assignments = find_assignments(graph_dict)
-<<<<<<< HEAD
         print ("assignments found")
         try:
             assignment = assignments[0]
@@ -331,29 +349,17 @@ for line in Lines:
             print ("finding assignment")
             assignments = find_assignments(graph_dict)
             print ("assignment found")
-=======
-        for assignment in assignments:
-            print ("generating for " + str(count))
->>>>>>> parent of 3eaf90b7 (update)
             try:
-                doitReturnValue = func_timeout(100, determine_embed, args=(graph_dict, assignment, str(count)))
+                assignment = assignments[0]
+                determine_embed(graph_dict, assignment, str(count))
                 with open('embed_result.txt', 'r+') as f:
                     if ('  ' + str(count) + ', ' in f.read()):
                         stop = timeit.default_timer()
                         f.write('\n' + str(stop-start) + '\n')
                         print (str(count) + ' solved')
-<<<<<<< HEAD
             except:
                 print (str(count) + " cannot be generated")
 
 
 #I?qa``eeO
 #ICOedPKL?
-=======
-                        break
-            except FunctionTimedOut:
-                print ("timeout")
-            except Exception as e:
-                print ("unexpected exception")
-         
->>>>>>> parent of 3eaf90b7 (update)

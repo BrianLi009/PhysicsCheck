@@ -233,7 +233,7 @@ def determine_embed(g, assignment, filename):
     f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
     num_vertices = len(g)
     num_edges = int(len(edges)/2)
-    f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check())+ '  ' +" + 'str(' + str(num_vertices) + ')' + "+" + " '  ' " + '+' + 'str(' + str(num_edges) + ")+" + repr('\n') + ')\n')
+    f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check())+ ' ' +" + 'str(' + str(num_vertices) + ')' + "+" + " ' ' " + '+' + 'str(' + str(num_edges) + ")+" + repr('\n') + ')\n')
     f.write(' '*4 + 'f.close()\n')
     f.write("if __name__ == '__main__': \n")
     f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
@@ -301,7 +301,8 @@ Lines = file1.readlines()
 count = 0
 for line in Lines:
     count += 1
-    if count > 11740:
+    if count > 37808:
+        print ("running")
         edge_lst = maple_to_edges(line, 19)
         G = nx.Graph()
         G.add_edges_from(edge_lst)
@@ -310,6 +311,7 @@ for line in Lines:
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         start = timeit.default_timer()
+        print ("assignments found")
         for assignment in assignments:
             print ("generating for " + str(count))
             determine_embed(graph_dict, assignment, str(count))
