@@ -322,3 +322,28 @@ for line in Lines:
                     f.write(str(stop-start) + '\n')
                     print (str(count) + ' solved')
                     break"""
+
+file1 = open('squarefree_11.txt', 'r')
+Lines = file1.readlines()
+count = 0
+for line in Lines:
+    count += 1
+    if count > 1:
+        x=list(line.split(': '))
+        g6_string = x[-1][:-1]
+        print (g6_string)
+        graph_dict = g6_to_dict(g6_string)
+        print (graph_dict)
+        start = timeit.default_timer()
+        assignments = find_assignments(graph_dict)
+        print ("assignments found")
+        for assignment in assignments:
+            print ("generating for " + str(count))
+            determine_embed(graph_dict, assignment, str(count))
+            os.system(str(count) + '.py')
+            with open('embed_result.txt', 'r+') as f:
+                if ('  ' + str(count) + ', ' in f.read()):
+                    stop = timeit.default_timer()
+                    f.write(str(stop-start) + '\n')
+                    print (str(count) + ' solved')
+                    break

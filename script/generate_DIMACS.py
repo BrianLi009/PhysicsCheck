@@ -67,3 +67,15 @@ def generate_dimacs(n):
     print ("isomorphism blocked")
     cnf.to_file('constraints_' + str(n))
     #cnf.to_file('no_trig_all_constraints_' + str(n))
+
+def generate_squarefree(n):
+    cnf = CNF()
+    matches = matching(n)
+    num_of_edges = np.math.factorial(n)/(np.math.factorial(2)*np.math.factorial(n-2))
+    for constraint in encode_squarefree(n): #does not contain C4 subgraph, no extra variables
+        #print (constraint)
+        constraint = relabel_from_matching(constraint, matches)
+        cnf.append(constraint)
+    cnf.to_file('squarefree_' + str(n))
+
+generate_squarefree(11)

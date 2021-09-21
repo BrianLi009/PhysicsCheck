@@ -16,7 +16,7 @@ def non_colorable(n):
         edge_dict[edge] = counter
         counter += 1
     """this script version does not contain the programmable interface"""
-    for i in range(1, 17):
+    for i in range(1, n):
         #get all possible combinations of i vertices, divide by 3, plus 1, round up
         possible_comb = list(itertools.combinations(vertices_lst, i))
         for choice in possible_comb: #we pick i vertices to be labeled

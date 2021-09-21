@@ -56,7 +56,7 @@ def output_clause(relations, filename, triangle):
     f.write('from z3 import * \n')
     f.write('import multiprocessing \n')
     f.write('def test_embed(): \n')
-    f.write(' '*4 + 'f = open("embed_result_subgraph.txt", "a") \n')
+    f.write(' '*4 + 'f = open("embed_result.txt", "a") \n')
     clauses = ''
     orthogonal_relations = relations[0]
     colinear_relations = relations[1]
@@ -115,7 +115,7 @@ def output_clause(relations, filename, triangle):
             equation_6 = ' '*4+"s.add(" + double_cross[1] + '==0) \n'
             equation_7 = ' '*4+"s.add(" + double_cross[2] + '==0) \n'
             clauses = clauses + equation_5 + equation_6 + equation_7
-    try:
+    if triangle != []:
         tri_1 = triangle[0]
         tri_2 = triangle[1]
         tri_3 = triangle[2]
@@ -129,24 +129,29 @@ def output_clause(relations, filename, triangle):
         equation_15 = ' '*4+"s.add(" + 'y_' + str(tri_3) + " == 0) \n"
         equation_16 = ' '*4+"s.add(" + 'z_' + str(tri_3) + " == 0) \n" 
         clauses = clauses + equation_8 + equation_9 + equation_10 + equation_11 + equation_12 + equation_13 + equation_14 + equation_15 + equation_16
-    except:
-        print ("no triangle or not considered")
-    f.write(clauses)
-    f.write(' '*4 + 'dir = __file__\n')
-    f.write(' '*4 + "dir = dir.split('\\\\')\n")
-    f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
-    f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check()) + '  ')\n")
-    f.write("if __name__ == '__main__': \n")
-    f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
-    f.write(' '*4 + "p.start() \n")
-    f.write(' '*4 + "p.join(5) \n")
-    f.write(' '*4 + "if p.is_alive(): \n")
-    f.write(' '*8 + "print (" + str(filename) + ")" + "\n")
-    f.write(' '*8 + "p.terminate() \n")
-    f.write(' '*8 + "p.join() \n")
-    f.write(' '*4 + "else: \n")
-    f.write(' '*8 + "p.terminate() \n")
-    f.write(' '*8 + "p.join() \n")
+        f.write(clauses)
+        f.write(' '*4 + 'dir = __file__\n')
+        f.write(' '*4 + "dir = dir.split('\\\\')\n")
+        f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
+        f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check()) + '  ')\n")
+        f.write("if __name__ == '__main__': \n")
+        f.write(' '*4 + "p = multiprocessing.Process(target=test_embed) \n")
+        f.write(' '*4 + "p.start() \n")
+        f.write(' '*4 + "p.join(5) \n")
+        f.write(' '*4 + "if p.is_alive(): \n")
+        f.write(' '*8 + "print (" + str(filename) + ")" + "\n")
+        f.write(' '*8 + "p.terminate() \n")
+        f.write(' '*8 + "p.join() \n")
+        f.write(' '*4 + "else: \n")
+        f.write(' '*8 + "p.terminate() \n")
+        f.write(' '*8 + "p.join() \n")
+    else:
+        f.write(clauses)
+        f.write(' '*4 + 'dir = __file__\n')
+        f.write(' '*4 + "dir = dir.split('\\\\')\n")
+        f.write(' '*4 + 'row = int(dir[-1][:-3])\n')
+        f.write(' '*4 + "f.write('  ' + str(row) + ', ' + str(s.check()) + '  ')\n")
+        f.write('test_embed()')
     f.close()
 
 def find_triangle(G):
@@ -155,6 +160,46 @@ def find_triangle(G):
         if len(clique) == 3:
             triangle_cliques.append(clique)
     return triangle_cliques
+
+#import from g6_file
+
+file1 = open('squarefree_11.txt', 'r')
+Lines = file1.readlines()
+count = 0
+for line in Lines:
+    count += 1
+    if count == 17980:
+        x=list(line.split(': '))
+        g6_string = x[-1][:-1]
+        G = nx.from_graph6_bytes(bytes(g6_string, encoding='ascii'))
+        edge_lst = g6_to_edge(g6_string)
+        degree_sorted = sorted(G.degree, key=lambda x: x[1], reverse=False)
+        vertices_lst = []
+        for vertex in degree_sorted:
+            vertices_lst.append(vertex[0])
+        start = timeit.default_timer()
+        assignment = embedability(edge_lst, vertices_lst)
+        if find_triangle(G) == []:
+            print ("entered")
+            print ("generating for " + str(count))
+            output_clause(assignment, str(count), [])
+            os.system(str(count)+'.py')
+            with open('embed_result.txt', 'r+') as f:
+                if ('  ' + str(count) + ', ' in f.read()):
+                    stop = timeit.default_timer()
+                    f.write('\n' + str(stop-start) + '\n')
+                    print (str(count) + ' solved')
+        else:
+            for triangle in find_triangle(G):
+                print ("generating for " + str(count))
+                output_clause(assignment, str(count), triangle)
+                os.system(str(count)+'.py')
+                with open('embed_result.txt', 'r+') as f:
+                    if ('  ' + str(count) + ', ' in f.read()):
+                        stop = timeit.default_timer()
+                        f.write('\n' + str(stop-start) + '\n')
+                        print (str(count) + ' solved')
+                        break
 
 #import from small_graph_new.csv
 """with open('small_graph_new.csv') as csv_file:
@@ -219,5 +264,3 @@ for line in Lines:
                 if ('  ' + str(count) + ', ' in f.read()):
                     print (str(count) + ' solved')
                     break"""
-    
-os.system('1.py')
