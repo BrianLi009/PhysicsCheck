@@ -342,17 +342,17 @@ Lines = file1.readlines()
 count = 0
 for line in Lines:
     count += 1
-    if count > 18099:
+    if count > 52173:
         x=list(line.split(': '))
         g6_string = x[-1][:-1]
         #print (g6_string)
         graph_dict = g6_to_dict(g6_string)
-        #print (graph_dict)
+        print (graph_dict)
         start = timeit.default_timer()
         assignments = find_assignments(graph_dict, str(count))
         #print (assignments)
         try:
-            #print ("solving assignment")
+            print ("solving assignment")
             assignment = assignments[0]
             determine_embed(graph_dict, assignment, str(count))
             with open('embed_result.txt', 'r+') as f:

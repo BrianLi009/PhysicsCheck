@@ -323,12 +323,12 @@ for line in Lines:
                     print (str(count) + ' solved')
                     break"""
 
-file1 = open('squarefree_11.txt', 'r')
+file1 = open('squarefree_12.txt', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
     count += 1
-    if count > 1:
+    if count > 52173:
         x=list(line.split(': '))
         g6_string = x[-1][:-1]
         print (g6_string)
