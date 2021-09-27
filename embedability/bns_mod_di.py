@@ -337,7 +337,7 @@ def check_squarefree(graph):
                 return False
     return True
 
-file1 = open('squarefree_12.txt', 'r')
+"""file1 = open('squarefree_12.txt', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
@@ -362,6 +362,6 @@ for line in Lines:
                     #print (str(count) + ' solved')
         except:
             print (str(count) + " cannot be generated")
-
+"""
 #I?qa``eeO
 #ICOedPKL?

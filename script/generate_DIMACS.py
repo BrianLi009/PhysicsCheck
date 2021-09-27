@@ -78,4 +78,4 @@ def generate_squarefree(n):
         cnf.append(constraint)
     cnf.to_file('squarefree_' + str(n))
 
-generate_squarefree(11)
+generate_dimacs(17)
