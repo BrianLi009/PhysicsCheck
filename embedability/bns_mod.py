@@ -322,7 +322,7 @@ for line in Lines:
                     f.write(str(stop-start) + '\n')
                     print (str(count) + ' solved')
                     break"""
-
+"""
 file1 = open('squarefree_12.txt', 'r')
 Lines = file1.readlines()
 count = 0
@@ -346,4 +346,4 @@ for line in Lines:
                     stop = timeit.default_timer()
                     f.write(str(stop-start) + '\n')
                     print (str(count) + ' solved')
-                    break
+                    break"""
