@@ -30,6 +30,7 @@ for line in Lines:
         for assignment in assignments:
             determine_embed(graph_dict, assignment, str(count))
             os.system(str(count) + '.py')
+            os.remove(str(count) + '.py')
             with open('embed_result.txt', 'r+') as f:
                 content = f.read()
                 if ('  ' + str(count) + ', sat' in content):
