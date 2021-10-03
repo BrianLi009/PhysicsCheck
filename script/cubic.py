@@ -49,7 +49,7 @@ def block_iso(n):
                     constraint_3 = [dict[A_ji[n]], dict[(i,j,n)]]
                     constraint = constraint + [constraint_1, constraint_2, constraint_3]
                 else:
-                    constraint_1 = [-dict[A_ij[n]], dict[A_ji[n]], -dict[(i,j,n)]]
+                    constraint_1 = [-dict[A_ij[n]], dict[A_ji[n]], -dict[(i,j,n)]] #this is what's different cuz n got incremented
                     constraint_2 = [-dict[A_ij[n]], dict[(i,j,n)], -dict[(i,j,n-1)]]
                     constraint_3 = [dict[A_ji[n]], dict[(i,j,n)], -dict[(i,j,n-1)]]
                     constraint = constraint + [constraint_1, constraint_2, constraint_3]

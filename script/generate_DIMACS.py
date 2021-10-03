@@ -10,6 +10,7 @@ from relabel import *
 from matching import *
 from minthree_2 import *
 import timeit
+from cubic_2 import *
 
 def generate_dimacs(n):
     """
@@ -55,6 +56,7 @@ def generate_dimacs(n):
         constraint = relabel_from_matching(constraint, matches)
         cnf.append(constraint)
     print ("constraint_4 added")
+    print (max_label)
     for constraint in block_iso(n): #block some isomorphic graphs
         #print (constraint)
         relabelled = relabel_2(constraint, n, max_label, relabeled_dict_2)
@@ -63,7 +65,11 @@ def generate_dimacs(n):
         #print (constraint)
         relabeled_dict_2 = relabelled[2]
         constraint = relabel_from_matching(constraint, matches)
+        print (constraint)
         cnf.append(constraint)
+    """for constraint in generate_lex(n, max_label): #fix this
+        edge + triangle + extra cubic
+        cnf.append(constraint)"""
     print ("isomorphism blocked")
     cnf.to_file('constraints_' + str(n))
     #cnf.to_file('no_trig_all_constraints_' + str(n))
@@ -76,6 +82,6 @@ def generate_squarefree(n):
         #print (constraint)
         constraint = relabel_from_matching(constraint, matches)
         cnf.append(constraint)
-    cnf.to_file('squarefree_' + str(n))
+    cnf.to_file('constraints_' + str(n))
 
-generate_dimacs(17)
+generate_dimacs(16)

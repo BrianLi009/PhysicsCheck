@@ -12,4 +12,7 @@ def get_variable(tri, n):
     for triangle in list(itertools.combinations(vertices_lst, 3)):
         extra_var_dict[triangle] = extra_var_count
         extra_var_count += 1
+    print (extra_var_dict)
     return extra_var_dict[tri]
+
+get_variable([1,2,3],5)

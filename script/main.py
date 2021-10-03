@@ -36,7 +36,7 @@ def plot_data(data_dict):
     plt.legend()
     plt.show()
 
-#plot_data(automate(17, 17, [1]))
+plot_data(automate(17, 17, [1]))
 
 
 

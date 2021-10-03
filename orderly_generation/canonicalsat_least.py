@@ -103,9 +103,9 @@ for i in range(n):
 					generate_implication_clause({B[k][l], P[i][k], P[j][l]}, {A[i][j]})
 
 # Clauses which encode the cubic ordering constraint on B
-"""for j in range(n):
+for j in range(n):
 	for i in range(j):
-		generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False)"""
+		generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False)
 
 # Clauses which encode B is lex smaller than A
 generate_lex_clauses(range(N+1,2*N+1), range(1,N+1), True)
