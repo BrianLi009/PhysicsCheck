@@ -43,11 +43,9 @@ def generate(n):
     for constraint in mindegree(n, edge_dict):
         cnf.append(constraint)
     print ("minimum degree of each vertex is 3")
-    print (tri_dict)
-    print (count)
     for constraint in cubic(n, count):
         cnf.append(constraint)
     print ("isomorphism blocking applied")
     cnf.to_file("constraints_" + str(n))
 
-generate(16)
+generate(5)

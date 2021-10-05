@@ -21,7 +21,7 @@ def generate_lex_clauses(X, Y, strict, total_vars):
     clauses = clauses + [generate_implication_clause({X[0]}, {Y[0]})]
     clauses = clauses + [generate_implication_clause({X[0]}, {total_vars+1})]
     clauses = clauses + [generate_clause({Y[0], total_vars+1})]
-    for k in range(1, n-1):
+    for k in range(1, n-1): 
         clauses = clauses + [generate_implication_clause({total_vars+k}, {-X[k], Y[k]})]
         clauses = clauses + [generate_implication_clause({total_vars+k}, {-X[k], total_vars+k+1})]
         clauses = clauses + [generate_implication_clause({total_vars+k}, {Y[k], total_vars+k+1})]
@@ -43,6 +43,7 @@ def cubic(n, count):
                 B[j][i] = total_vars
     for j in range(n):
         for i in range(j):
+            print (i,j)
             clause = generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False, count)[0]
             count = generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False, count)[1]
             #print (count)

@@ -68,7 +68,6 @@ def generate_dimacs(n):
         print (constraint)
         cnf.append(constraint)
     """for constraint in generate_lex(n, max_label): #fix this
-        edge + triangle + extra cubic
         cnf.append(constraint)"""
     print ("isomorphism blocked")
     cnf.to_file('constraints_' + str(n))
@@ -84,4 +83,4 @@ def generate_squarefree(n):
         cnf.append(constraint)
     cnf.to_file('constraints_' + str(n))
 
-generate_dimacs(16)
+generate_dimacs(5)

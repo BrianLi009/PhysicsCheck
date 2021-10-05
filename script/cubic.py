@@ -42,18 +42,19 @@ def block_iso(n):
             for n in range(len(A_ij)):
                 dict[(i,j,n)] = extra_var_count
                 extra_var_count += 1
-            for n in range(len(A_ij)):
+            for n in range(len(A_ij)-1): #here might be a bug, range(len(A_ij))
                 if n == 0:
                     constraint_1 = [-dict[A_ij[n]], dict[A_ji[n]]]
                     constraint_2 = [-dict[A_ij[n]], dict[(i,j,n)]]
                     constraint_3 = [dict[A_ji[n]], dict[(i,j,n)]]
                     constraint = constraint + [constraint_1, constraint_2, constraint_3]
                 else:
-                    constraint_1 = [-dict[A_ij[n]], dict[A_ji[n]], -dict[(i,j,n)]] #this is what's different cuz n got incremented
+                    #constraint_1 = [-dict[A_ij[n]], dict[A_ji[n]], -dict[(i,j,n)]] #this is what's different cuz n got incremented
+                    constraint_1 = [-dict[A_ij[n]], dict[A_ji[n]], -dict[(i,j,n-1)]]
                     constraint_2 = [-dict[A_ij[n]], dict[(i,j,n)], -dict[(i,j,n-1)]]
                     constraint_3 = [dict[A_ji[n]], dict[(i,j,n)], -dict[(i,j,n-1)]]
                     constraint = constraint + [constraint_1, constraint_2, constraint_3]
-            constraint_4 = [-dict[A_ij[-1]], dict[A_ji[-1]], -dict[(i,j,len(A_ij)-1)]]
+            constraint_4 = [-dict[A_ij[-1]], dict[A_ji[-1]], -dict[(i,j,n)]]
             constraint = constraint + [constraint_4]
     """for i in range(size):
         constraint = constraint + [[-dict[adj_matrix[i][i]]]]
@@ -62,3 +63,5 @@ def block_iso(n):
             constraint = constraint + [[dict[adj_matrix[i][j]], -dict[adj_matrix[j][i]]]]"""
     #print (dict)
     return constraint
+
+print (block_iso(4))
