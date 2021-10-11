@@ -19,7 +19,8 @@ def triangle(n, edge_dict, tri_dict):
         constraint_1 = [edge_dict[edge_1], -tri_dict[triangle]]
         constraint_2 = [edge_dict[edge_2], -tri_dict[triangle]]
         constraint_3 = [edge_dict[edge_3], -tri_dict[triangle]]
-        constraint = constraint + [constraint_1, constraint_2, constraint_3]
+        constraint_4 = [-edge_dict[edge_1], -edge_dict[edge_2], -edge_dict[edge_3], tri_dict[triangle]]
+        constraint = constraint + [constraint_1, constraint_2, constraint_3, constraint_4]
     for vertex in vertices_lst:
         all_in = []
         for triangle in list(itertools.combinations(vertices_lst, 3)):
