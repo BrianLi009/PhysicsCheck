@@ -5,7 +5,7 @@ def mindegree(n, edge_dict):
     vertices_lst = list(range(1, n+1))
     constraint = []
     for v in vertices_lst:
-        vertices_lst_copy = vertices_lst.copy()
+        vertices_lst_copy = list(vertices_lst)
         vertices_lst_copy.remove(v)
         for choice in list(itertools.combinations(vertices_lst_copy, n-3)):
             constraint_1 = []
