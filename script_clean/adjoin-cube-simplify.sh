@@ -3,8 +3,8 @@
 # Ensure parameters are specified on the command-line
 if [ -z "$3" ]
 then
-	echo "Instance filename, cube filename, and index of the cube to adjoin"
-	exit
+    echo "Need instance filename, cube filename, and the index of the cube to adjoin (zero-based indexing)"
+    exit
 fi
 
 f=$1
