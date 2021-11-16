@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 # Ensure parameters are specified on the command-line
 if [ -z "$3" ]
 then
@@ -10,12 +10,10 @@ fi
 f=$1
 c=$2
 i=$3
-dir=$f-$c-simp
-adj=$dir/$c$i.adj # Instance with adjoined cube
-cnf=$dir/$c$i.cnf # Simplified instance
-ext=$dir/$c$i.ext # Extension stack
-cnfext=$dir/$c$i.cnfext # Simplified instance with extension stack
-mkdir -p "$dir"
+adj=$c$i.adj # Instance with adjoined cube
+cnf=$c$i.cnf # Simplified instance
+ext=$c$i.ext # Extension stack
+cnfext=$c$i.cnfext # Simplified instance with extension stack
 
 # Determine the number of unit clauses to add
 unitlines=0
@@ -28,11 +26,11 @@ do
 done
 numvars=$(head -n 1 "$f" | cut -d' ' -f3)
 numlines=$(head -n 1 "$f" | cut -d' ' -f4)
-newlines=$((numlines+unitlines))
+newlines=$((numlines+unitlines-1))
 
 # Write instance with adjoined cube
 echo "p cnf $numvars $newlines" > "$adj"
-tail "$f" -n +2 >> "$adj"
+tail "$f" -n +2 | head -n -1 >> "$adj"
 
 for b in $(sed "$((i+1))q;d" "$c")
 do
@@ -42,18 +40,7 @@ do
     fi
 done
 
+sed -i '$ d' "$adj"
+
 # Use CaDiCaL to simplify instance with adjoined cube
-command="./cadical $adj -n -c 200000 -o $cnf -e $ext | tee $dir/$c$i.log"
-echo "$command"
-eval "$command"
-
-# Write simplified instance with extension stack
-numvars=$(head -n 1 "$cnf" | cut -d' ' -f3)
-numlines=$(head -n 1 "$cnf" | cut -d' ' -f4)
-extlines=$(wc -l "$ext" | cut -d' ' -f1)
-newlines=$((numlines+extlines))
-
-echo "p cnf $numvars $newlines" > "$cnfext"
-tail "$cnf" -n +2 >> "$cnfext"
-cat "$ext" >> "$cnfext"
-sed -i 's/ 0.*/ 0/' "$cnfext"
+./simplify.sh "$adj" 1
