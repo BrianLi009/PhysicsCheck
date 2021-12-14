@@ -21,5 +21,4 @@ def squarefree(n, edge_dict):
     """
     add the constraints of each square
     """
-    #print (edge_dict)
     return constraint

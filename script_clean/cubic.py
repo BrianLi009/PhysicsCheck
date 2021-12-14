@@ -43,8 +43,7 @@ def cubic(n, count):
                 B[j][i] = total_vars
     for j in range(n):
         for i in range(j):
-            print (i,j)
-            clause = generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False, count)[0]
+            clause = generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False, count)[0] #generate the lex constraint here A_{ij} \leq A_{ji}
             count = generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False, count)[1]
             #print (count)
             clauses = clauses + clause

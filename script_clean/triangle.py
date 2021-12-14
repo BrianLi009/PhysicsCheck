@@ -8,6 +8,8 @@ def triangle(n, edge_dict, tri_dict):
     constraint = []
     vertices_lst = list(range(1, n+1))
     for triangle in list(itertools.combinations(vertices_lst, 3)):
+        # the following encoding are applied in every possible triangle in the graph
+        # given a triangle, if encode the equivalence relation
         v_1 = triangle[0]
         v_2 = triangle[1]
         v_3 = triangle[2]
@@ -25,6 +27,6 @@ def triangle(n, edge_dict, tri_dict):
         all_in = []
         for triangle in list(itertools.combinations(vertices_lst, 3)):
             if vertex in triangle:
-                all_in.append(tri_dict[triangle])
+                all_in.append(tri_dict[triangle])   #at least one triangle variable that includes this particular vertex is True
         constraint = constraint + [all_in]
     return constraint

@@ -5,7 +5,14 @@ from mindegree import mindegree
 from noncolorable import noncolorable
 from cubic import cubic
 
-def generate(n):
+import sys, os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from test_function import *
+
+"""generate partial encoding for only one of the constraint"""
+
+def generate(n, option):
     """
     n: size of the graph
     Given n, the function calls each individual constraint-generating function, then write them into a DIMACS file as output
@@ -13,6 +20,7 @@ def generate(n):
     edges - n choose 2 variables
     triangles - n choose 3 variables
     extra variables from cubic
+    option: 0=squarefree, 1=triangle, 2=noncolorable, 3=min_degree
     """
     cnf = CNF()
     edge_dict = {}
@@ -31,19 +39,21 @@ def generate(n):
                 count += 1
                 #var_dict[(a,b,c)] = count
                 tri_dict[(a,b,c)] = count
-    for constraint in squarefree(n, edge_dict):
-        cnf.append(constraint)
-    print ("graph is squarefree")
-    for constraint in triangle(n, edge_dict, tri_dict):
-        cnf.append(constraint)
-    print ("all vertices are part of a triangle")
-    for constraint in noncolorable(n,  edge_dict, tri_dict):
-        cnf.append(constraint)
-    print ("graph is noncolorable")
-    for constraint in mindegree(n, edge_dict):
-        cnf.append(constraint)
-    print ("minimum degree of each vertex is 3")
-    for constraint in cubic(n, count):
-        cnf.append(constraint)
-    print ("isomorphism blocking applied")
-    cnf.to_file("constraints_half_" + str(n))
+    if option == 0:
+        for constraint in squarefree(n, edge_dict):
+            cnf.append(constraint)
+        cnf.to_file("constraints_squarefree_only_" + str(n))
+    if option == 1:
+        for constraint in triangle(n, edge_dict, tri_dict):
+            cnf.append(constraint)
+        cnf.to_file("constraints_triangle_only_" + str(n))
+    if option == 2:
+        for constraint in noncolorable(n,  edge_dict, tri_dict, 1):
+            cnf.append(constraint)
+        for constraint in triangle_equivalence(n, edge_dict, tri_dict):
+            cnf.append(constraint)
+        cnf.to_file("constraints_color_only_full_" + str(n))
+    if option == 3:
+        for constraint in mindegree(n, edge_dict):
+            cnf.append(constraint)
+        cnf.to_file("constraints_mindegree_only_" + str(n))
