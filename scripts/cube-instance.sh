@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Ensure necessary parameters are provided on the command-line
+if [ -z $5 ]
+then
+	echo "Need order, instance filename, number of edge variables to remove, depth, cube index, and optionally a simplification mode parameter"
+	exit
+fi
+
+n=$1 # Order
+f=$2 # Instance filename
+r=$3 # Number of free edge variables to remove
+i=$4 # Depth
+c=$5 # Cube index
+s=$6 # Simplification mode parameter
+
+m=$((n*(n+1)/2)) # Number of edge variables in instance
+dir=$n-cubes # Directory to store cubes
+logdir=$n-log # Directory to store logs
+
+# Get the c-th cube
+cubeline=`head $dir/$((i-1)).cubes -n $c | tail -n 1`
+echo "Processing $cubeline..."
+
+if [ -z $s ] || (( i == 1 ))
+then
+	# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
+	command="./apply.sh $f $dir/$((i-1)).cubes $c | ./cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 20000 > $logdir/$((i-1)).cubes$c.simp"
+	echo $command
+	eval $command
+else
+	# Parent cube
+	parentcube=$(echo "$cubeline" | xargs -n 1 | head -n -2 | xargs)
+
+	# Line number of parent cube
+	l=$(grep -n "$parentcube" $dir/$((i-2)).cubes | cut -d':' -f1)
+
+	# Adjoin the literals in the current cube to the simplified parent instance and simplify the resulting instance with CaDiCaL
+	command="./concat-and-apply.sh $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 20000 > $logdir/$((i-1)).cubes$c.simp"
+	echo $command
+	eval $command
+fi
+
+# Check if simplified instance was unsatisfiable
+if grep -q "^0$" $dir/$((i-1)).cubes$c.simp
+then
+	removedvars=$m # Instance was unsatisfiable so all variables were removed
+else
+	# Determine how many edge variables were removed
+	removedvars=$(sed -E 's/.* 0 [-]*([0-9]*) 0$/\1/' < $dir/$((i-1)).cubes$c.ext | awk "\$0<=$m" | sort | uniq | wc -l)
+fi
+
+# Check if current cube should be split
+if (( removedvars <= r ))
+then
+	echo "  Depth $i instance $c has $removedvars removed edge variables; splitting..."
+	# Split this cube by running march_cu on the simplified instance
+	command="./march_cu $dir/$((i-1)).cubes$c.simp -o $dir/$((i-1)).cubes$c.cubes -d 1 -m $m | tee $logdir/$((i-1)).cubes$c.log"
+	echo $command
+	eval $command
+	# Adjoin the newly generated cubes to the literals in the current cube
+	cubeprefix=`head $dir/$((i-1)).cubes -n $c | tail -n 1 | sed -E 's/(.*) 0/\1/'`
+	sed -E "s/^a (.*)/$cubeprefix \1/" $dir/$((i-1)).cubes$c.cubes > $dir/$i-$c.cubes
+else
+	# Current cube should not be split
+	echo "  Depth $i instance $c has $removedvars removed edge variables; not splitting"
+	head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
+fi
