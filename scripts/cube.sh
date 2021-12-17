@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Process options
-while getopts "aps" opt
+while getopts "apsb" opt
 do
 	case $opt in
 		a) a="-a" ;;
 		p) p="-p" ;;
 		s) s="-s" ;;
+		b) s="-b" ;;
 	esac
 done
 shift $((OPTIND-1))
@@ -15,7 +16,7 @@ shift $((OPTIND-1))
 if [ -z $3 ]
 then
 	echo "Need order, filename, and number of variables to be removed in every cube (and optionally the depth to start and end at)"
-	echo "Usage: $0 [-a] [-p] [-s] n f r [d] [e]"
+	echo "Usage: $0 [-a] [-p] [-s] [-b] n f r [d] [e]"
 	echo "  n is the instance order"
 	echo "  f is the instance filename"
 	echo "  r is the number of edge variables to remove from each cube before splitting stops"
@@ -25,6 +26,7 @@ then
 	echo "  -a always check # of free edge variables at the starting depth (instead of skipping instances not split at the previous depth)"
 	echo "  -p run cubing in parallel"
 	echo "  -s apply CaDiCaL on the instances simplified on the previous depth"
+	echo "  -b apply noncanonical clauses to simplified instance (implies -s)"
 	exit
 fi
 
@@ -107,7 +109,7 @@ do
 	done
 	if [ "$p" == "-p" ]
 	then
-		parallel < $dir/$i.commands
+		parallel --will-cite < $dir/$i.commands
 	fi
 	for c in `seq 1 $numcubes`
 	do
