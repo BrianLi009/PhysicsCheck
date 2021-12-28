@@ -9,3 +9,4 @@ def nested_cross(x):
         return 'cross({},{})'.format(*map(nested_cross, x))
     str = 'v{}'.format(x)
     return str
+

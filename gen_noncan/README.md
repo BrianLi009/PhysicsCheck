@@ -7,5 +7,6 @@
 │   ├── find_canonical.py: given a graph, find its canonical representation
 │   ├── helper functions...
 ├── canonical_subgraphs: all subgraphs with canonical repersentation up to certain order
+├── run-subgraph-generation.sh (calling maplesat_ks)
 └── .gitignore
 ```
