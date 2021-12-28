@@ -1,0 +1,8 @@
+The file constraints_$n_$k.simp$m.$b.cubes represents cubing using parameters
+
+n: graph order
+k: block colourings with up to k label-1s
+m: number of times CaDiCaL simplication was run
+b: number of free variables on which to stop cubing
+
+If a limit l on the number of cubes was used it is listed as -l$l at the end of the filename

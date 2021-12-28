@@ -1,0 +1,66 @@
+============================[ Problem Statistics ]=============================
+|                                                                             |
+|  Number of variables:          6160                                         |
+|  Number of clauses:         2496012                                         |
+|  Parse time:                  30.27 s                                       |
+|  Simplification time:          0.00 s                                       |
+|                                                                             |
+============================[ Search Statistics ]====================================================
+| Conflicts |          ORIGINAL         |          LEARNT          | Num Sols |      SUBGRAPHS      |
+|           |    Vars  Clauses Literals |    Limit  Clauses Lit/Cl |          | Canonical Noncanon. |
+=====================================================================================================
+=====================================================================================================
+Number of solutions   : 2           
+Canonical subgraphs   : 2              (inf /sec)
+          order  3    : 2              (inf /sec)
+          order  4    : 0              (-nan /sec)
+          order  5    : 0              (-nan /sec)
+          order  6    : 0              (-nan /sec)
+          order  7    : 0              (-nan /sec)
+          order  8    : 0              (-nan /sec)
+          order  9    : 0              (-nan /sec)
+          order 10    : 0              (-nan /sec)
+          order 11    : 0              (-nan /sec)
+          order 12    : 0              (-nan /sec)
+          order 13    : 0              (-nan /sec)
+          order 14    : 0              (-nan /sec)
+          order 15    : 0              (-nan /sec)
+          order 16    : 0              (-nan /sec)
+          order 17    : 0              (-nan /sec)
+          order 18    : 0              (-nan /sec)
+          order 19    : 0              (-nan /sec)
+          order 20    : 0              (-nan /sec)
+          order 21    : 0              (-nan /sec)
+          order 22    : 0              (-nan /sec)
+Noncanonical subgraphs: 0              (-nan /sec)
+          order  3    : 0              (-nan /sec)
+          order  4    : 0              (-nan /sec)
+          order  5    : 0              (-nan /sec)
+          order  6    : 0              (-nan /sec)
+          order  7    : 0              (-nan /sec)
+          order  8    : 0              (-nan /sec)
+          order  9    : 0              (-nan /sec)
+          order 10    : 0              (-nan /sec)
+          order 11    : 0              (-nan /sec)
+          order 12    : 0              (-nan /sec)
+          order 13    : 0              (-nan /sec)
+          order 14    : 0              (-nan /sec)
+          order 15    : 0              (-nan /sec)
+          order 16    : 0              (-nan /sec)
+          order 17    : 0              (-nan /sec)
+          order 18    : 0              (-nan /sec)
+          order 19    : 0              (-nan /sec)
+          order 20    : 0              (-nan /sec)
+          order 21    : 0              (-nan /sec)
+Canonicity checking   : 0 s
+database reductions   : 0
+restarts              : 1
+conflicts             : 7              (0 /sec)
+decisions             : 744            (0.00 % random) (24 /sec)
+propagations          : 1327           (43 /sec)
+conflict literals     : 12             (0.00 % deleted)
+actual reward         : 0.035699
+Memory used           : 3911.02 MB
+CPU time              : 30.75 s
+
+UNSATISFIABLE

@@ -1,0 +1,21 @@
+c down fraction = 0.020 and down exponent = 0.300
+c cubes are emitted to cubes/simp/constraints_22_11.simp5.1928.cubes
+c full lookahead due to high density!
+c the DIMACS p-line indicates a CNF of 6160 variables and 1567951 clauses.
+c equivalence reasoning is turned off.
+c clause-length heuristic with magic constants: bin = 25.00 and dec = 0.50
+c init_lookahead: longest clause has size 1078
+c number of free variables = 2328
+c highest active variable  = 6120
+c dynamic_preselect_setsize :: off
+c |----------------------------------------------------------------|cc |********************************c |****************************************c |************************************************c |**************************************************c |****************************************************c |*****************************************************c |******************************************************c |*******************************************************c |********************************************************c |*********************************************************c |**********************************************************c |***********************************************************c |************************************************************c |*************************************************************c |**************************************************************c |***************************************************************c |****************************************************************c |****************************************************************
+c
+c main():: nodeCount: 0
+c main():: dead ends in main: 0
+c main():: lookAheadCount: 141181
+c main():: unitResolveCount: 5910
+c time = 90727.55 seconds
+c main():: necessary_assignments: 367
+c print learnt clauses and cubes
+c number of cubes 35, including 0 refuted leaves
+c average weight cubes 1857.343, average weights leaves -nan
