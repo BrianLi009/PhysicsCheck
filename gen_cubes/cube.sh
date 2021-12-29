@@ -1,28 +1,34 @@
 #!/bin/bash
 
+# Process options
+while getopts "apsb" opt
+do
+	case $opt in
+		a) a="-a" ;;
+		p) p="-p" ;;
+		s) s="-s" ;;
+		b) s="-b" ;;
+	esac
+done
+shift $((OPTIND-1))
+
 # Ensure necessary parameters are provided on the command-line
 if [ -z $3 ]
 then
 	echo "Need order, filename, and number of variables to be removed in every cube (and optionally the depth to start and end at)"
-	echo "Usage: $0 [-a] n f r [d] [e]"
+	echo "Usage: $0 [-a] [-p] [-s] [-b] n f r [d] [e]"
 	echo "  n is the instance order"
 	echo "  f is the instance filename"
 	echo "  r is the number of edge variables to remove from each cube before splitting stops"
 	echo "  d is the starting depth"
 	echo "  e is the ending depth"
 	echo "Options:"
-	echo "  -a always check # of free edge variables instead of skipping instances not split at the previous depth"
+	echo "  -a always check # of free edge variables at the starting depth (instead of skipping instances not split at the previous depth)"
+	echo "  -p run cubing in parallel"
+	echo "  -s apply CaDiCaL on the instances simplified on the previous depth"
+	echo "  -b apply noncanonical clauses to simplified instance (implies -s)"
 	exit
 fi
-
-# Process options
-while getopts "a" opt
-do
-	case $opt in
-		a) a="-a" ;;
-	esac
-done
-shift $((OPTIND-1))
 
 n=$1 # Order
 f=$2 # Instance filename
@@ -73,8 +79,9 @@ fi
 # Solve depths d to e
 for i in $(seq $d $e)
 do
-	# Clear cube file at depth i if it already exists
+	# Clear cube/commands files at depth i if it already exists
 	rm $dir/$i.cubes 2> /dev/null
+	rm $dir/$i.commands 2> /dev/null
 
 	# Number of cubes at the previous depth
 	numcubes=`wc -l < $dir/$((i-1)).cubes`
@@ -84,45 +91,31 @@ do
 	do
 		# Get the c-th cube
 		cubeline=`head $dir/$((i-1)).cubes -n $c | tail -n 1`
-		echo "Processing $cubeline..."
 
-		# Skip processing this cube entirely if it was not split on the previous depth (can be turned off with -a)
-		if [ "$a" != "-a" ] && grep -q "$cubeline" $dir/$((i-2)).cubes 2> /dev/null
+		# Skip processing this cube entirely if it was not split on the previous depth (can be turned off with -a; ignore option when i > d)
+		if ([ "$a" != "-a" ] || (( i > d ))) && grep -q "$cubeline" $dir/$((i-2)).cubes 2> /dev/null
 		then
 			echo "  Depth $i instance $c was not split at previous depth; skipping"
-			head $dir/$((i-1)).cubes -n $c | tail -n 1 >> $dir/$i.cubes
+			head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
 			continue
 		fi
 
-		# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
-		./apply.sh $f $dir/$((i-1)).cubes $c | ./cadical -q -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 20000
-
-		# Check if simplified instance was unsatisfiable
-		if grep -q "^0$" $dir/$((i-1)).cubes$c.simp
+		command="./cube-instance.sh $n $f $r $i $c $s"
+		echo $command >> $dir/$i.commands
+		if [ "$p" != "-p" ]
 		then
-			removedvars=$m # Instance was unsatisfiable so all variables were removed
-		else
-			# Determine how many edge variables were removed
-			removedvars=$(sed -E 's/.* 0 [-]*([0-9]*) 0$/\1/' < $dir/$((i-1)).cubes$c.ext | awk "\$0<=$m" | sort | uniq | wc -l)
-		fi
-
-		# Check if current cube should be split
-		if (( removedvars <= r ))
-		then
-			echo "  Depth $i instance $c has $removedvars removed edge variables; splitting..."
-			# Split this cube by running march_cu on the simplified instance
-			command="./march_cu $dir/$((i-1)).cubes$c.simp -o $dir/$((i-1)).cubes$c.cubes -d 1 -m $m | tee $logdir/$((i-1)).cubes$c.log"
-			echo $command
 			eval $command
-			# Adjoin the newly generated cubes to the literals in the current cube
-			cubeprefix=`head $dir/$((i-1)).cubes -n $c | tail -n 1 | sed -E 's/(.*) 0/\1/'`
-			sed -E "s/^a (.*)/$cubeprefix \1/" $dir/$((i-1)).cubes$c.cubes >> $dir/$i.cubes
-		else
-			# Current cube should not be split
-			echo "  Depth $i instance $c has $removedvars removed edge variables; not splitting"
-			head $dir/$((i-1)).cubes -n $c | tail -n 1 >> $dir/$i.cubes
 		fi
 	done
+	if [ "$p" == "-p" ]
+	then
+		parallel --will-cite < $dir/$i.commands
+	fi
+	for c in `seq 1 $numcubes`
+	do
+		cat $dir/$i-$c.cubes >> $dir/$i.cubes
+	done
+	rm $dir/$i-*.cubes
 
 	# Stop cubing when no additional cubes have been generated
 	if [ "$(wc -l < $dir/$((i-1)).cubes)" == "$(wc -l < $dir/$i.cubes)" ]
