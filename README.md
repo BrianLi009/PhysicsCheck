@@ -7,3 +7,7 @@
 **gen_cubes:** generate the cubes used in cube and conquer (require march_cu)
 
 **compute_canada:** given an instance and cubes, cube-in-instance files are generated on Compute Canada (require Cadical for instance simplification)
+
+**Pipeline:** 
+
+![Showing pipeline and which directory to enter for each step](pipeline.png?raw=true "Pipeline")

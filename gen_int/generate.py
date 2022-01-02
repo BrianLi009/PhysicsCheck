@@ -46,4 +46,4 @@ def generate(n):
     for constraint in cubic(n, count):
         cnf.append(constraint)
     print ("isomorphism blocking applied")
-    cnf.to_file("constraints_half_" + str(n))
+    cnf.to_file("constraints_" + str(n))
