@@ -1,16 +1,21 @@
-o=$1 #order
-c=$2 #cubing fuke
-t=$3
+#verify then generate more cubes into a file, then redirect back to pipeline-1.sh
+d=$1 #directory of log file to verify
+c=$2 #initial cube file
 
 set -x
 
-echo "#!/bin/bash" > solve-$o-$c
-numline=$(< "$c" wc -l)
-index=$((numline-1))
-echo "#SBATCH --array=0-${index}" >> solve-$o-$c
-echo "#SBATCH --time=$t" >> solve-$o-$c
-echo "#SBATCH --mem=4G" >> solve-$o-$c
-echo "#SBATCH --account=def-janehowe" >> solve-$o-$c
-echo "./maplesat-ks/simp/maplesat_static $c\${CLURM_ARRAY_TASK_ID}.adj.simp -no-pre -exhaustive=$o.exhaust - order=$o" >> solve-$o-$c
+#./verify.sh $d
 
-sbatch solve-$o-$c
+for f in $d/*.out
+do
+if grep -q "DUE TO TIME LIMIT" $f
+then
+	fileindex=${f#*_}
+	index=${fileindex%.*} #Index of the cube needed extending
+	index=$((index+1))
+	line=$(sed "${index}q;d" $c)
+	cube=$(echo "${line::-2}")
+	echo $cube >> $c-tocube.cubes 
+fi
+done
+echo "output remaining cubes to $c-tocube.cubes"

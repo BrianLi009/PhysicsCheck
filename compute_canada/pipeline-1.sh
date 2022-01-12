@@ -3,13 +3,15 @@ c=$2 #cubing fuke
 
 set -x
 
-echo "#!/bin/bash" > simplify-$i-$c
+echo "#!/bin/bash" > simp-solve-$i-$c.sh
 numline=$(< "$c" wc -l)
 index=$((numline-1))
-echo "#SBATCH --array=0-${index}" >> simplify-$i-$c
-echo "#SBATCH --time=01:00:00" >> simplify-$i-$c
-echo "#SBATCH --account=def-janehowe" >> simplify-$i-$c
-echo "#SBATCH --mem-per-cpu=4G" >> simplify-$i-$c
-echo "./adjoin-cube-simplify.sh $i $c \$SLURM_ARRAY_TASK_ID 70" >> simplify-$i-$c
+echo "#SBATCH --array=0-${index}" >> simp-solve-$i-$c.sh
+echo "#SBATCH --time=01:00:00" >> simp-solve-$i-$c.sh
+echo "#SBATCH --account=def-janehowe" >> simp-solve-$i-$c.sh
+echo "#SBATCH --mem-per-cpu=4G" >> simp-solve-$i-$c.sh
+echo "./adjoin-cube-simplify.sh $i $c \$SLURM_ARRAY_TASK_ID 70" >> simp-solve-$i-$c.sh
+echo "./maplesat-ks/simp/maplesat_static $c\${CLURM_ARRAY_TASK_ID}.adj.simp -no-pre -exhaustive=$o.exhaust -order=$o" >> simp-solve-$i-$c.sh
 
-sbatch simplify-$i-$c #compute canada execute adjoin and simplification
+#sbatch simp-solve-$i-$c #compute canada execute adjoin and simplification
+
