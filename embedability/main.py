@@ -265,8 +265,9 @@ def maple_to_edges(input, v):
         if indicator > 0:
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
-
-file1 = open('22uniq.exhaust', 'r')
+"""
+#taking file in the SAT output format
+file1 = open('22partial.exhaust', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
@@ -287,4 +288,26 @@ for line in Lines:
                 if ('  ' + str(count) + '  ' in f.read()):
                     print (str(count) + ' solved')
                     break
+    count += 1"""
+
+#takes in file with graph6 format
+file1 = open('min_non_embed_13_candidate.txt', 'r')
+Lines = file1.readlines()
+count = 0
+for line in Lines:
+    print ("solving " + str(count))
+    print (line[:-1])
+    G = nx.from_graph6_bytes(bytes(line[:-1], encoding='utf-8'))
+    graph_dict = {}
+    for v in list(G.nodes()):
+        graph_dict[v] = (list(G.neighbors(v)))
+    assignments = find_assignments(graph_dict)
+    print ("assignments found")
+    for assignment in assignments:
+        determine_embed(graph_dict, assignment, str(count)) #write the file
+        os.system('test.py')
+        with open('embed_result.txt', 'r+') as f:
+            if ('  ' + str(count) + '  ' in f.read()):
+                print (str(count) + ' solved')
+                break
     count += 1
