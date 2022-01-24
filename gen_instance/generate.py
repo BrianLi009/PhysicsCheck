@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from pysat.formula import CNF 
 from squarefree import squarefree
 from triangle import triangle
@@ -5,6 +7,7 @@ from mindegree import mindegree
 from noncolorable import noncolorable
 from cubic import cubic
 
+import sys, getopt
 def generate(n):
     """
     n: size of the graph
@@ -47,3 +50,6 @@ def generate(n):
         cnf.append(constraint)
     print ("isomorphism blocking applied")
     cnf.to_file("constraints_" + str(n))
+
+if __name__ == "__main__":
+   generate(int(sys.argv[1]))
