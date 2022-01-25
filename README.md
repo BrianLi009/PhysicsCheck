@@ -10,4 +10,6 @@
 
 **Pipeline:** 
 
+dependencies: pySAT, networkx, z3
+
 ![Showing pipeline and which directory to enter for each step](pipeline.png?raw=true "Pipeline")

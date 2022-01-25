@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from io import StringIO
 from networkx.algorithms.cycles import find_cycle
 from z3 import *
@@ -8,6 +9,8 @@ import collections
 import itertools
 from collections import Counter
 from helper import cross, dot, nested_cross
+
+import sys, getopt
 
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
@@ -170,7 +173,7 @@ def determine_embed(g, assignment,label):
     io = StringIO()
     io.write('from helper import cross, dot, nested_cross \n')
     io.write('from z3 import * \n')
-    io.write('import multiprocessing \n')
+    #io.write('import multiprocessing \n')
     io.write("def solve(): \n")
     io.write("    s = Solver()\n")
     v_dict = {}
@@ -236,7 +239,8 @@ def determine_embed(g, assignment,label):
     #io.write('    print (s.check()) \n')
     io.write('    f = open("embed_result.txt", "a") \n')
     io.write('    f.write(' + ' "  "+ ' + 'str(' + str(label) + ') +' + ' "  "  ' + '+' + 'str(s.check()))\n')
-    io.write("if __name__ == '__main__':\n")
+    io.write("solve()")
+    """io.write("if __name__ == '__main__':\n")
     io.write("    p = multiprocessing.Process(target=solve) \n")
     io.write("    p.start()\n")
     io.write("    p.join(10)\n")
@@ -246,9 +250,10 @@ def determine_embed(g, assignment,label):
     io.write("        p.join() \n")
     io.write("    else: \n")
     io.write("        p.terminate() \n")
-    io.write("        p.join() \n")
-    with open('test.py', mode = 'w') as f:
-        f.write(io.getvalue())
+    io.write("        p.join() \n")"""
+    file1 = open('test.py', "w")
+    file1.write(io.getvalue())
+    file1.close()
 
 #graph in sat labeling format
 
@@ -265,6 +270,27 @@ def maple_to_edges(input, v):
         if indicator > 0:
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
+
+def main(g, order, count, index):
+    """takes in graph in maplesat output format, and order of the graph"""
+    edge_lst = maple_to_edges(g, int(order))
+    G = nx.Graph()
+    G.add_edges_from(edge_lst)
+    graph_dict = {}
+    for v in list(G.nodes()):
+        graph_dict[v] = (list(G.neighbors(v)))
+    assignments = find_assignments(graph_dict)
+    assignment = assignments[int(index)]
+    determine_embed(graph_dict, assignment, str(count)) #write the file
+    """os.system('test.py')
+    with open('embed_result.txt', 'w+') as f:
+        if ('  ' + str(count) + '  ' in f.read()):
+            print (str(count) + ' solved')
+            break"""
+
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
 """
 #taking file in the SAT output format
 file1 = open('22partial.exhaust', 'r')
@@ -291,7 +317,7 @@ for line in Lines:
     count += 1"""
 
 #takes in file with graph6 format
-file1 = open('min_non_embed_13_candidate.txt', 'r')
+"""file1 = open('min_non_embed_13_candidate.txt', 'r')
 Lines = file1.readlines()
 count = 0
 for line in Lines:
@@ -310,4 +336,4 @@ for line in Lines:
             if ('  ' + str(count) + '  ' in f.read()):
                 print (str(count) + ' solved')
                 break
-    count += 1
+    count += 1"""
