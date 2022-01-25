@@ -2,8 +2,6 @@
 
 n=$1 #order
 
-set -x
-
 python3 gen_instance/generate.py $n #generate the instance of order n
 
 if cd maplesat-ks
@@ -28,16 +26,19 @@ cd -
 cp $n.exhaust embedability
 
 cd embedability
-
-#cat > embed_result.txt
+touch embed_result.txt
 
 count=0
 while read line; do
     index=0
     while ! grep -q "  $count  " embed_result.txt; do
         python3 main.py "$line" $n $count $index
-        timeout 10 python3 test.py
+        if ! grep -q "  $count  " embed_result.txt; then
+            timeout 10 python3 test.py
+        fi
         index=$((index+1))
     done
     count=$((count+1))
 done < $n.exhaust
+
+#todo: add minimum subgraph check for candidates

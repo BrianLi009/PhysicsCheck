@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from io import StringIO
-from networkx.algorithms.cycles import find_cycle
+from networkx.algorithms import isomorphism
 from z3 import *
 import os
 import csv
@@ -276,6 +276,16 @@ def main(g, order, count, index):
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
+    min_non_subgraphs=["I?qa``eeO", "ICOedPKL?", "J?GX?dH`f_?", "JsOH?`JH_i_", "J@`ICC[Gv_?", "J`hSA?hD_F_", "JRPCSGoAgJ_", "K_GTAQOP@KbK",
+                "K@QCAGdA_c~?", "K_GP`GWBACoK", "KAICH@@DOT^?", "Kko_GC`C?b`q", "K`?KA@se_YCX", "Ks?I@?XDaTCi", "Kt?G?DKOoqCo", "KqCaC?[I_J?Z", "K`?LAQOP@KbK"]
+    for string in min_non_subgraphs:
+        min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
+        gm = isomorphism.GraphMatcher(G, min_g)
+        if gm.subgraph_is_isomorphic():
+            f = open("embed_result.txt", "a") 
+            f.write( "  "+ str(count) + "  "  + "unsat")
+            return
+    #check if G contains a minimum nonembedabble subgraph
     graph_dict = {}
     for v in list(G.nodes()):
         graph_dict[v] = (list(G.neighbors(v)))
