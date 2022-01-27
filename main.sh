@@ -4,31 +4,50 @@ n=$1 #order
 
 python3 gen_instance/generate.py $n #generate the instance of order n
 
+#install maplesat-ks
 if cd maplesat-ks
 then
     echo "maplesat-ks installed"
     git stash
     git checkout unembeddable-subgraph-check
+    cd -
 else
     git clone https://github.com/curtisbright/maplesat-ks.git maplesat-ks
     git stash
     git checkout unembeddable-subgraph-check
     cd maplesat-ks
+    make
+    cd -
 fi 
 #clone maplesat-ks if it does not
-make
-cd -
+
+#install cadical
+if cd cadical
+then
+    echo "cadical installed"
+    cd -
+else
+    git clone https://github.com/arminbiere/cadical.git cadical
+    cd cadical
+    make
+    cd -
+fi
 
 #generate non canonical subgraph
-./run-subgraph-generation.sh -i $n constraints_17 10
+./run-subgraph-generation.sh -i $n constraints_$n 10
 
 #append blocking clauses to the instance
 cd $n
 cat *.noncanonical > all.noncanonical
 cd -
 cat $n/all.noncanonical >> constraints_$n
+lines=$(wc -l < "constraints_$n")
+sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
-./maplesat-ks/simp/maplesat_static constraints_$n -no-pre -exhaustive=$n.exhaust -order=$n
+#simplify 3 times
+./simplify.sh constraints_$n 3
+
+./maplesat-ks/simp/maplesat_static constraints_$n.simp -no-pre -exhaustive=$n.exhaust -order=$n
 
 #checking if there exist embeddable solution
 
