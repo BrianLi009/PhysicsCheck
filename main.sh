@@ -19,6 +19,15 @@ fi
 make
 cd -
 
+#generate non canonical subgraph
+./run-subgraph-generation.sh -i $n constraints_17 10
+
+#append blocking clauses to the instance
+cd $n
+cat *.noncanonical > all.noncanonical
+cd -
+cat $n/all.noncanonical >> constraints_$n
+
 ./maplesat-ks/simp/maplesat_static constraints_$n -no-pre -exhaustive=$n.exhaust -order=$n
 
 #checking if there exist embeddable solution
