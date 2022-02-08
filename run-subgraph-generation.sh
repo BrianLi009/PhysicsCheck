@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 while getopts "pi" opt
 do

@@ -34,7 +34,8 @@ else
 fi
 
 #generate non canonical subgraph
-./run-subgraph-generation.sh -i $n constraints_$n 10
+./run-subgraph-generation.sh $n constraints_$n 11
+./run-subgraph-generation.sh $n constraints_$n 12
 
 #append blocking clauses to the instance
 cd $n
@@ -42,6 +43,7 @@ cat *.noncanonical > all.noncanonical
 cd -
 cat $n/all.noncanonical >> constraints_$n
 lines=$(wc -l < "constraints_$n")
+chmod u+x constraints_$n
 sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
 #simplify 3 times

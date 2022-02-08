@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 if cd nauty27r3
 then
