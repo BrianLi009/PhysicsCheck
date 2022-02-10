@@ -5,30 +5,31 @@ n=$1 #order
 python3 gen_instance/generate.py $n #generate the instance of order n
 
 #install maplesat-ks
-if cd maplesat-ks
+if [ -d maplesat-ks ]
 then
     echo "maplesat-ks installed"
-    git stash
-    git checkout unembeddable-subgraph-check
-    cd -
+    #git stash
+    #git checkout unembeddable-subgraph-check
+    #cd -
 else
-    git clone https://github.com/curtisbright/maplesat-ks.git maplesat-ks
-    git stash
-    git checkout unembeddable-subgraph-check
+    git clone git@github.com:curtisbright/maplesat-ks.git maplesat-ks
+    #git stash
     cd maplesat-ks
+    git checkout unembeddable-subgraph-check
     make
     cd -
 fi 
 #clone maplesat-ks if it does not
 
 #install cadical
-if cd cadical
+if [ -d cadical ]
 then
     echo "cadical installed"
-    cd -
+    #cd -
 else
     git clone https://github.com/arminbiere/cadical.git cadical
     cd cadical
+    ./configure
     make
     cd -
 fi
