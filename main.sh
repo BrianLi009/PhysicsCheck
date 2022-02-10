@@ -35,7 +35,7 @@ else
 fi
 
 #generate non canonical subgraph
-./run-subgraph-generation.sh $n constraints_$n 11
+#./run-subgraph-generation.sh $n constraints_$n 11
 ./run-subgraph-generation.sh $n constraints_$n 12
 
 #append blocking clauses to the instance
