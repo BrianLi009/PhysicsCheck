@@ -44,7 +44,6 @@ cat *.noncanonical > all.noncanonical
 cd -
 cat $n/all.noncanonical >> constraints_$n
 lines=$(wc -l < "constraints_$n")
-chmod u+x constraints_$n
 sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
 #simplify 3 times
