@@ -1,5 +1,7 @@
 #!/bin/bash
 # Ensure parameters are specified on the command-line
+set -x
+
 if [ -z "$3" ]
 then
     echo "Need instance filename, cube filename, and the index of the cube to adjoin (zero-based indexing)"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # Ensure parameters are specified on the command-line
 if [ -z "$2" ]
 then
@@ -10,11 +12,12 @@ fi
 f="$1"
 p="$2"
 
-# Directory to log simplification output
-mkdir -p log
+sub_dir=$(echo "${f%%/*}")
+#Directory to log simplification output
+mkdir -p log/$sub_dir
 
 # Directory for simplified output
-mkdir -p simp
+mkdir -p simp/$sub_dir
 
 # Simplify until at least p percent of variables have been removed
 ./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c 200000 | tee log/"$f".simp1
