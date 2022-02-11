@@ -238,7 +238,7 @@ def determine_embed(g, assignment,label):
         io.write('    s.add(' + dot(v,w) + '== 0) \n')
     #io.write('    print (s.check()) \n')
     io.write('    f = open("embed_result.txt", "a") \n')
-    io.write('    f.write(' + ' "  "+ ' + 'str(' + str(label) + ') +' + ' "  "  ' + '+' + 'str(s.check()))\n')
+    io.write('    f.write(' + ' "  "+ ' + 'str(' + str(label) + ') +' + ' "  "  ' + '+' + 'str(s.check())' + "+ '\\n' )")
     io.write("solve()")
     """io.write("if __name__ == '__main__':\n")
     io.write("    p = multiprocessing.Process(target=solve) \n")
@@ -283,7 +283,7 @@ def main(g, order, count, index):
         gm = isomorphism.GraphMatcher(G, min_g)
         if gm.subgraph_is_isomorphic():
             f = open("embed_result.txt", "a") 
-            f.write( "  "+ str(count) + "  "  + "unsat")
+            f.write("  " + str(count) + "  " + "unsat" + "\n")
             return
     #check if G contains a minimum nonembedabble subgraph
     graph_dict = {}

@@ -71,4 +71,17 @@ while read line; do
     count=$((count+1))
 done < $n.exhaust
 
-#todo: add minimum subgraph check for candidates
+#output the ks system if there is any
+touch ks_solution_$n.exhaust
+while read p; do
+	if [[ $p == *"  sat"* ]]; then
+		index=$(echo $p | cut -d ' ' -f1)
+		sed "${index}q;d" $n.exhaust >> ks_solution_$n.exhaust	
+	fi
+done < embed_result.txt
+
+cd -
+mv embedability/ks_solution_$n.exhaust .
+sort -u ks_solution_$n.exhaust -o ks_solution_uniq_$n.exhaust
+rm  ks_solution_$n.exhaust
+echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."
