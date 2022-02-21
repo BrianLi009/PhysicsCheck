@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Ensure parameters are specified on the command-line
+if [ -z "$1" ]
+then
+    echo "Need instance order (number of vertices)"
+    exit
+fi
+
 n=$1 #order
 
 python3 gen_instance/generate.py $n #generate the instance of order n
