@@ -1,9 +1,23 @@
 #!/bin/bash
 
 # Ensure parameters are specified on the command-line
+
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
+    simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
+    
+Usage:
+    ./main.sh <n> <s>
+
+Options:
+    <n>: the order of the instance/number of vertices in the graph
+    <s>: number of times to simplify the instance using CaDiCaL
+" && exit
+
 if [ -z "$1" ]
 then
-    echo "Need instance order (number of vertices)"
+    echo "Need instance order (number of vertices) and number of simplification, use -h or --help for further instruction"
     exit
 fi
 
@@ -42,7 +56,6 @@ else
 fi
 
 #generate non canonical subgraph
-#./run-subgraph-generation.sh $n constraints_$n 11
 ./run-subgraph-generation.sh $n constraints_$n 12
 
 #append blocking clauses to the instance
@@ -53,8 +66,8 @@ cat $n/all.noncanonical >> constraints_$n
 lines=$(wc -l < "constraints_$n")
 sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
-#simplify 3 times
-./simplify.sh constraints_$n 3
+#simplify s times
+./simplify.sh constraints_$n $s
 
 ./maplesat-ks/simp/maplesat_static constraints_$n.simp -no-pre -exhaustive=$n.exhaust -order=$n
 
