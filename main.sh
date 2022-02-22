@@ -2,8 +2,6 @@
 
 # Ensure parameters are specified on the command-line
 
-set -x
-
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
@@ -78,34 +76,11 @@ sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
 cp $n.exhaust embedability
 
-set -e 
-
 cd embedability
 pip install networkx
 pip install z3-solver
 touch embed_result.txt
-
-count=0
-while read line; do
-    index=0
-    while ! grep -q "  $count  " embed_result.txt; do
-        python3 main.py "$line" $n $count $index
-        if ! grep -q "  $count  " embed_result.txt; then
-            timeout 10 python3 test.py
-        fi
-        index=$((index+1))
-    done
-    count=$((count+1))
-done < $n.exhaust
-
-#output the ks system if there is any
-touch ks_solution_$n.exhaust
-while read p; do
-	if [[ $p == *"  sat"* ]]; then
-		index=$(echo $p | cut -d ' ' -f1)
-		sed "${index}q;d" $n.exhaust >> ks_solution_$n.exhaust	
-	fi
-done < embed_result.txt
+./check_embedability.sh $n
 
 cd -
 mv embedability/ks_solution_$n.exhaust .
