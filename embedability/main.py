@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from io import StringIO
 from networkx.algorithms import isomorphism
-from z3 import *
 import os
 import csv
 import networkx as nx

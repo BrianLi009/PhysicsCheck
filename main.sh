@@ -6,7 +6,7 @@
 Description:
     This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
-    
+
 Usage:
     ./main.sh <n> <s>
 
@@ -22,6 +22,7 @@ then
 fi
 
 n=$1 #order
+s=$2
 
 python3 gen_instance/generate.py $n #generate the instance of order n
 
@@ -76,6 +77,7 @@ sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 cp $n.exhaust embedability
 
 cd embedability
+pip install z3-solver
 touch embed_result.txt
 
 count=0

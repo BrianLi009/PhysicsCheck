@@ -1,5 +1,5 @@
 from helper import cross, dot, nested_cross 
-from z3 import * 
+from z3 import *
 def solve(): 
     s = Solver()
     v0c1 = Real("v0c1")
@@ -83,6 +83,5 @@ def solve():
     s.add(Or(Not(cross(cross(v0,v1),cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2))[0] == 0), Not(cross(cross(v0,v1),cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2))[1] == 0), Not(cross(cross(v0,v1),cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2))[2] == 0)))
     s.add(Or(Not(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1)[0] == 0), Not(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1)[1] == 0), Not(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1)[2] == 0)))
     s.add(cross(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1),v3)[0]*cross(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1),cross(v2,v0))[0]+cross(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1),v3)[1]*cross(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1),cross(v2,v0))[1]+cross(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1),v3)[2]*cross(cross(cross(cross(cross(cross(v3,cross(v0,v1)),v3),v2),v2),v1),cross(v2,v0))[2]== 0) 
-    f = open("embed_result_g6.txt", "a") 
-    f.write( "  "+ "b'Ls?GYOcCaACDCE\n'" + "  "  +str(s.check()))
+    print (s.check())
 solve()
