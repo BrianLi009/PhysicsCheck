@@ -2,6 +2,8 @@
 
 # Ensure parameters are specified on the command-line
 
+set -x
+
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
@@ -12,7 +14,7 @@ Usage:
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <s>: number of times to simplify the instance using CaDiCaL
+    <s>: number of times to simplify the instance using CaDiCaL with default value 3
 " && exit
 
 if [ -z "$1" ]
@@ -22,7 +24,7 @@ then
 fi
 
 n=$1 #order
-s=$2
+s=${2:-3}
 
 python3 gen_instance/generate.py $n #generate the instance of order n
 
@@ -76,7 +78,10 @@ sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
 cp $n.exhaust embedability
 
+set -e 
+
 cd embedability
+pip install networkx
 pip install z3-solver
 touch embed_result.txt
 
