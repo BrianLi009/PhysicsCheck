@@ -25,7 +25,7 @@ echo "Processing $cubeline..."
 if [ -z $s ] || (( i == 1 ))
 then
 	# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
-	command="./apply.sh $f $dir/$((i-1)).cubes $c | ./cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 else
@@ -36,7 +36,7 @@ else
 	l=$(grep -n "$parentcube" $dir/$((i-2)).cubes | cut -d':' -f1)
 
 	# Adjoin the literals in the current cube to the simplified parent instance and simplify the resulting instance with CaDiCaL
-	command="./concat-edge-and-apply.sh $m $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./concat-edge-and-apply.sh $m $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 

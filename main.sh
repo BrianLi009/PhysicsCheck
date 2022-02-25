@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 # Ensure parameters are specified on the command-line
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
@@ -72,18 +72,20 @@ sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 #simplify s times
 ./simplify.sh constraints_$n $s
 
-+if [ "$r" != "0" ] #not working yet here
+if [ "$r" != "0" ] 
 then 
     cp cadical gen_cubes
     cp constraints_$n.simp gen_cubes
     cd gen_cubes
+    cd march_cu
+    make
+    cd ..
     ./cube.sh $n constraints_$n.simp $r #cube till r varaibles are eliminated
     #now adjoin them and create separate instances
-    cd -
-    cube_file=`find . -type f -wholename "./gen_cubes/$n-cubes/*.cubes" -exec grep -H -c '[^[:space:]]' {} \; | sort -nr -t":" -k2 | awk -F: '{print $1; exit;}'`
-    cp $cube_file .
+    cd ..
+    cube_file=$(find . -type f -wholename "./gen_cubes/$n-cubes/*.cubes" -exec grep -H -c '[^[:space:]]' {} \; | sort -nr -t":" -k2 | awk -F: '{print $1; exit;}')
+    cp $(echo $cube_file) .
     cube_file=$(echo $cube_file | sed 's:.*/::')
-    echo $cube_file
     numline=$(< $cube_file wc -l)
     new_index=$((numline-1))
     for i in $(seq 0 $new_index)
