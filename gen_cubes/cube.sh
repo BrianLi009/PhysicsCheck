@@ -69,7 +69,7 @@ if [ "$d" == "0" ]
 then
 	if [ ! -s $dir/0.cubes ]
 	then
-		command="./march_cu $f -o $dir/0.cubes -d 1 -m $m | tee $logdir/0.log"
+		command="./march_cu/march_cu $f -o $dir/0.cubes -d 1 -m $m | tee $logdir/0.log"
 		echo $command
 		eval $command
 	fi

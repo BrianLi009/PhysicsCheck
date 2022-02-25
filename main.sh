@@ -8,11 +8,12 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh <n> <s>
+    ./main.sh n s r
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
     <s>: number of times to simplify the instance using CaDiCaL with default value 3
+    <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
 " && exit
 
 if [ -z "$1" ]
@@ -23,6 +24,7 @@ fi
 
 n=$1 #order
 s=${2:-3}
+r=${3:-0}
 
 python3 gen_instance/generate.py $n #generate the instance of order n
 
@@ -70,7 +72,28 @@ sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 #simplify s times
 ./simplify.sh constraints_$n $s
 
-./maplesat-ks/simp/maplesat_static constraints_$n.simp -no-pre -exhaustive=$n.exhaust -order=$n
++if [ "$r" != "0" ] #not working yet here
+then 
+    cp cadical gen_cubes
+    cp constraints_$n.simp gen_cubes
+    cd gen_cubes
+    ./cube.sh $n constraints_$n.simp $r #cube till r varaibles are eliminated
+    #now adjoin them and create separate instances
+    cd -
+    cube_file=`find . -type f -wholename "./gen_cubes/$n-cubes/*.cubes" -exec grep -H -c '[^[:space:]]' {} \; | sort -nr -t":" -k2 | awk -F: '{print $1; exit;}'`
+    cp $cube_file .
+    cube_file=$(echo $cube_file | sed 's:.*/::')
+    echo $cube_file
+    numline=$(< $cube_file wc -l)
+    new_index=$((numline-1))
+    for i in $(seq 0 $new_index)
+    do
+        ./adjoin-cube-simplify.sh constraints_$n.simp $cube_file $i 50
+        ./maplesat-ks/simp/maplesat_static $cube_file$i.adj.simp -no-pre -exhaustive=$n.exhaust -order=$n
+    done
+else
+    ./maplesat-ks/simp/maplesat_static constraints_$n.simp -no-pre -exhaustive=$n.exhaust -order=$n
+fi
 
 #checking if there exist embeddable solution
 
