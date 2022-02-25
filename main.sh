@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+
 # Ensure parameters are specified on the command-line
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
