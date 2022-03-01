@@ -26,7 +26,12 @@ n=$1 #order
 s=${2:-3}
 r=${3:-0}
 
-python3 gen_instance/generate.py $n #generate the instance of order n
+if [ -d constraints_$n ]
+then
+    echo "instance already generated"
+else
+    python3 gen_instance/generate.py $n #generate the instance of order n
+fi
 
 #install maplesat-ks
 if [ -d maplesat-ks ]
@@ -70,7 +75,12 @@ lines=$(wc -l < "constraints_$n")
 sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
 #simplify s times
-./simplify.sh constraints_$n $s
+if [ -d constraints_$n.simp ]
+then
+    echo "instance already simplified"
+else
+    ./simplify.sh constraints_$n $s
+fi 
 
 if [ "$r" != "0" ] 
 then 
