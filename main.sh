@@ -26,7 +26,7 @@ n=$1 #order
 s=${2:-3}
 r=${3:-0}
 
-if [ -d constraints_$n ]
+if [ -f constraints_$n ]
 then
     echo "instance already generated"
 else
@@ -39,14 +39,14 @@ then
     echo "maplesat-ks installed"
     #git stash
     #git checkout unembeddable-subgraph-check
-    #cd -
+    #cd ..
 else
     git clone git@github.com:curtisbright/maplesat-ks.git maplesat-ks
     #git stash
     cd maplesat-ks
     git checkout unembeddable-subgraph-check
     make
-    cd -
+    cd ..
 fi 
 #clone maplesat-ks if it does not
 
@@ -54,13 +54,13 @@ fi
 if [ -d cadical ]
 then
     echo "cadical installed"
-    #cd -
+    #cd ..
 else
     git clone https://github.com/arminbiere/cadical.git cadical
     cd cadical
     ./configure
     make
-    cd -
+    cd ..
 fi
 
 #generate non canonical subgraph
@@ -69,13 +69,13 @@ fi
 #append blocking clauses to the instance
 cd $n
 cat *.noncanonical > all.noncanonical
-cd -
+cd ..
 cat $n/all.noncanonical >> constraints_$n
 lines=$(wc -l < "constraints_$n")
 sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
 
 #simplify s times
-if [ -d constraints_$n.simp ]
+if [ -f constraints_$n.simp ]
 then
     echo "instance already simplified"
 else
@@ -115,9 +115,17 @@ cd embedability
 pip install networkx
 pip install z3-solver
 touch embed_result.txt
+if [ -f min_nonembed_graph_10-12.txt ]
+then
+    echo "using precomputed minimum nonembedable subgraph"
+else
+    echo "need to compute minimum nonembedable subgraph"
+    ./generate_nonembed_sat.sh 10
+    ./generate_nonembed_sat.sh 11
+    ./generate_nonembed_sat.sh 12
 ./check_embedability.sh $n
 
-cd -
+cd ..
 mv embedability/ks_solution_$n.exhaust .
 sort -u ks_solution_$n.exhaust -o ks_solution_uniq_$n.exhaust
 rm  ks_solution_$n.exhaust

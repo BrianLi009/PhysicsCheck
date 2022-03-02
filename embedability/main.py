@@ -237,7 +237,7 @@ def determine_embed(g, assignment,label):
         io.write('    s.add(' + dot(v,w) + '== 0) \n')
     #io.write('    print (s.check()) \n')
     io.write('    f = open("embed_result.txt", "a") \n')
-    io.write('    f.write(' + ' "  "+ ' + 'str(' + str(label) + ') +' + ' "  "  ' + '+' + 'str(s.check())' + "+ '\\n' )")
+    io.write('    f.write(' + ' "  "+ ' + 'str(' + str(label) + ') +' + ' "  "  ' + '+' + 'str(s.check())' + "+ '\\n' ) \n")
     io.write("solve()")
     """io.write("if __name__ == '__main__':\n")
     io.write("    p = multiprocessing.Process(target=solve) \n")
@@ -275,8 +275,10 @@ def main(g, order, count, index):
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    min_non_subgraphs=["I?qa``eeO", "ICOedPKL?", "J?GX?dH`f_?", "JsOH?`JH_i_", "J@`ICC[Gv_?", "J`hSA?hD_F_", "JRPCSGoAgJ_", "K_GTAQOP@KbK",
-                "K@QCAGdA_c~?", "K_GP`GWBACoK", "KAICH@@DOT^?", "Kko_GC`C?b`q", "K`?KA@se_YCX", "Ks?I@?XDaTCi", "Kt?G?DKOoqCo", "KqCaC?[I_J?Z", "K`?LAQOP@KbK"]
+    my_file = open("min_nonembed_graph_10-12.txt", "r")
+    content = my_file.read()
+    min_non_subgraphs = content.split("\n")
+    my_file.close()
     for string in min_non_subgraphs:
         min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
         gm = isomorphism.GraphMatcher(G, min_g)

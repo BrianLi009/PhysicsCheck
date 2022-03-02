@@ -2,6 +2,7 @@
 
 #set -x
 
+#generate nonembedable subgraphs
 if cd nauty27r3
 then
 	echo "nauty installed"

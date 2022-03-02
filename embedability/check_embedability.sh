@@ -1,5 +1,7 @@
 n=$1
 
+#check embedability of order n, given that $n.exhaust exists
+
 set -e 
 count=0
 while read line; do
@@ -22,3 +24,4 @@ while read p; do
 		sed "${index}q;d" $n.exhaust >> ks_solution_$n.exhaust	
 	fi
 done < embed_result.txt
+
