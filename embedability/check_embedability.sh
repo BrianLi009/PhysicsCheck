@@ -1,6 +1,5 @@
 n=$1
 
-set -x 
 #check embedability of order n, given that $n.exhaust exists
 
 set -e 

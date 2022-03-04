@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x 
 n=$1 #order
 
 cp $n.exhaust embedability

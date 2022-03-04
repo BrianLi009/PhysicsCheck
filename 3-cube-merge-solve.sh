@@ -5,9 +5,9 @@ n=$1 #order
 r=$2 #number of variables to eliminate
 f=$3 #instance file name
 
--'
+
 ./gen_cubes/cube.sh $n $f $r #cube till r varaibles are eliminated
-'
+
 #find the deepest cube file
 cube_file=$(find . -type f -wholename "./$n-cubes/*.cubes" -exec grep -H -c '[^[:space:]]' {} \; | sort -nr -t":" -k2 | awk -F: '{print $1; exit;}')
 
