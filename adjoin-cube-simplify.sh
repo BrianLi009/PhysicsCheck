@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ensure parameters are specified on the command-line
-set -x
+#set -x
 
 if [ -z "$3" ]
 then

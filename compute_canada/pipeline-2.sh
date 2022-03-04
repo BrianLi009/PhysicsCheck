@@ -3,7 +3,7 @@ d=$1 #directory of log file to verify
 c=$2 #current cubing depth
 n=$3 #order
 
-set -x
+#set -x
 
 #./verify.sh $d
 

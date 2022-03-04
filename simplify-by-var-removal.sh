@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 # Ensure parameters are specified on the command-line
 if [ -z "$2" ]

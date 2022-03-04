@@ -25,7 +25,7 @@ echo "Processing $cubeline..."
 if [ -z $s ] || (( i == 1 ))
 then
 	# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
-	command="./apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 else
@@ -36,7 +36,7 @@ else
 	l=$(grep -n "$parentcube" $dir/$((i-2)).cubes | cut -d':' -f1)
 
 	# Adjoin the literals in the current cube to the simplified parent instance and simplify the resulting instance with CaDiCaL
-	command="./concat-edge-and-apply.sh $m $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./gen_cubes/concat-edge-and-apply.sh $m $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 
@@ -44,7 +44,7 @@ else
 	then
 		# Run MapleSAT for 10000 conflicts and output noncanonical blocking clauses
 		rm $dir/$((i-1)).cubes$c.noncanon 2> /dev/null
-		command="./concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat_static -order=$n -exhaustive=$dir/$((i-1)).cubes$c.exhaust -keep-blocking=2 -noncanonical-out=$dir/$((i-1)).cubes$c.noncanon -max-conflicts=10000"
+		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat_static -order=$n -exhaustive=$dir/$((i-1)).cubes$c.exhaust -keep-blocking=2 -noncanonical-out=$dir/$((i-1)).cubes$c.noncanon -max-conflicts=10000"
 		echo $command
 		eval $command
 		rm $dir/$((i-1)).cubes$c.exhaust
@@ -71,7 +71,7 @@ if (( removedvars <= r ))
 then
 	echo "  Depth $i instance $c has $removedvars removed edge variables; splitting..."
 	# Split this cube by running march_cu on the simplified instance
-	command="./march_cu $dir/$((i-1)).cubes$c.simp -o $dir/$((i-1)).cubes$c.cubes -d 1 -m $m | tee $logdir/$((i-1)).cubes$c.log"
+	command="./gen_cubes/march_cu/march_cu $dir/$((i-1)).cubes$c.simp -o $dir/$((i-1)).cubes$c.cubes -d 1 -m $m | tee $logdir/$((i-1)).cubes$c.log"
 	echo $command
 	eval $command
 	echo "c Depth $i instance $c has $removedvars removed edge variables" >> $logdir/$((i-1)).cubes$c.log

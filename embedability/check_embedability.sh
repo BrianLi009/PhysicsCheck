@@ -1,5 +1,6 @@
 n=$1
 
+set -x 
 #check embedability of order n, given that $n.exhaust exists
 
 set -e 
@@ -24,4 +25,10 @@ while read p; do
 		sed "${index}q;d" $n.exhaust >> ks_solution_$n.exhaust	
 	fi
 done < embed_result.txt
+
+cd ..
+
+mv embedability/ks_solution_$n.exhaust .
+sort -u ks_solution_$n.exhaust -o ks_solution_uniq_$n.exhaust
+rm  ks_solution_$n.exhaust
 

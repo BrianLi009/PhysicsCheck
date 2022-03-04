@@ -16,6 +16,7 @@ Options:
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
 " && exit
 
+#step 1: input parameters
 if [ -z "$1" ]
 then
     echo "Need instance order (number of vertices) and number of simplification, use -h or --help for further instruction"
@@ -23,110 +24,36 @@ then
 fi
 
 n=$1 #order
-s=${2:-3}
-r=${3:-0}
+s=${2:-3} #number of time to simplify each to simplification is called
+r=${3:-0} #number of variables to eliminate until the cubing terminates
 
-if [ -f constraints_$n ]
-then
-    echo "instance already generated"
-else
-    python3 gen_instance/generate.py $n #generate the instance of order n
-fi
+#step 2: setp up dependencies
+./dependency-setup.sh
 
-#install maplesat-ks
-if [ -d maplesat-ks ]
-then
-    echo "maplesat-ks installed"
-    #git stash
-    #git checkout unembeddable-subgraph-check
-    #cd ..
-else
-    git clone git@github.com:curtisbright/maplesat-ks.git maplesat-ks
-    #git stash
-    cd maplesat-ks
-    git checkout unembeddable-subgraph-check
-    make
-    cd ..
-fi 
-#clone maplesat-ks if it does not
-
-#install cadical
-if [ -d cadical ]
-then
-    echo "cadical installed"
-    #cd ..
-else
-    git clone https://github.com/arminbiere/cadical.git cadical
-    cd cadical
-    ./configure
-    make
-    cd ..
-fi
-
-#generate non canonical subgraph
-./run-subgraph-generation.sh $n constraints_$n 12
-
-#append blocking clauses to the instance
-cd $n
-cat *.noncanonical > all.noncanonical
-cd ..
-cat $n/all.noncanonical >> constraints_$n
-lines=$(wc -l < "constraints_$n")
-sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "constraints_$n"
+#step 3: generate instances
+./1-instance-generation.sh $n
 
 #simplify s times
-if [ -f constraints_$n.simp ]
-then
-    echo "instance already simplified"
-else
-    ./simplify.sh constraints_$n $s
-fi 
+./simplify.sh constraints_$n $s
+mv constraints_$n.simp constraints_$n.simp1
 
+#step 4: generate non canonical subgraph
+./2-add-blocking-clauses.sh $n 12 constraints_$n.simp1
+
+#simplify s times again
+./simplify.sh constraints_$n.simp1 $s
+mv constraints_$n.simp1.simp constraints_$n.simp2
+
+#step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then 
-    cp cadical gen_cubes
-    cp constraints_$n.simp gen_cubes
-    cd gen_cubes
-    cd march_cu
-    make
-    cd ..
-    ./cube.sh $n constraints_$n.simp $r #cube till r varaibles are eliminated
-    #now adjoin them and create separate instances
-    cd ..
-    cube_file=$(find . -type f -wholename "./gen_cubes/$n-cubes/*.cubes" -exec grep -H -c '[^[:space:]]' {} \; | sort -nr -t":" -k2 | awk -F: '{print $1; exit;}')
-    cp $(echo $cube_file) .
-    cube_file=$(echo $cube_file | sed 's:.*/::')
-    numline=$(< $cube_file wc -l)
-    new_index=$((numline-1))
-    for i in $(seq 0 $new_index)
-    do
-        ./adjoin-cube-simplify.sh constraints_$n.simp $cube_file $i 50
-        ./maplesat-ks/simp/maplesat_static $cube_file$i.adj.simp -no-pre -exhaustive=$n.exhaust -order=$n
-    done
+    ./3-cube-merge-solve.sh $n $r constraints_$n.simp2
 else
-    ./maplesat-ks/simp/maplesat_static constraints_$n.simp -no-pre -exhaustive=$n.exhaust -order=$n
+    ./maplesat-ks/simp/maplesat_static constraints_$n.simp2 -no-pre -exhaustive=$n.exhaust -order=$n
 fi
 
-#checking if there exist embeddable solution
+#step 6: checking if there exist embeddable solution
+./4-check-embedability.sh $n
 
-cp $n.exhaust embedability
-
-cd embedability
-pip install networkx
-pip install z3-solver
-touch embed_result.txt
-if [ -f min_nonembed_graph_10-12.txt ]
-then
-    echo "using precomputed minimum nonembedable subgraph"
-else
-    echo "need to compute minimum nonembedable subgraph"
-    ./generate_nonembed_sat.sh 10
-    ./generate_nonembed_sat.sh 11
-    ./generate_nonembed_sat.sh 12
-./check_embedability.sh $n
-
-cd ..
-mv embedability/ks_solution_$n.exhaust .
-sort -u ks_solution_$n.exhaust -o ks_solution_uniq_$n.exhaust
-rm  ks_solution_$n.exhaust
+#output the number of KS system is there is any
 echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."

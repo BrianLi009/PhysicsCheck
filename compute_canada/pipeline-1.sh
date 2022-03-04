@@ -3,7 +3,7 @@ f=$2 #cubing file
 o=$3 #instance order
 c=$4 #cube depth
 sub_dir=$(echo "${f%%/*}")
-set -x
+#set -x
 echo "#!/bin/bash" > simp-solve-$i-$c.sh
 numline=$(< "$f" wc -l)
 index=$((numline-1))
