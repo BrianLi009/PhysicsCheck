@@ -14,7 +14,7 @@ i=$4 # Depth
 c=$5 # Cube index
 s=$6 # Simplification mode parameter
 
-m=$((n*(n+1)/2)) # Number of edge variables in instance
+m=$((n*(n-1)/2)) # Number of edge variables in instance
 dir=$n-cubes # Directory to store cubes
 logdir=$n-log # Directory to store logs
 
