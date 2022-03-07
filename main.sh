@@ -34,26 +34,42 @@ r=${3:-0} #number of variables to eliminate until the cubing terminates
 ./1-instance-generation.sh $n
 
 #simplify s times
-./simplify.sh constraints_$n $s
-mv constraints_$n.simp constraints_$n.simp1
+if [ -f constraints_$n.simp1 ]
+then
+    echo "constraints_$n.simp1 already exist, skip simplification"
+else
+    ./simplify.sh constraints_$n $s
+    mv constraints_$n.simp constraints_$n.simp1
+fi
 
 #step 4: generate non canonical subgraph
 ./2-add-blocking-clauses.sh $n 12 constraints_$n.simp1
 
 #simplify s times again
-./simplify.sh constraints_$n.simp1 $s
-mv constraints_$n.simp1.simp constraints_$n.simp2
-
-#step 5: cube and conquer if necessary, then solve
-if [ "$r" != "0" ] 
-then 
-    ./3-cube-merge-solve.sh $n $r constraints_$n.simp2
+if [ -f constraints_$n.simp2 ]
+then
+    echo "constraints_$n.simp2 already exist, skip simplification"
 else
-    ./maplesat-ks/simp/maplesat_static constraints_$n.simp2 -no-pre -exhaustive=$n.exhaust -order=$n
+    ./simplify.sh constraints_$n.simp1 $s
+    mv constraints_$n.simp1.simp constraints_$n.simp2
 fi
 
-#step 6: checking if there exist embeddable solution
-./4-check-embedability.sh $n
+if [[ $(wc -l <constraints_$n.simp2) -ge 3 ]] #if the constraint file only has two lines or less after simplification, output unsat
+then 
+    #step 5: cube and conquer if necessary, then solve
+    if [ "$r" != "0" ] 
+    then 
+        ./3-cube-merge-solve.sh $n $r constraints_$n.simp2
+    else
+        ./maplesat-ks/simp/maplesat_static constraints_$n.simp2 -no-pre -exhaustive=$n.exhaust -order=$n
+    fi
 
-#output the number of KS system is there is any
-echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."
+    #step 6: checking if there exist embeddable solution
+    ./4-check-embedability.sh $n
+
+    #output the number of KS system is there is any
+    echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."
+else 
+    echo "No kochen specker candidates are found, thus no Kochen Specker solution can exist"
+    echo "0 kochen specker solution were found"
+fi 

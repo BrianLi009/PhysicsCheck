@@ -1,10 +1,22 @@
 #!/bin/bash
 
-set -x 
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This script generate cubes for the instance using the incremental cubing technique, then adjoin the deepest cubing file with the instance
+    line by line, creating multiple separate instances with a cube embedded in it. Then maplesat-ks is being called to solve each instance (in parallel).
+
+Usage:
+    ./3-cube-merge-solve.sh n r f
+
+Options:
+    <n>: the order of the instance/number of vertices in the graph
+    <r>: number of variables to eliminate before cubing is terminated
+    <f>: file name of the current SAT instance
+" && exit
+ 
 n=$1 #order
 r=$2 #number of variables to eliminate
 f=$3 #instance file name
-
 
 ./gen_cubes/cube.sh $n $f $r #cube till r varaibles are eliminated
 

@@ -16,5 +16,5 @@ numlines2=$(wc -l < "$l")
 newlines=$((numlines1+numlines2))
 
 echo "p cnf $numvars $newlines"
-tail "$f" -n +2
-sed 's/ 0.*/ 0/' "$l" # Additional clauses
+tail "$f" -n +2 
+sed 's/ 0.*/ 0/' "$l" 

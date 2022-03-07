@@ -1,13 +1,18 @@
 #!/bin/bash
 
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This script will install and compile all required dependency and packages, including maplesat-ks, cadical, networkx, z3-solver, and march_cu from cube and conquer
+
+Usage:
+    ./dependency-setup.sh 
+
+" && exit
+
 #install maplesat-ks
-if [ -d maplesat-ks ]
+if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
 then
-    echo "maplesat-ks installed"
-    cd maplesat-ks
-    git checkout unembeddable-subgraph-check
-    make
-    cd -
+    echo "maplesat-ks installed and binary file compiled"
 else
     git clone git@github.com:curtisbright/maplesat-ks.git maplesat-ks
     #git stash
@@ -18,10 +23,9 @@ else
 fi 
 
 #install cadical
-if [ -d cadical ]
+if [ -d cadical ] && [ -f cadical/build/cadical ]
 then
-    echo "cadical installed"
-    #cd ..
+    echo "cadical installed and binary file compiled"
 else
     git clone https://github.com/arminbiere/cadical.git cadical
     cd cadical
@@ -30,11 +34,27 @@ else
     cd ..
 fi
 
-cd embedability
-pip install networkx
-pip install z3-solver
-cd ..
+if pip list | grep networkx
+then
+    echo "networkx package installed"
+else 
+    pip install networkx
+fi
 
-cd gen_cubes/march_cu
-make
-cd ..
+if pip list | grep z3-solver
+then
+    echo "z3-solver package installed"
+else 
+    pip install z3-solver
+fi
+
+if [ -f gen_cubes/march_cu/march_cu ]
+then
+    echo "march installed and binary file compiled"
+else
+    cd gen_cubes/march_cu
+    make
+    cd -
+fi
+
+echo "all dependency properly installed"
