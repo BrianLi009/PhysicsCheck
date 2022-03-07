@@ -68,6 +68,7 @@ then
     ./4-check-embedability.sh $n
 
     #output the number of KS system is there is any
+    echo "$(wc -l $n.exhaust) kochen specker candidates were found."
     echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."
 else 
     echo "No kochen specker candidates are found, thus no Kochen Specker solution can exist"
