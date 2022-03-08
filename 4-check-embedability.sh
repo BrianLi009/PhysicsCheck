@@ -31,5 +31,5 @@ else
     #this part to be finished
 fi 
 ./check_embedability.sh $n
-rm test.py
+
 cd -

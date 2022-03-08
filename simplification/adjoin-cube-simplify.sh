@@ -43,4 +43,4 @@ do
 done
 
 # Use CaDiCaL to simplify instance with adjoined cube
-./simplify-by-var-removal.sh "$adj" $s
+./simplification/simplify-by-var-removal.sh "$adj" $s

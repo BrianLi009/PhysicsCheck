@@ -38,7 +38,7 @@ if [ -f constraints_$n.simp1 ]
 then
     echo "constraints_$n.simp1 already exist, skip simplification"
 else
-    ./simplify.sh constraints_$n $s
+    ./simplification/simplify.sh constraints_$n $s
     mv constraints_$n.simp constraints_$n.simp1
 fi
 
@@ -50,7 +50,7 @@ if [ -f constraints_$n.simp2 ]
 then
     echo "constraints_$n.simp2 already exist, skip simplification"
 else
-    ./simplify.sh constraints_$n.simp1 $s
+    ./simplification/simplify.sh constraints_$n.simp1 $s
     mv constraints_$n.simp1.simp constraints_$n.simp2
 fi
 
