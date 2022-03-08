@@ -1,6 +1,17 @@
-n=$1
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This script takes in an exhaust file with kochen specker candidates, and determine whether each
+    of them is embeddable, if it is embeddable, then it will be outputted into a file as a Kochen
+    Specker graph. We require the existance of n.exhaust in the directory.
 
-#check embedability of order n, given that $n.exhaust exists
+Usage:
+    ./check_embedability.sh n
+
+Options:
+    <n>: the order of the instance/number of vertices in the graph
+" && exit
+
+n=$1
 
 set -e 
 count=0

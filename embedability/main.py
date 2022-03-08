@@ -271,7 +271,8 @@ def maple_to_edges(input, v):
     return actual_edges
 
 def main(g, order, count, index):
-    """takes in graph in maplesat output format, and order of the graph"""
+    """takes in graph in maplesat output format, order of the graph, count corresponds to the line
+       number of the candidates, and index indicates which vector assignment we will be using. """
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
@@ -301,50 +302,3 @@ def main(g, order, count, index):
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-
-"""
-#taking file in the SAT output format
-file1 = open('22partial.exhaust', 'r')
-Lines = file1.readlines()
-count = 0
-for line in Lines:
-    if count == 60457:
-        print ("solving " + str(count))
-        edge_lst = maple_to_edges(line, 22)
-        G = nx.Graph()
-        G.add_edges_from(edge_lst)
-        graph_dict = {}
-        for v in list(G.nodes()):
-            graph_dict[v] = (list(G.neighbors(v)))
-        assignments = find_assignments(graph_dict)
-        print ("assignments found")
-        for assignment in assignments:
-            determine_embed(graph_dict, assignment, str(count)) #write the file
-            os.system('test.py')
-            with open('embed_result.txt', 'r+') as f:
-                if ('  ' + str(count) + '  ' in f.read()):
-                    print (str(count) + ' solved')
-                    break
-    count += 1"""
-
-#takes in file with graph6 format
-"""file1 = open('min_non_embed_13_candidate.txt', 'r')
-Lines = file1.readlines()
-count = 0
-for line in Lines:
-    print ("solving " + str(count))
-    print (line[:-1])
-    G = nx.from_graph6_bytes(bytes(line[:-1], encoding='utf-8'))
-    graph_dict = {}
-    for v in list(G.nodes()):
-        graph_dict[v] = (list(G.neighbors(v)))
-    assignments = find_assignments(graph_dict)
-    print ("assignments found")
-    for assignment in assignments:
-        determine_embed(graph_dict, assignment, str(count)) #write the file
-        os.system('test.py')
-        with open('embed_result.txt', 'r+') as f:
-            if ('  ' + str(count) + '  ' in f.read()):
-                print (str(count) + ' solved')
-                break
-    count += 1"""
