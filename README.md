@@ -10,6 +10,8 @@
 
 **compute_canada:** the cubing and solving of high order graph might require computing resources, in our case, Compute Canada were used
 
+**simplification:** contains script relavant to simplification in the pipeline
+
 **Pipeline:** 
 
 dependencies: maplesat-ks, cadical, networkx, z3-solver, and march_cu from cube and conquer. Run dependency-setup.sh for dependency setup
