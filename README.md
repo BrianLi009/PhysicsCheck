@@ -12,17 +12,17 @@
 
 **simplification:** contains script relavant to simplification in the pipeline
 
-**1-instance-generation.sh:** 
+**1-instance-generation.sh:** script that initiate instance geenration for order n, can be called with ./1-instance-generation.sh n
 
-**2-add-blocking-clauses.sh:**
+**2-add-blocking-clauses.sh:** script that adds blocking clauses to constraints_n, can be called with ./2-add-blocking-clauses.sh n(graph order) o(subgraph order) f(instance filename)
 
-**3-cube-merge-solve.sh:**
+**3-cube-merge-solve.sh:** script that perform incremental cubing, merge cubes into instance and solve with maplesat, can be called with ./3-cube-merge-solve.sh n(graph order) r(number of variables to eliminate) f(instance file name)
 
-**4-check-embedability:**
+**4-check-embedability:** script that perform embedability checking on n.exhaust, which is the file that contains all kochen specker candidates output by MapleSAT. can be called with ./4-check-embedability.sh n(graph order)
 
-**dependency-setup.sh:**
+**dependency-setup.sh:** script that set up all dependencies, see the script documentation for details, can be called with ./dependency-setup.sh
 
-**main.sh:**
+**main.sh:** driver script that connects all script stated above, running this script will execute the entire pipeline, can be called with ./main.sh n(graph order) s(number of times to simplify, default to be 3) r(number of variables to eliminate during incremental cubing)
 
 **run-subgraph-generation.sh:** a script that generate blocking clauses to block non-canonical representation of a graph
 
