@@ -12,7 +12,7 @@ f=$2 # Instance filename
 l=$3 # Filename containing clauses
 c=$4 # Filename containing cubes
 i=$5 # Index of the cube to adjoin
-m=$((n*(n+1)/2)) # Number of edge variables
+m=$((n*(n-1)/2)) # Number of edge variables
 
 numvars=$(head -n 1 "$f" | cut -d' ' -f3) # Number of variables in instance
 numlines1=$(head -n 1 "$f" | cut -d' ' -f4) # Number of base clauses

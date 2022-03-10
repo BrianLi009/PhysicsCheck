@@ -2,7 +2,7 @@
 n=$1 # Order
 f=$2 #Instance filename
 r=$3 #number of free variables to remove
-m=$((n*(n+1)/2)) # Number of edge variables in instance
+m=$((n*(n-1)/2)) # Number of edge variables in instance
 dir=$n-cubes # Directory to store cubes
 logdir=$n-log # Directory to store logs
 mkdir -p $dir

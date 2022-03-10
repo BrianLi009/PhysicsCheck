@@ -10,7 +10,7 @@ fi
 n=$1 # Order
 f=$2 # Base instance
 l=$3 # Clauses to concatenate
-m=$((n*(n+1)/2)) # Number of edge variables
+m=$((n*(n-1)/2)) # Number of edge variables
 
 numvars=$(head -n 1 "$f" | cut -d' ' -f3)
 numlines1=$(head -n 1 "$f" | cut -d' ' -f4)
