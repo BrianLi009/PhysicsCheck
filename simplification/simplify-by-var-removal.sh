@@ -11,6 +11,7 @@ fi
 
 f="$1"
 p="$2"
+m=$3
 
 sub_dir=$(echo "${f%%/*}")
 #Directory to log simplification output
@@ -28,6 +29,7 @@ do
 	then
 		break
 	fi
+	awk "sqrt(\$(NF-1)*\$(NF-1))<=$m" "simp/"$f".simp$i" | sed 's/ 0.*/ 0/' >> simp/"$f".simp"$i"
 	./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 | tee log/"$f".simp$((i+1))
 done
 

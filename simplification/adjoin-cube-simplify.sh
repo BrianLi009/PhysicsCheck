@@ -8,14 +8,17 @@ then
     exit
 fi
 
-f=$1
-c=$2
-i=$3
-s=$4
+n=$1
+f=$2 #instance file name
+c=$3 #cubes file name
+i=$4 #index of cube
+s=$5 #percentage of variable elimination
 adj=$c$i.adj # Instance with adjoined cube
 cnf=$c$i.cnf # Simplified instance
 ext=$c$i.ext # Extension stack
 cnfext=$c$i.cnfext # Simplified instance with extension stack
+
+m=$((n*(n-1)/2)) # Number of edge variables in instance
 
 # Determine the number of unit clauses to add
 unitlines=0
@@ -43,4 +46,4 @@ do
 done
 
 # Use CaDiCaL to simplify instance with adjoined cube
-./simplification/simplify-by-var-removal.sh "$adj" $s
+./simplification/simplify-by-var-removal.sh "$adj" $s $m
