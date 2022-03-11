@@ -1,3 +1,19 @@
-Call the generate function in generate.py with parameter n being the order of the graph.
+This directory contains the Python script that generates the CNF file for Kochen Specker candidates
 
-The function will output cnf file constraints_n.
+pysat: PySAT package was used to collect the clauses and generate the file
+
+cubic: generate cubic isomorphism blocking clauses
+
+generate_squarefree_only: generate instance with only the squarefree constraint, this is used to find minimum nonembedable subgraph
+
+generate.py: generate instance with constraints "mindegree", "noncolorable", "squarefree", "triangle", and the "cubic" isomorphism blocking clauses
+
+mindegree.py: each vertex must have minimum degree 3
+
+noncolorable.py: the graph must be non 101-colorable (in some literature, it is also referred to as 010-colorable)
+
+squarefree.py: the graph does not contain a C4 square subgraph
+
+triangle.py: each vertex must be contained in some C3 triangle
+
+The script can be called by running generate.py with the parameter n, where n is the order of the graph

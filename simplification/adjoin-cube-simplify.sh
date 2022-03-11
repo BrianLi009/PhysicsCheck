@@ -2,9 +2,24 @@
 # Ensure parameters are specified on the command-line
 #set -x
 
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This script join the cubes with the instance, then call the simplification script
+
+Usage:
+    ./adjoin-cube-simplify n f c i s
+
+Options:
+    <n>: the order of the instance/number of vertices in the graph
+    <f>: file name of the current SAT instance
+    <c>: file name of the cubes
+    <i>: index of the cube to adjoin
+    <s>: percentage of variables to eliminate (1-100)
+" && exit
+
 if [ -z "$3" ]
 then
-    echo "Need instance filename, cube filename, and the index of the cube to adjoin (zero-based indexing)"
+    echo "Need order, instance filename, cube filename, and the index of the cube to adjoin (zero-based indexing), and percentage of variables to eliminate."
     exit
 fi
 
@@ -46,4 +61,4 @@ do
 done
 
 # Use CaDiCaL to simplify instance with adjoined cube
-./simplification/simplify-by-var-removal.sh "$adj" $s $m
+./simplification/simplify-by-var-removal.sh $n "$adj" $s

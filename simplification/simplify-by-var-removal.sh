@@ -2,6 +2,20 @@
 
 #set -x
 
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This script simplify the instance, add back edge blocking clauses, then repeat
+	until a certain percentage of variables are eliminated
+
+Usage:
+    ./simplify-by-var-removal f p m
+
+Options:
+	<n>: the order of the instance/number of vertices in the graph
+    <f>: file name of the current SAT instance
+    <p>: percentage of variables to eliminate (1-100)
+" && exit
+
 # Ensure parameters are specified on the command-line
 if [ -z "$2" ]
 then
@@ -9,9 +23,10 @@ then
 	exit
 fi
 
-f="$1"
-p="$2"
-m=$3
+n=$1
+f="$2"
+p="$3"
+m=$((n*(n-1)/2))
 
 sub_dir=$(echo "${f%%/*}")
 #Directory to log simplification output
