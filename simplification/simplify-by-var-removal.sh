@@ -62,7 +62,7 @@ numlines=$(head -n 1 simp/"$f".simp"$i" | cut -d' ' -f4)
 extlines_total=0
 for j in $(seq 1 "$i")
 do
-	extlines_j=$(wc -l simp/"$f".ext"$j" | cut -d' ' -f1)
+	extlines_j=$(awk "sqrt(\$(NF-1)*\$(NF-1))<=$m" "simp/"$f".ext$j" | wc -l | cut -d' ' -f1)
 	extlines_total=$((extlines_total+extlines_j))
 done
 
@@ -74,6 +74,6 @@ echo "p cnf $numvars $newlines" > "$f".simp
 tail simp/"$f".simp"$i" -n +2 >> "$f".simp
 for j in $(seq 1 "$i")
 do
-	cat simp/"$f".ext"$j" >> "$f".simp
+	awk "sqrt(\$(NF-1)*\$(NF-1))<=$m" "simp/"$f".ext$j" | sed 's/ 0.*/ 0/' >> "$f".simp
 done
 sed -i 's/ 0.*/ 0/' "$f".simp
