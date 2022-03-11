@@ -29,7 +29,7 @@ do
 	then
 		break
 	fi
-	awk "sqrt(\$(NF-1)*\$(NF-1))<=$m" "simp/"$f".simp$i" | sed 's/ 0.*/ 0/' >> simp/"$f".simp"$i"
+	awk "sqrt(\$(NF-1)*\$(NF-1))<=$m" "simp/"$f".ext$i" | sed 's/ 0.*/ 0/' >> simp/"$f".simp"$i"
 	./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 | tee log/"$f".simp$((i+1))
 done
 
