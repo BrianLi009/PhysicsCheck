@@ -270,35 +270,38 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, count, index):
+def main(g, order, count, index, using_subgraph):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    my_file = open("min_nonembed_graph_10-12.txt", "r")
-    content = my_file.read()
-    min_non_subgraphs = content.split("\n")
-    my_file.close()
-    for string in min_non_subgraphs:
-        min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
-        gm = isomorphism.GraphMatcher(G, min_g)
-        if gm.subgraph_is_isomorphic():
-            f = open("embed_result.txt", "a") 
-            f.write("  " + str(count) + "  " + "unsat" + "\n")
-            return
-    #check if G contains a minimum nonembedabble subgraph
-    graph_dict = {}
-    for v in list(G.nodes()):
-        graph_dict[v] = (list(G.neighbors(v)))
-    assignments = find_assignments(graph_dict)
-    assignment = assignments[int(index)]
-    determine_embed(graph_dict, assignment, str(count)) #write the file
-    """os.system('test.py')
-    with open('embed_result.txt', 'w+') as f:
-        if ('  ' + str(count) + '  ' in f.read()):
-            print (str(count) + ' solved')
-            break"""
+    if using_subgraph:
+        my_file = open("min_nonembed_graph_10-12.txt", "r")
+        content = my_file.read()
+        min_non_subgraphs = content.split("\n")
+        my_file.close()
+        for string in min_non_subgraphs:
+            min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
+            gm = isomorphism.GraphMatcher(G, min_g)
+            if gm.subgraph_is_isomorphic():
+                f = open("embed_result.txt", "a") 
+                f.write("  " + str(count) + "  " + "unsat" + "\n")
+                return
+        #check if G contains a minimum nonembedabble subgraph
+        graph_dict = {}
+        for v in list(G.nodes()):
+            graph_dict[v] = (list(G.neighbors(v)))
+        assignments = find_assignments(graph_dict)
+        assignment = assignments[int(index)]
+        determine_embed(graph_dict, assignment, str(count)) #write the file
+    else:
+        graph_dict = {}
+        for v in list(G.nodes()):
+            graph_dict[v] = (list(G.neighbors(v)))
+        assignments = find_assignments(graph_dict)
+        assignment = assignments[int(index)]
+        determine_embed(graph_dict, assignment, str(count)) #write the file
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])

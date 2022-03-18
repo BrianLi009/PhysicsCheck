@@ -48,7 +48,7 @@ count=1
 while read line; do
     index=0
     while ! grep -q "  $count  " embed_result.txt; do
-        python3 main.py "$line" $n $count $index
+        python3 main.py "$line" $n $count $index False
         if ! grep -q "  $count  " embed_result.txt; then
             timeout 10 python3 test.py
         fi
