@@ -1,5 +1,0 @@
-This directory contains a collection of cubes incrementally generated from the instance constraints_21_10.simp-noncanon.simp.
-
-Cubing was initially done until 75 edge variables were removed from the instances associated with each cube.
-
-Cubing was then restarted at depth 7 until 100 edge variables were removed from the instances associated with each cube.
