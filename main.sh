@@ -54,23 +54,17 @@ else
     mv constraints_$n.simp1.simp constraints_$n.simp2
 fi
 
-if [[ $(wc -l <constraints_$n.simp2) -ge 3 ]] #if the constraint file only has two lines or less after simplification, output unsat
+#step 5: cube and conquer if necessary, then solve
+if [ "$r" != "0" ] 
 then 
-    #step 5: cube and conquer if necessary, then solve
-    if [ "$r" != "0" ] 
-    then 
-        ./3-cube-merge-solve.sh $n $r constraints_$n.simp2
-    else
-        ./maplesat-ks/simp/maplesat_static constraints_$n.simp2 -no-pre -exhaustive=$n.exhaust -order=$n
-    fi
+    ./3-cube-merge-solve.sh $n $r constraints_$n.simp2
+else
+    ./maplesat-ks/simp/maplesat_static constraints_$n.simp2 -no-pre -exhaustive=$n.exhaust -order=$n
+fi
 
-    #step 6: checking if there exist embeddable solution
-    ./4-check-embedability.sh $n
+#step 6: checking if there exist embeddable solution
+./4-check-embedability.sh $n
 
-    #output the number of KS system is there is any
-    echo "$(wc -l $n.exhaust) kochen specker candidates were found."
-    echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."
-else 
-    echo "No kochen specker candidates are found, thus no Kochen Specker solution can exist"
-    echo "0 kochen specker solution were found"
-fi 
+#output the number of KS system is there is any
+echo "$(wc -l $n.exhaust) kochen specker candidates were found."
+echo "$(wc -l ks_solution_uniq_$n.exhaust) kochen specker solutions were found."
