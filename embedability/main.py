@@ -276,32 +276,40 @@ def main(g, order, count, index, using_subgraph):
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    if using_subgraph:
-        my_file = open("min_nonembed_graph_10-12.txt", "r")
-        content = my_file.read()
-        min_non_subgraphs = content.split("\n")
-        my_file.close()
-        for string in min_non_subgraphs:
-            min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
-            gm = isomorphism.GraphMatcher(G, min_g)
-            if gm.subgraph_is_isomorphic():
-                f = open("embed_result.txt", "a") 
-                f.write("  " + str(count) + "  " + "unsat" + "\n")
-                return
-        #check if G contains a minimum nonembedabble subgraph
-        graph_dict = {}
-        for v in list(G.nodes()):
-            graph_dict[v] = (list(G.neighbors(v)))
-        assignments = find_assignments(graph_dict)
-        assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, str(count)) #write the file
+    if nx.is_empty(G):
+        f = open("embed_result.txt", "a")
+        f.write("  " + str(count) + "  " + "sat" + "\n")
+        return
     else:
-        graph_dict = {}
-        for v in list(G.nodes()):
-            graph_dict[v] = (list(G.neighbors(v)))
-        assignments = find_assignments(graph_dict)
-        assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, str(count)) #write the file
+        if using_subgraph == True:
+            print ("Checking minimum nonembeddable subgraph")
+            my_file = open("min_nonembed_graph_10-12.txt", "r")
+            content = my_file.read()
+            min_non_subgraphs = content.split("\n")
+            my_file.close()
+            for string in min_non_subgraphs:
+                min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
+                gm = isomorphism.GraphMatcher(G, min_g)
+                if gm.subgraph_is_isomorphic():
+                    f = open("embed_result.txt", "a") 
+                    f.write("  " + str(count) + "  " + "unsat" + "\n")
+                    return
+            #check if G contains a minimum nonembedabble subgraph
+            graph_dict = {}
+            for v in list(G.nodes()):
+                graph_dict[v] = (list(G.neighbors(v)))
+            assignments = find_assignments(graph_dict)
+            assignment = assignments[int(index)]
+            determine_embed(graph_dict, assignment, str(count)) #write the file
+        else:
+            graph_dict = {}
+            for v in list(G.nodes()):
+                graph_dict[v] = (list(G.neighbors(v)))
+            assignments = find_assignments(graph_dict)
+            assignment = assignments[int(index)]
+            determine_embed(graph_dict, assignment, str(count)) #write the file
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+
+#print (main("a -1 -2 -3 -4 -5 -6 -7 -8 9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 -21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 43 -44 -45 0", 20,  4589, 0, False))

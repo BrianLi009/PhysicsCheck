@@ -20,23 +20,50 @@ Options:
 #generate nonembedable subgraphs
 
 n=$1
+
+if [ $# -eq 0 ]; then
+    echo "Need to provide order of unembedable subgraph"
+    exit 1
+fi
+
 cd ..
 
-if [ -f squarefree_constraints_$n ]
+#install maplesat-ks
+if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
 then
-    echo "instance already gengerated"
+    echo "maplesat-ks installed and binary file compiled"
 else
-    python3 gen_instance/generate_squarefree_only.py $n
+    git clone git@github.com:curtisbright/maplesat-ks.git maplesat-ks
+    #git stash
+    cd maplesat-ks
+    git checkout unembeddable-subgraph-check
+    make
+    cd -
+fi 
+
+if pip list | grep networkx
+then
+    echo "networkx package installed"
+else 
+    pip install networkx
+fi
+
+if pip list | grep z3-solver
+then
+    echo "z3-solver package installed"
+else 
+    pip install z3-solver
 fi
 
 if [ -f squarefree_$n.exhaust ]
 then
     echo "instance already solved"
 else
+	python3 gen_instance/generate_squarefree_only.py $n
     ./maplesat-ks/simp/maplesat_static squarefree_constraints_$n -no-pre -exhaustive=squarefree_$n.exhaust -order=$n
 fi
 
-cp squarefree_constraints_$n embedability
+#cp squarefree_constraints_$n embedability
 cp squarefree_$n.exhaust embedability
 
 cd embedability
@@ -56,13 +83,10 @@ while read line; do
     done
     if grep -q "  $count  unsat" embed_result.txt
     then
-        #unembedable graph found, append to min_nonembed_graph_10-12.txt
-        sed "${count}q;d" squarefree_$n.exhaust >> min_nonembed_graph_10-12.txt
+        #unembedable graph found, append to min_nonembed_graph_sat_10-12.txt
+        sed "${count}q;d" squarefree_$n.exhaust >> min_nonembed_graph_sat_10-12.txt
     fi
+    echo "graph $count solved"
     count=$((count+1))
 done < squarefree_$n.exhaust
-
-#extract all row with unsat, find corresponding maplesat encoding
-
-rm embed_result.txt
 
