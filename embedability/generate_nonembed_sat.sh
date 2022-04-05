@@ -83,8 +83,8 @@ while read line; do
     done
     if grep -q "  $count  unsat" embed_result.txt
     then
-        #unembedable graph found, append to min_nonembed_graph_sat_10-12.txt
-        sed "${count}q;d" squarefree_$n.exhaust >> min_nonembed_graph_sat_10-12.txt
+        #unembedable graph found, append to min_nonembed_graph_sat_$n.txt
+        sed "${count}q;d" squarefree_$n.exhaust >> min_nonembed_graph_sat_$n.txt
     fi
     echo "graph $count solved"
     count=$((count+1))
