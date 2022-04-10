@@ -19,6 +19,8 @@ Options:
 
 #generate nonembedable subgraphs
 
+#set -x
+
 n=$1
 
 if [ $# -eq 0 ]; then
@@ -70,23 +72,27 @@ cd embedability
 
 touch embed_result.txt
 
-set -e 
+#set -e 
 count=1
+#add a parameter for starting count
 while read line; do
     index=0
     while ! grep -q "  $count  " embed_result.txt; do
         python3 main.py "$line" $n $count $index False
         if ! grep -q "  $count  " embed_result.txt; then
             timeout 10 python3 test.py
+            #python3 test.py
         fi
         index=$((index+1))
     done
     if grep -q "  $count  unsat" embed_result.txt
     then
         #unembedable graph found, append to min_nonembed_graph_sat_$n.txt
-        sed "${count}q;d" squarefree_$n.exhaust >> min_nonembed_graph_sat_$n.txt
+        sed "${count}q;d" squarefree_$n.exhaust >> nonembed_graph_sat_$n.txt
     fi
-    echo "graph $count solved"
+    #echo "graph $count solved"
     count=$((count+1))
 done < squarefree_$n.exhaust
 
+#filtering all output and only keep minimal nonembeddable subgraph
+python3 analyze_subgraph.py $n

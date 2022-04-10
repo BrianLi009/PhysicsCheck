@@ -7,6 +7,9 @@ import networkx as nx
 import collections
 import itertools
 from collections import Counter
+
+from networkx.algorithms.isomorphism.isomorph import is_isomorphic
+from networkx.generators.classic import cycle_graph
 from helper import cross, dot, nested_cross
 
 import sys, getopt
@@ -276,7 +279,8 @@ def main(g, order, count, index, using_subgraph):
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    if nx.is_empty(G):
+    degree_sequence = [d for n, d in G.degree()]
+    if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
         f = open("embed_result.txt", "a")
         f.write("  " + str(count) + "  " + "sat" + "\n")
         return
@@ -312,4 +316,4 @@ def main(g, order, count, index, using_subgraph):
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
 
-#print (main("a -1 -2 -3 -4 -5 -6 -7 -8 9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 -21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 43 -44 -45 0", 20,  4589, 0, False))
+#print (main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 10 -11 -12 13 -14 15 -16 17 -18 -19 20 21 -22 23 24 25 -26 -27 -28 29 -30 -31 32 33 -34 -35 -36 37 -38 39 -40 -41 42 -43 -44 -45 46 47 -48 -49 -50 -51 52 -53 -54 -55 0', 11, 10000, 0, False))
