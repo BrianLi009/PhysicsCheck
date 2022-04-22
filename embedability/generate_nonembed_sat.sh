@@ -73,11 +73,14 @@ cp squarefree_$n.exhaust embedability
 cd embedability
 
 touch embed_result.txt
+touch embed_runtime.log
+echo "Embedability check using Z3 started"
 
-#set -e 
+set -e 
 count=1
 #add a parameter for starting count
 while read line; do
+    start=`date +%s.%N`
     index=0
     while ! grep -q "  $count  " embed_result.txt; do
         python3 main.py "$line" $n $count $index False
@@ -87,12 +90,14 @@ while read line; do
         fi
         index=$((index+1))
     done
+    end=`date +%s.%N`
+    runtime=$( echo "$end - $start" | bc -l )
+    echo $count: $runtime >> embed_runtime.log
     if grep -q "  $count  unsat" embed_result.txt
     then
         #unembedable graph found, append to min_nonembed_graph_sat_$n.txt
         sed "${count}q;d" squarefree_$n.exhaust >> nonembed_graph_sat_$n.txt
     fi
-    echo "graph $count solved"
     count=$((count+1))
 done < squarefree_$n.exhaust
 

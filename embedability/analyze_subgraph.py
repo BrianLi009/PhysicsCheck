@@ -145,14 +145,15 @@ def filter_non_minimal_12():
 
 def verify(n):
     """n has to be either 10, 11, or 12"""
-    if n == 10:
+    if int(n) == 10:
+        print ("entered")
         filter_non_minimal_10()
-    if n == 11:
+    elif int(n) == 11:
         filter_non_minimal_11()
-    if n == 12:
+    elif int(n) == 12:
         filter_non_minimal_12()
     else:
-        print ("invalid input")
+        print ("currently only taking order 10, 11, or 12 for analyze_subgraph.py")
 
 if __name__ == "__main__":
     verify(sys.argv[1])
