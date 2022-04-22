@@ -5,4 +5,5 @@ cadical/
 embedability/nauty27r3
 dependency-tools/
 gen_cubes/cadical/
+gen_cubes/march_cu/
 embedability/test.py
