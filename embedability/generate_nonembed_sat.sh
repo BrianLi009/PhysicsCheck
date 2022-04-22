@@ -30,6 +30,8 @@ fi
 
 cd ..
 
+if dpkg --verify python3 2>/dev/null; then echo "python3 installed"; else echo "need to update to python3"; exit 1; fi
+
 #install maplesat-ks
 if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
 then
@@ -90,7 +92,7 @@ while read line; do
         #unembedable graph found, append to min_nonembed_graph_sat_$n.txt
         sed "${count}q;d" squarefree_$n.exhaust >> nonembed_graph_sat_$n.txt
     fi
-    #echo "graph $count solved"
+    echo "graph $count solved"
     count=$((count+1))
 done < squarefree_$n.exhaust
 
