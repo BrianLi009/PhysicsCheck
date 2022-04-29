@@ -8,11 +8,12 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh n s r
+    ./main.sh n o s r
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <s>: number of times to simplify the instance using CaDiCaL with default value 3
+    <o>: two options here, option "t" means simplification for t times, option "s" means simplification for a total of s seconds
+    <s>: number of times(t) to simplify the instance using CaDiCaL with default value 3 / or by total number of seconds (s)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
 " && exit
 
@@ -24,8 +25,9 @@ then
 fi
 
 n=$1 #order
-s=${2:-3} #number of time to simplify each to simplification is called
-r=${3:-0} #number of variables to eliminate until the cubing terminates
+o=${2:t} #option for simplification
+s=${3:-3} #number of time to simplify each to simplification is called or amount of seconds
+r=${4:-0} #number of variables to eliminate until the cubing terminates
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -38,7 +40,7 @@ if [ -f constraints_$n.simp1 ]
 then
     echo "constraints_$n.simp1 already exist, skip simplification"
 else
-    ./simplification/simplify.sh constraints_$n $s
+    ./simplification/simplify.sh constraints_$n $o $s
     mv constraints_$n.simp constraints_$n.simp1
 fi
 
@@ -50,7 +52,7 @@ if [ -f constraints_$n.simp2 ]
 then
     echo "constraints_$n.simp2 already exist, skip simplification"
 else
-    ./simplification/simplify.sh constraints_$n.simp1 $s
+    ./simplification/simplify.sh constraints_$n.simp1 $o $s
     mv constraints_$n.simp1.simp constraints_$n.simp2
 fi
 
