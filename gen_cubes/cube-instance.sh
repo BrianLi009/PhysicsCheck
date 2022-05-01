@@ -43,7 +43,7 @@ else
 	l=$(grep -n "$parentcube" $dir/$((i-2)).cubes | cut -d':' -f1)
 
 	# Adjoin the literals in the current cube to the simplified parent instance and simplify the resulting instance with CaDiCaL
-	command="./gen_cubes/concat-edge-and-apply.sh $m $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./gen_cubes/concat-edge-and-apply.sh $n $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 
