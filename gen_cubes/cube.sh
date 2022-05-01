@@ -20,7 +20,7 @@ then
 	echo "  n is the instance order"
 	echo "  f is the instance filename"
 	echo "  r is the number of edge variables to remove from each cube before splitting stops"
-	echo "  d is the starting depth"
+	echo "  d is the starting depth (generate d.cubes assuming (d-1).cubes is already generated)"
 	echo "  e is the ending depth"
 	echo "Options:"
 	echo "  -a always check # of free edge variables at the starting depth (instead of skipping instances not split at the previous depth)"
@@ -79,12 +79,19 @@ fi
 # Solve depths d to e
 for i in $(seq $d $e)
 do
+	if [ ! -f $dir/$((i-1)).cubes ]
+	then
+		echo "$dir/$((i-1)).cubes doesn't exist; stopping"
+		break
+	fi
+
 	# Clear cube/commands files at depth i if it already exists
 	rm $dir/$i.cubes 2> /dev/null
 	rm $dir/$i.commands 2> /dev/null
 
 	# Number of cubes at the previous depth
 	numcubes=`wc -l < $dir/$((i-1)).cubes`
+	echo "$numcubes cubes in $dir/$((i-1)).cubes"
 
 	# Generate a new instance for every cube generated from the previous depth
 	for c in `seq 1 $numcubes`
@@ -95,6 +102,14 @@ do
 		# Skip processing this cube entirely if it was not split on the previous depth (can be turned off with -a; ignore option when i > d)
 		if ([ "$a" != "-a" ] || (( i > d ))) && grep -q "$cubeline" $dir/$((i-2)).cubes 2> /dev/null
 		then
+			if [ "$s" == "-s" ]
+			then
+				# Line number of parent cube
+				l=$(grep -n "$cubeline" $dir/$((i-2)).cubes | cut -d':' -f1)
+				# Update location of simplified instance
+				cp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes$c.ext
+				cp $dir/$((i-2)).cubes$l.simp $dir/$((i-1)).cubes$c.simp
+			fi
 			echo "  Depth $i instance $c was not split at previous depth; skipping"
 			head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
 			continue
@@ -116,6 +131,13 @@ do
 		cat $dir/$i-$c.cubes >> $dir/$i.cubes
 	done
 	rm $dir/$i-*.cubes
+
+	# Remove unnecessary files
+	rm $dir/$i.commands 2> /dev/null
+	rm $dir/$i-*.cubes 2> /dev/null
+	rm $dir/$((i-1)).cubes*.cubes 2> /dev/null
+	rm $dir/$((i-2)).cubes*.ext 2> /dev/null
+	rm $dir/$((i-2)).cubes*.simp 2> /dev/null
 
 	# Stop cubing when no additional cubes have been generated
 	if [ "$(wc -l < $dir/$((i-1)).cubes)" == "$(wc -l < $dir/$i.cubes)" ]
