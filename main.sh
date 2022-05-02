@@ -25,7 +25,7 @@ then
 fi
 
 n=$1 #order
-o=${2:t} #option for simplification
+o=$2 #option for simplification
 s=${3:-3} #number of time to simplify each to simplification is called or amount of seconds
 r=${4:-0} #number of variables to eliminate until the cubing terminates
 
@@ -45,15 +45,21 @@ else
 fi
 
 #step 4: generate non canonical subgraph
-./2-add-blocking-clauses.sh $n 12 constraints_$n.simp1
+if [ -f constraints_$n.non_can.simp1 ]
+then
+    echo "constraints_$n.non_can.simp1 already exist, skip adding non canoniacl subgraph"
+else
+    cat constraints_$n.simp1 >> constraints_$n.non_can.simp1
+    ./2-add-blocking-clauses.sh $n 12 constraints_$n.non_can.simp1
+fi
 
 #simplify s times again
 if [ -f constraints_$n.simp2 ]
 then
     echo "constraints_$n.simp2 already exist, skip simplification"
 else
-    ./simplification/simplify.sh constraints_$n.simp1 $o $s
-    mv constraints_$n.simp1.simp constraints_$n.simp2
+    ./simplification/simplify.sh constraints_$n.non_can.simp1 $o $s
+    mv constraints_$n.non_can.simp1.simp constraints_$n.simp2
 fi
 
 #step 5: cube and conquer if necessary, then solve
