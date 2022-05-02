@@ -72,8 +72,23 @@ cp squarefree_$n.exhaust embedability
 
 cd embedability
 
-touch embed_result.txt
-touch embed_runtime.log
+#if txt or log already exist, notify user
+if test -f "embed_result.txt"
+then
+    echo "embed_result.txt exists, delete or rename the file to continue"
+    exit 0
+else
+    touch embed_result.txt
+fi
+
+if test -f "embed_runtime.log"
+then
+    echo "embed_runtime.log exists, delete or rename the file to continue"
+    exit 0
+else
+    touch embed_runtime.log
+fi
+
 echo "Embedability check using Z3 started"
 
 set -e 
