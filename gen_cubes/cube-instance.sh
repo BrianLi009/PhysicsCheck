@@ -28,6 +28,13 @@ then
 	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
+elif grep -q "$cubeline" $dir/$((i-2)).cubes
+then
+	# Line number of current cube in previous list of cubes
+	l=$(grep -n "$cubeline" $dir/$((i-2)).cubes | cut -d':' -f1)
+
+	cp $dir/$((i-2)).cubes$l.simp $dir/$((i-1)).cubes$c.simp
+	cp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes$c.ext
 else
 	# Parent cube
 	parentcube=$(echo "$cubeline" | xargs -n 1 | head -n -2 | xargs)
@@ -36,7 +43,7 @@ else
 	l=$(grep -n "$parentcube" $dir/$((i-2)).cubes | cut -d':' -f1)
 
 	# Adjoin the literals in the current cube to the simplified parent instance and simplify the resulting instance with CaDiCaL
-	command="./gen_cubes/concat-edge-and-apply.sh $m $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./gen_cubes/concat-edge-and-apply.sh $n $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 
@@ -86,5 +93,6 @@ fi
 # Delete simplified instance if not needed anymore
 if [ -z $s ]
 then
-	rm $dir/$((i-1)).cubes$c.simp
+	rm $dir/$((i-1)).cubes$c.simp 2> /dev/null
+	rm $dir/$((i-1)).cubes$c.ext 2> /dev/null
 fi
