@@ -29,6 +29,12 @@ o=$2 #option for simplification
 s=${3:-3} #number of time to simplify each to simplification is called or amount of seconds
 r=${4:-0} #number of variables to eliminate until the cubing terminates
 
+if [ "$o" != "s" ] && [ "$o" != "t" ]
+then
+    echo "Need simplification option, option "t" means simplification for t times, option "s" means simplification for a total of s seconds"
+    exit
+fi
+
 #step 2: setp up dependencies
 ./dependency-setup.sh
 
