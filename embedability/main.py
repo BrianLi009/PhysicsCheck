@@ -244,7 +244,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_f
     io.write('    with open(output_f, "a+") as f: \n')
     io.write('        f.write(g_sat) \n')
     io.write('if s.check() == unknown: \n')
-    index = index + 1
+    index = int(index) + 1
     io.write('    print ("next assignment") \n')
     io.write('    main(g_sat, order, index, using_subgraph, output_f) \n')
     exec (io.getvalue())
