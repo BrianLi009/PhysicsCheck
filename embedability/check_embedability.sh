@@ -12,33 +12,23 @@ Options:
 " && exit
 
 n=$1
+index=0
 
-set -e 
-count=0
+if test -f "embeddable.txt"
+then
+    echo "embeddable.txt exists, delete or rename the file to continue"
+    exit 0
+else
+    touch embeddable.txt
+fi
+
 while read line; do
-    index=0
-    while ! grep -q "  $count  " embed_result.txt; do
-        python3 main.py "$line" $n $count $index True
-        if ! grep -q "  $count  " embed_result.txt; then
-            timeout 10 python3 test.py
-        fi
-        index=$((index+1))
-    done
-    count=$((count+1))
+    python3 main.py "$line" $n $index True embeddable.txt
 done < $n.exhaust
-
-#output the ks system if there is any
-touch ks_solution_$n.exhaust
-while read p; do
-	if [[ $p == *"  sat"* ]]; then
-		index=$(echo $p | cut -d ' ' -f1)
-		sed "${index}q;d" $n.exhaust >> ks_solution_$n.exhaust	
-	fi
-done < embed_result.txt
 
 cd ..
 
-mv embedability/ks_solution_$n.exhaust .
-sort -u ks_solution_$n.exhaust -o ks_solution_uniq_$n.exhaust
-rm  ks_solution_$n.exhaust
+mv embedability/embeddable.txt .
+sort -u embeddable.txt -o ks_solution_uniq_$n.exhaust
+rm embeddable.txt
 
