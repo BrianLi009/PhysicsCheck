@@ -146,7 +146,6 @@ def filter_non_minimal_12():
 def verify(n):
     """n has to be either 10, 11, or 12"""
     if int(n) == 10:
-        print ("entered")
         filter_non_minimal_10()
     elif int(n) == 11:
         filter_non_minimal_11()

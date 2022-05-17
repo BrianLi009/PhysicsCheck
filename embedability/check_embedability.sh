@@ -23,12 +23,12 @@ else
 fi
 
 while read line; do
-    python3 main.py "$line" $n $index True embeddable.txt
+    python3 main.py "$line" $n $index True nonembeddable.txt embeddable.txt
 done < $n.exhaust
 
 cd ..
 
-mv embedability/embeddable.txt .
+cp embedability/embeddable.txt .
 sort -u embeddable.txt -o ks_solution_uniq_$n.exhaust
 rm embeddable.txt
 

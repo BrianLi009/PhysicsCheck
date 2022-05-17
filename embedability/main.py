@@ -171,11 +171,10 @@ def find_assignments(g):
     completed.sort(key=lambda f: (f.nvar, len(f.eqs), len(f.ortho)))
     return completed
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_f):
+def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
     io = StringIO()
     io.write('from helper import cross, dot, nested_cross \n')
     io.write('from z3 import * \n')
-    #io.write('import multiprocessing \n')
     io.write("s = Solver()\n")
     v_dict = {}
     for i in range(len(assignment.var)):
@@ -239,14 +238,14 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_f
         io.write('s.add(' + dot(v,w) + '== 0) \n')
     io.write('s.set("timeout", 10000) \n')
     io.write('if s.check() == unsat: \n')
-    io.write('    pass \n')
+    io.write('    with open(output_unsat_f, "a+") as f: \n')
+    io.write('        f.write(g_sat + "\\n") \n')
     io.write('if s.check() == sat: \n')
-    io.write('    with open(output_f, "a+") as f: \n')
-    io.write('        f.write(g_sat) \n')
+    io.write('    with open(output_sat_f, "a+") as f: \n')
+    io.write('        f.write(g_sat + "\\n") \n')
     io.write('if s.check() == unknown: \n')
-    index = int(index) + 1
-    io.write('    print ("next assignment") \n')
-    io.write('    main(g_sat, order, index, using_subgraph, output_f) \n')
+    io.write('    index = int(index) + 1 \n')
+    io.write('    main(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f) \n')
     exec (io.getvalue())
 
 #graph in sat labeling format
@@ -265,7 +264,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, index, using_subgraph, output_f):
+def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     edge_lst = maple_to_edges(g, int(order))
@@ -273,7 +272,8 @@ def main(g, order, index, using_subgraph, output_f):
     G.add_edges_from(edge_lst)
     degree_sequence = [d for n, d in G.degree()]
     if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
-        return
+        with open(output_sat_f, "a+") as f:
+            f.write(g + "\n")
     else:
         if using_subgraph == "True":
             print ("Checking minimum nonembeddable subgraph")
@@ -285,7 +285,8 @@ def main(g, order, index, using_subgraph, output_f):
                 min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
                 gm = isomorphism.GraphMatcher(G, min_g)
                 if gm.subgraph_is_monomorphic():
-                    return
+                    with open(output_sat_f, "a+") as f:
+                        f.write(g + "\n")
             #check if G contains a minimum nonembedabble subgraph
             print ("this graph does not contain known minimal nonembeddable subgraph")
             graph_dict = {}
@@ -293,16 +294,16 @@ def main(g, order, index, using_subgraph, output_f):
                 graph_dict[v] = (list(G.neighbors(v)))
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_f) #write the file
+            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
         else:
             graph_dict = {}
             for v in list(G.nodes()):
                 graph_dict[v] = (list(G.neighbors(v)))
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_f) #write the file
+            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
 
 #main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20 -21 -22 -23 -24 -25 -26 -27 28 -29 -30 -31 -32 -33 -34 35 36 -37 -38 -39 -40 -41 42 -43 -44 -45 -46 -47 -48 -49 50 -51 -52 -53 54 -55 -56 -57 -58 59 -60 -61 -62 -63 64 65 66 -67 -68 -69 70 71 -72 -73 74 -75 -76 -77 -78 -79 -80 81 -82 -83 -84 85 -86 -87 -88 -89 -90 -91 -92 -93 94 -95 96 -97 -98 -99 -100 -101 -102 -103 104 105 -106 107 -108 -109 -110 111 -112 -113 -114 115 -116 -117 -118 -119 -120 -121 122 123 124 -125 -126 -127 -128 -129 -130 -131 132 -133 -134 -135 -136 137 -138 -139 -140 -141 142 143 -144 -145 -146 -147 -148 -149 150 -151 -152 -153 154 -155 -156 -157 158 -159 -160 -161 -162 -163 164 -165 -166 -167 -168 -169 -170 -171 172 -173 -174 175 -176 -177 -178 -179 -180 -181 -182 -183 184 -185 -186 -187 -188 189 -190 191 -192 193 -194 -195 -196 -197 198 -199 -200 -201 -202 -203 -204 -205 -206 207 -208 209 -210 211 212 -213 -214 -215 -216 -217 -218 -219 -220 -221 -222 -223 -224 225 226 -227 -228 -229 -230 -231 0', 22, 0, False, "testing.txt")
