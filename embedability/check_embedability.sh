@@ -14,21 +14,15 @@ Options:
 n=$1
 index=0
 
-if test -f "embeddable.txt"
-then
-    echo "embeddable.txt exists, delete or rename the file to continue"
-    exit 0
-else
-    touch embeddable.txt
-fi
+touch embeddable$n.txt
 
 while read line; do
-    python3 main.py "$line" $n $index True nonembeddable.txt embeddable.txt
+    python3 main.py "$line" $n $index True nonembeddable_$n.txt embeddable_$n.txt
 done < $n.exhaust
 
 cd ..
 
-cp embedability/embeddable.txt .
-sort -u embeddable.txt -o ks_solution_uniq_$n.exhaust
-rm embeddable.txt
+cp embedability/embeddable$n.txt .
+sort -u embeddable$n.txt -o ks_solution_uniq_$n.exhaust
+rm embeddable$n.txt
 
