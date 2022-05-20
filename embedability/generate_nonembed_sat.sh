@@ -45,18 +45,18 @@ else
     cd -
 fi 
 
-if pip list | grep networkx
+if pip3 list | grep networkx
 then
     echo "networkx package installed"
 else 
-    pip install networkx
+    pip3 install networkx
 fi
 
-if pip list | grep z3-solver
+if pip3 list | grep z3-solver
 then
     echo "z3-solver package installed"
 else 
-    pip install z3-solver
+    pip3 install z3-solver
 fi
 
 if [ -f squarefree_$n.exhaust ]
