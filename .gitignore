@@ -1,6 +1,7 @@
 __pycache__/
 .ipynb_checkpoints
 cadical/
+maplesat-ks/
 embedability/nauty27r3
 dependency-tools/
 gen_cubes/cadical/
