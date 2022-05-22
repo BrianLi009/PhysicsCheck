@@ -14,10 +14,7 @@ if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
 then
     echo "maplesat-ks installed and binary file compiled"
 else
-    git clone git@github.com:curtisbright/maplesat-ks.git maplesat-ks
-    #git stash
     cd maplesat-ks
-    git checkout unembeddable-subgraph-check
     make
     cd -
 fi 
