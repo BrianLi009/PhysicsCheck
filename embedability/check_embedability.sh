@@ -14,7 +14,7 @@ Options:
 n=$1
 index=0
 
-touch embeddable$n.txt
+touch embeddable_$n.txt
 
 while read line; do
     python3 main.py "$line" $n $index True nonembeddable_$n.txt embeddable_$n.txt
@@ -22,7 +22,7 @@ done < $n.exhaust
 
 cd ..
 
-cp embedability/embeddable$n.txt .
-sort -u embeddable$n.txt -o ks_solution_uniq_$n.exhaust
-rm embeddable$n.txt
+cp embedability/embeddable_$n.txt .
+sort -u embeddable_$n.txt -o ks_solution_uniq_$n.exhaust
+rm embeddable_$n.txt
 

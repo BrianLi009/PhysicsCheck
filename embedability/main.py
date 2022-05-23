@@ -285,8 +285,9 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
                 min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
                 gm = isomorphism.GraphMatcher(G, min_g)
                 if gm.subgraph_is_monomorphic():
-                    with open(output_sat_f, "a+") as f:
+                    with open(output_unsat_f, "a+") as f:
                         f.write(g + "\n")
+                        return
             #check if G contains a minimum nonembedabble subgraph
             print ("this graph does not contain known minimal nonembeddable subgraph")
             graph_dict = {}

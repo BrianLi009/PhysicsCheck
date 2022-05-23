@@ -42,38 +42,53 @@ fi
 ./1-instance-generation.sh $n
 
 #simplify s times
-if [ -f constraints_$n.simp1 ]
+
+simp1=constraints_${n}_${o}_${s}.simp1
+if [ -f $simp1 ]
 then
-    echo "constraints_$n.simp1 already exist, skip simplification"
+    echo "$simp1 already exist, skip simplification"
 else
     ./simplification/simplify.sh constraints_$n $o $s
-    mv constraints_$n.simp constraints_$n.simp1
+    mv constraints_$n.simp $simp1
 fi
 
 #step 4: generate non canonical subgraph
-if [ -f constraints_$n.non_can.simp1 ]
+
+simp_non=constraints_$n.non_can_${o}_${s}.simp1
+if [ -f $simp_non ]
 then
-    echo "constraints_$n.non_can.simp1 already exist, skip adding non canoniacl subgraph"
+    echo "$simp_non already exist, skip adding non canoniacl subgraph"
 else
-    cat constraints_$n.simp1 >> constraints_$n.non_can.simp1
-    ./2-add-blocking-clauses.sh $n 12 constraints_$n.non_can.simp1
+    cat $simp1 >> $simp_non
+    ./2-add-blocking-clauses.sh $n 12 $simp_non
 fi
 
 #simplify s times again
-if [ -f constraints_$n.simp2 ]
+simp2=constraints_${n}_${o}_${s}.simp2
+if [ -f $simp2 ]
 then
     echo "constraints_$n.simp2 already exist, skip simplification"
 else
-    ./simplification/simplify.sh constraints_$n.non_can.simp1 $o $s
-    mv constraints_$n.non_can.simp1.simp constraints_$n.simp2
+    ./simplification/simplify.sh $simp_non $o $s
+    mv $simp_non.simp $simp2
+fi
+
+if [ -f $n.exhaust ]
+then
+    rm $n.exhaust
+fi
+
+if [ -f embedability/$n.exhaust ]
+then
+    rm embedability/$n.exhaust
 fi
 
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then 
-    ./3-cube-merge-solve.sh $n $r constraints_$n.simp2
+    ./3-cube-merge-solve.sh $n $r $simp2
 else
-    ./maplesat-ks/simp/maplesat_static constraints_$n.simp2 -no-pre -exhaustive=$n.exhaust -order=$n
+    ./maplesat-ks/simp/maplesat_static $simp2 -no-pre -exhaustive=$n.exhaust -order=$n
 fi
 
 #step 6: checking if there exist embeddable solution
