@@ -67,7 +67,7 @@ fi
 simp2=constraints_${n}_${o}_${s}.simp2
 if [ -f $simp2 ]
 then
-    echo "constraints_$n.simp2 already exist, skip simplification"
+    echo "$simp2 already exist, skip simplification"
 else
     ./simplification/simplify.sh $simp_non $o $s
     mv $simp_non.simp $simp2
