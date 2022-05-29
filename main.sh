@@ -91,6 +91,9 @@ else
     ./maplesat-ks/simp/maplesat_static $simp2 -no-pre -exhaustive=$n.exhaust -order=$n
 fi
 
+#step 5.5: verify all constraints are satisfied
+./verify-constraints.sh $n.exhaust $n
+
 #step 6: checking if there exist embeddable solution
 echo "checking embeddability of KS candidates using Z3..."
 ./4-check-embedability.sh $n
