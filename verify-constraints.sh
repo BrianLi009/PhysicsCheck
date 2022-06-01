@@ -6,6 +6,7 @@ touch not_verified_$n
 echo "verifying constraints for candidates..."
 
 while read line; do
+    echo "running..."
     if [ -f "non_colorable_check_$n" ]
     then
         rm non_colorable_check_$n
