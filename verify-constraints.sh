@@ -1,6 +1,7 @@
 file=$1
 n=$2
 
+touch not_verified_$n
 while read line; do
     if [ -f "non_colorable_check_$n" ]
     then
