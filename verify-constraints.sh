@@ -2,6 +2,9 @@ file=$1
 n=$2
 
 touch not_verified_$n
+
+echo "verifying constraints for candidates..."
+
 while read line; do
     if [ -f "non_colorable_check_$n" ]
     then
