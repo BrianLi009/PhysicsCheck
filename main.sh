@@ -17,6 +17,8 @@ Options:
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
 " && exit
 
+set -x
+
 #step 1: input parameters
 if [ -z "$1" ]
 then
@@ -25,15 +27,8 @@ then
 fi
 
 n=$1 #order
-o=$2 #option for simplification
-s=${3:-3} #number of time to simplify each to simplification is called or amount of seconds
-r=${4:-0} #number of variables to eliminate until the cubing terminates
-
-if [ "$o" != "s" ] && [ "$o" != "t" ]
-then
-    echo "Need simplification option, option "t" means simplification for t times, option "s" means simplification for a total of s seconds"
-    exit
-fi
+s=${2:-3} #number of time to simplify each to simplification is called or amount of seconds
+r=${3:-0} #number of variables to eliminate until the cubing terminates
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -43,18 +38,18 @@ fi
 
 #simplify s times
 
-simp1=constraints_${n}_${o}_${s}.simp1
+simp1=constraints_${n}_${s}.simp1
 if [ -f $simp1 ]
 then
     echo "$simp1 already exist, skip simplification"
 else
-    ./simplification/simplify.sh constraints_$n $o $s
+    ./simplification/simplify.sh constraints_$n $s
     mv constraints_$n.simp $simp1
 fi
 
 #step 4: generate non canonical subgraph
 
-simp_non=constraints_$n.non_can_${o}_${s}.simp1
+simp_non=constraints_$n.non_can_${s}.simp1
 if [ -f $simp_non ]
 then
     echo "$simp_non already exist, skip adding non canoniacl subgraph"
@@ -63,13 +58,13 @@ else
     ./2-add-blocking-clauses.sh $n 12 $simp_non
 fi
 
-#simplify s times again
-simp2=constraints_${n}_${o}_${s}.simp2
+#simplify s seconds again
+simp2=constraints_${n}_${s}.simp2
 if [ -f $simp2 ]
 then
     echo "$simp2 already exist, skip simplification"
 else
-    ./simplification/simplify.sh $simp_non $o $s
+    ./simplification/simplify.sh $simp_non $s
     mv $simp_non.simp $simp2
 fi
 

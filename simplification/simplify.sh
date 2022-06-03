@@ -8,8 +8,9 @@ then
 fi
 
 f=$1
-o=$2 
-m=$3
+m=$2
+
+set -x
 
 # Directory to log simplification output
 mkdir -p log
@@ -17,41 +18,26 @@ mkdir -p log
 # Directory for simplified output
 mkdir -p simp
 
-# Simplify m times
-if [ $o = "t" ]
-then
-	echo "simplifying for $m times"
-	./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c 200000 | tee log/"$f".simp1
-	for i in $(seq 1 $((m-1)))
-	do
-		./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 | tee log/"$f".simp$((i+1))
-	done
-elif [ $o = "s" ]
-then
-	echo "simplifying for $m seconds"
-	i=1
-	./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c 200000 -t $m | tee log/"$f".simp1
-	str=$(less log/"$f".simp1 | grep "total process time since initialization:")
-	time_used=$(echo $str | awk -F ' ' '{print $7; exit;}')
-	while [ $(echo "$time_used < $m" | bc) -ne 0 ]
-	do
-		time_left=$(echo $m-$time_used | bc)
-		time_left=$(printf "%.0f\n" "$time_left")
-		./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 -t $time_left | tee log/"$f".simp$((i+1))
-		str=$(less log/"$f".simp$((i+1)) | grep "total process time since initialization:")
-		time_used_2=$(echo $str | awk -F ' ' '{print $7; exit;}')
-		time_used=$(echo $time_used+$time_used_2 | bc)
-		((i+=1))
-	done
-else
-	echo "invalid command."
-fi
+# Simplify m seconds
+echo "simplifying for $m seconds"
+i=1
+./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c 200000 -t $m | tee log/"$f".simp1
+str=$(less log/"$f".simp1 | grep "total process time since initialization:")
+time_used=$(echo $str | awk -F ' ' '{print $7; exit;}')
+while [ $(echo "$time_used < $m" | bc) -ne 0 ]
+do
+	time_left=$(echo $m-$time_used | bc)
+	time_left=$(printf "%.0f\n" "$time_left")
+	./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 -t $time_left | tee log/"$f".simp$((i+1))
+	str=$(less log/"$f".simp$((i+1)) | grep "total process time since initialization:")
+	time_used_2=$(echo $str | awk -F ' ' '{print $7; exit;}')
+	time_used=$(echo $time_used+$time_used_2+1 | bc)
+	((i+=1))
+done
 
-if [ $o = "s" ]
-then
-	m=$(echo ls "simp/$f".simp* | tail -1 | egrep -o [0-9]+ | cut -f1 | tail -1)
-	echo "$m"
-fi
+m=$(echo ls "simp/$f".simp* | tail -1 | egrep -o [0-9]+ | cut -f1 | tail -1)
+echo "$m"
+
 # Number of variables and lines in the final simplified instance
 numvars=$(head -n 1 simp/"$f".simp"$m" | cut -d' ' -f3)
 numlines=$(head -n 1 simp/"$f".simp"$m" | cut -d' ' -f4)
