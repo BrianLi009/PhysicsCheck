@@ -8,16 +8,15 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh n o s r
+    ./main.sh n t r s b
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <o>: two options here, option "t" means simplification for t times, option "s" means simplification for a total of s seconds
-    <s>: number of times(t) to simplify the instance using CaDiCaL with default value 3 / or by total number of seconds (s)
+    <t>: total number of seconds (s)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
+    <s>: option for simplifiation, takes in argument 1 (before), 2 (after), 3(both)
+    <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
 " && exit
-
-set -x
 
 #step 1: input parameters
 if [ -z "$1" ]
@@ -26,9 +25,13 @@ then
     exit
 fi
 
+set -x
+
 n=$1 #order
-s=${2:-3} #number of time to simplify each to simplification is called or amount of seconds
-r=${3:-0} #number of variables to eliminate until the cubing terminates
+t=${2:-3} #number of time to simplify each to simplification is called or amount of seconds
+s=${3:-3} #by default we simplify twice, before and after noncanonical blocking clauses
+b=${4:-2} #by default we generate noncanonical blocking clauses in real time
+r=${5:-0} #number of variables to eliminate until the cubing terminates
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -36,36 +39,72 @@ r=${3:-0} #number of variables to eliminate until the cubing terminates
 #step 3: generate instances
 ./1-instance-generation.sh $n
 
-#simplify s times
+simp1=constraints_${n}_${t}_${s}_${b}.simp1
 
-simp1=constraints_${n}_${s}.simp1
-if [ -f $simp1 ]
+if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
-    echo "$simp1 already exist, skip simplification"
-else
-    ./simplification/simplify.sh constraints_$n $s
-    mv constraints_$n.simp $simp1
+    if [ -f $simp1 ]
+    then
+        echo "$simp1 already exist, skip simplification"
+    else
+        ./simplification/simplify.sh constraints_$n $t
+        mv constraints_$n.simp $simp1
+    fi
+fi
+if [ "$s" -eq 2 ]
+then
+    echo "skipping the first simplification"
+    mv constraints_$n $simp1
 fi
 
 #step 4: generate non canonical subgraph
 
-simp_non=constraints_$n.non_can_${s}.simp1
-if [ -f $simp_non ]
+simp_non=constraints_$n.non_can_${t}_${s}_${b}.simp1
+if [ "$b" -eq 2 ]
 then
-    echo "$simp_non already exist, skip adding non canoniacl subgraph"
-else
+    if [ -f $simp_non ]
+    then
+        echo "$simp_non already exist, skip adding non canonical subgraph"
+    else
+        cat $simp1 >> $simp_non
+        ./2-add-blocking-clauses.sh $n 12 $simp_non
+    fi
+fi
+if [ "$b" -eq 1 ]
+then
+    if [ -f $simp_non ]
+    then
+        echo "$simp_non already exist, skip adding non canoniacl subgraph"
+    else
+        cat $simp1 >> $simp_non
+        for file in non_can/*.noncanonical
+        do
+            cat $file >> $simp_non
+            lines=$(wc -l < "$simp_non")
+            sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "$simp_non"
+        done
+    fi
+fi
+if [ "$b" -eq 3 ]
+then
     cat $simp1 >> $simp_non
-    ./2-add-blocking-clauses.sh $n 12 $simp_non
 fi
 
-#simplify s seconds again
-simp2=constraints_${n}_${s}.simp2
-if [ -f $simp2 ]
+simp2=constraints_${n}_${t}_${s}_${b}.simp2
+if [ "$s" -eq 2 ] || [ "$s" -eq 3 ]
 then
-    echo "$simp2 already exist, skip simplification"
-else
-    ./simplification/simplify.sh $simp_non $s
-    mv $simp_non.simp $simp2
+    if [ -f $simp2 ]
+    then
+        echo "$simp2 already exist, skip simplification"
+    else
+        ./simplification/simplify.sh $simp_non $t
+        mv $simp_non.simp $simp2
+    fi
+fi
+if [ "$s" -eq 1 ]
+then
+    echo "skipping the second simplification"
+    mv $simp_non $simp2
 fi
 
 if [ -f $n.exhaust ]
