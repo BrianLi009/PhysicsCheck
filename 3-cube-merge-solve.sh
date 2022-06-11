@@ -20,25 +20,25 @@ f=$3 #instance file name
 c=$4 #the -s option in cubing
 p=$5 #the -p option in cubing
 
-if [ "c" -eq 1 ] && [ "p" -eq 1 ]
+if [ "$c" -eq 1 ] && [ "$p" -eq 1 ]
 then
      echo "both -s, -p enabled"
     ./gen_cubes/cube.sh -p -s $n $f $r #cube till r varaibles are eliminated
 fi
 
-if [ "c" -eq 1 ] && [ "p" -eq 0 ]
+if [ "$c" -eq 1 ] && [ "$p" -eq 0 ]
 then
      echo "-s enabled"
     ./gen_cubes/cube.sh -s $n $f $r #cube till r varaibles are eliminated
 fi
 
-if [ "c" -eq 0 ] && [ "p" -eq 0 ]
+if [ "$c" -eq 0 ] && [ "$p" -eq 0 ]
 then
      echo "-p enabled"
     ./gen_cubes/cube.sh -p $n $f $r #cube till r varaibles are eliminated
 fi
 
-if [ "c" -eq 0 ] && [ "p" -eq 0 ]
+if [ "$c" -eq 0 ] && [ "$p" -eq 0 ]
 then
      echo "both -s, -p disabled"
     ./gen_cubes/cube.sh $n $f $r #cube till r varaibles are eliminated
