@@ -13,9 +13,11 @@ Usage:
 Options:
     <n>: the order of the instance/number of vertices in the graph
     <t>: total number of seconds (s)
-    <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
     <s>: option for simplifiation, takes in argument 1 (before), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
+    <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
+    <c>: -s apply CaDiCaL on the instances simplified on the previous depth, takes in 1 (on), 0 (off)
+    <p>: cubing in parallel, 1 (on), 0 (off)
 " && exit
 
 #step 1: input parameters
@@ -32,6 +34,9 @@ t=${2:-3} #number of time to simplify each to simplification is called or amount
 s=${3:-3} #by default we simplify twice, before and after noncanonical blocking clauses
 b=${4:-2} #by default we generate noncanonical blocking clauses in real time
 r=${5:-0} #number of variables to eliminate until the cubing terminates
+c=${6:-1} #-s apply CaDiCaL on the instances simplified on the previous depth
+p=${7:-0} #default turn off parallel cubing
+
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -120,7 +125,7 @@ fi
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then 
-    ./3-cube-merge-solve.sh $n $r $simp2
+    ./3-cube-merge-solve.sh $n $r $simp2 $c $p
 else
     ./maplesat-ks/simp/maplesat_static $simp2 -no-pre -exhaustive=$n.exhaust -order=$n
 fi
