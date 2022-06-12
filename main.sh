@@ -59,7 +59,7 @@ fi
 if [ "$s" -eq 2 ]
 then
     echo "skipping the first simplification"
-    mv constraints_$n $simp1
+    cp constraints_$n $simp1
 fi
 
 #step 4: generate non canonical subgraph
@@ -109,7 +109,7 @@ fi
 if [ "$s" -eq 1 ]
 then
     echo "skipping the second simplification"
-    mv $simp_non $simp2
+    cp $simp_non $simp2
 fi
 
 if [ -f $n.exhaust ]
