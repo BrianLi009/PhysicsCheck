@@ -1,6 +1,5 @@
 import sys
 import networkx as nx
-import subprocess
 from networkx.algorithms import isomorphism
 import itertools
 sys.path.insert(0, './gen_instance')
@@ -79,7 +78,6 @@ def maple_to_edges(input, v):
 
 def verify(g, n):
     edge_lst = maple_to_edges(g, int(n))
-    
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     if not check_minimum_degree(G) or not check_squarefree(G) or not check_triangle(G):

@@ -131,7 +131,7 @@ else
 fi
 
 #step 5.5: verify all constraints are satisfied
-./verify-constraints.sh $n.exhaust $n
+./verify.sh.sh $n.exhaust $n
 
 #step 6: checking if there exist embeddable solution
 echo "checking embeddability of KS candidates using Z3..."
