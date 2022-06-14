@@ -32,7 +32,7 @@ then
     ./gen_cubes/cube.sh -s $n $f $r #cube till r varaibles are eliminated
 fi
 
-if [ "$c" -eq 0 ] && [ "$p" -eq 0 ]
+if [ "$c" -eq 0 ] && [ "$p" -eq 1 ]
 then
      echo "-p enabled"
     ./gen_cubes/cube.sh -p $n $f $r #cube till r varaibles are eliminated
