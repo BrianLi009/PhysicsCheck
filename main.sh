@@ -103,7 +103,7 @@ then
         echo "$simp2 already exist, skip simplification"
     else
         ./simplification/simplify.sh $simp_non $t
-        mv $simp_non.simp $simp2
+        cp $simp_non.simp $simp2
     fi
 fi
 if [ "$s" -eq 1 ]
