@@ -71,7 +71,7 @@ then
     then
         echo "$simp_non already exist, skip adding non canonical subgraph"
     else
-        cat $simp1 >> $simp_non
+        cp $simp1 >> $simp_non
         ./2-add-blocking-clauses.sh $n 12 $simp_non
     fi
 fi
@@ -81,7 +81,7 @@ then
     then
         echo "$simp_non already exist, skip adding non canoniacl subgraph"
     else
-        cat $simp1 >> $simp_non
+        cp $simp1 $simp_non
         for file in non_can/*.noncanonical
         do
             cat $file >> $simp_non
@@ -92,7 +92,7 @@ then
 fi
 if [ "$b" -eq 3 ]
 then
-    cat $simp1 >> $simp_non
+    cp $simp1 $simp_non
 fi
 
 simp2=constraints_${n}_${t}_${s}_${b}.simp2
