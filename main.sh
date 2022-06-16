@@ -45,15 +45,15 @@ p=${7:-0} #default turn off parallel cubing
 ./1-instance-generation.sh $n
 
 simp1=constraints_${n}_${t}_${s}_${b}.simp1
-
+cp constraints_$n constraints_${n}_${t}_${s}_${b}
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
     if [ -f $simp1 ]
     then
         echo "$simp1 already exist, skip simplification"
     else
-        ./simplification/simplify.sh constraints_$n $t
-        mv constraints_$n.simp $simp1
+        ./simplification/simplify.sh constraints_${n}_${t}_${s}_${b} $t
+        mv constraints_${n}_${t}_${s}_${b}.simp $simp1
     fi
 fi
 if [ "$s" -eq 2 ]
