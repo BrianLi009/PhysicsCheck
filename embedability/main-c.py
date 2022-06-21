@@ -10,7 +10,7 @@ from collections import Counter
 
 from networkx.algorithms.isomorphism.isomorph import is_isomorphic
 from networkx.generators.classic import cycle_graph
-from helper import cross, dot, nested_cross
+from helper import *
 
 import sys, getopt
 
@@ -173,14 +173,14 @@ def find_assignments(g):
 
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
     io = StringIO()
-    io.write('from helper import cross, dot, nested_cross \n')
+    io.write('from helper import * \n')
     io.write('from z3 import * \n')
     io.write("s = Solver()\n")
     v_dict = {}
     for i in range(len(assignment.var)):
-        io.write( 'v'+str(i)+'c1 = Real("v'+ str(i) + 'c1")\n')
-        io.write( 'v'+str(i)+'c2 = Real("v'+ str(i) + 'c2")\n')
-        io.write( 'v'+str(i)+'c3 = Real("v'+ str(i) + 'c3")\n')
+        io.write( 'v'+str(i)+'c1 = Complex("v'+ str(i) + 'c1")\n')
+        io.write( 'v'+str(i)+'c2 = Complex("v'+ str(i) + 'c2")\n')
+        io.write( 'v'+str(i)+'c3 = Complex("v'+ str(i) + 'c3")\n')
         io.write( 'v' + str(i) + '= (' + 'v' + str(i) + 'c1, v' + str(i) + 'c2, v' + str(i) + 'c3)\n')
         v_dict[i] = ('v'+str(i)+'c1', 'v'+str(i)+'c2', 'v'+str(i)+'c3') #{0: (v0c1, v0c2, v0c3)}
     io.write('s.add('+v_dict[0][0] +'== 1) \n')
@@ -236,8 +236,9 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
         v = nested_cross(dot_relation[0])
         w = nested_cross(dot_relation[1])
         io.write('s.add(' + dot(v,w) + '== 0) \n')
-    io.write('s.set("timeout", 10000) \n')
-    io.write('if s.check() == unsat: \n')
+    io.write('print (s.check()) \n')
+    io.write('print (s.model())')
+    """io.write('if s.check() == unsat: \n')
     io.write('    with open(output_unsat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
     io.write('if s.check() == sat: \n')
@@ -245,7 +246,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     io.write('        f.write(g_sat + "\\n") \n')
     io.write('if s.check() == unknown: \n')
     io.write('    index = int(index) + 1 \n')
-    io.write('    main(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f) \n')
+    io.write('    main(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f) \n')"""
     exec (io.getvalue())
 
 #graph in sat labeling format
@@ -304,5 +305,7 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
             assignment = assignments[int(index)]
             determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
 
-if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+"""if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])"""
+
+main('a -1 -2 -3 -4 -5 -6 -7 -8 9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 -21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 43 -44 -45 0', 10, 0, False, "testing.txt", "testing2.txt")

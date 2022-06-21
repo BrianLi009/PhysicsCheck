@@ -71,7 +71,7 @@ then
     then
         echo "$simp_non already exist, skip adding non canonical subgraph"
     else
-        cp $simp1 >> $simp_non
+        cp $simp1 $simp_non
         ./2-add-blocking-clauses.sh $n 12 $simp_non
     fi
 fi
