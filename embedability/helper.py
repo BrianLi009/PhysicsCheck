@@ -5,6 +5,7 @@ def cross(v,w):
 
 def dot(v,w):
     return (v+'[0]'+'*'+w+'[0]' + '+' + v+'[1]'+'*'+w+'[1]' + '+' + v +'[2]'+'*'+w+'[2]')
+    #take conjugation of w
 
 def nested_cross(x):
     if isinstance(x, tuple):

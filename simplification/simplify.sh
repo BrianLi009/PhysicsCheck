@@ -10,8 +10,6 @@ fi
 f=$1
 m=$2
 
-set -x
-
 # Directory to log simplification output
 mkdir -p log
 
@@ -35,7 +33,7 @@ do
 	((i+=1))
 done
 
-m=$(echo ls "simp/$f".simp* | tail -1 | egrep -o [0-9]+ | cut -f1 | tail -1)
+m=$i
 echo "$m"
 
 # Number of variables and lines in the final simplified instance
