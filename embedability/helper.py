@@ -1,11 +1,16 @@
 from z3 import * 
 
 def cross(v,w):
-    return (v[1]*w[2]-v[2]*w[1], v[2]*w[0]-v[0]*w[2], v[0]*w[1]-v[1]*w[0])
+    return ((v[1]*w[2]-v[2]*w[1]).conjugate(), v[2]*w[0]-v[0]*w[2].conjugate(), v[0]*w[1]-v[1]*w[0].conjugate())
+
 
 def dot(v,w):
+    return (v+'[0]'+'*'+w+'[0]' + '.conjugate()' + '+' + v+'[1]'+'*'+w+'[1]' + '.conjugate()' + '+' + v +'[2]'+'*'+w+'[2]' + '.conjugate()')
+
+"""
+def dot(v,w):
     return (v+'[0]'+'*'+w+'[0]' + '+' + v+'[1]'+'*'+w+'[1]' + '+' + v +'[2]'+'*'+w+'[2]')
-    #take conjugation of w
+"""
 
 def nested_cross(x):
     if isinstance(x, tuple):
@@ -58,6 +63,9 @@ class ComplexExpr:
         other = _to_complex(other)
         return ComplexExpr(other.r*self.r - other.i*self.i, other.i*self.r + other.r*self.i)
 
+    def conjugate(self):
+        return ComplexExpr(self.r, -self.i)
+
     def inv(self):
         den = self.r*self.r + self.i*self.i
         return ComplexExpr(self.r/den, -self.i/den)
@@ -99,4 +107,3 @@ def Complex(a):
 
 def evaluate_cexpr(m, e):
     return ComplexExpr(m[e.r], m[e.i])
-
