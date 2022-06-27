@@ -1,29 +1,28 @@
 from z3 import * 
 
+"""
+#Complex Functions
 def cross(v,w):
     return ((v[1]*w[2]-v[2]*w[1]).conjugate(), v[2]*w[0]-v[0]*w[2].conjugate(), v[0]*w[1]-v[1]*w[0].conjugate())
 
 
 def dot(v,w):
     return (v+'[0]'+'*'+w+'[0]' + '.conjugate()' + '+' + v+'[1]'+'*'+w+'[1]' + '.conjugate()' + '+' + v +'[2]'+'*'+w+'[2]' + '.conjugate()')
-
 """
+
+#Real Functions
+
+def cross(v,w):
+    return ((v[1]*w[2]-v[2]*w[1]), v[2]*w[0]-v[0]*w[2], v[0]*w[1]-v[1]*w[0])
+
 def dot(v,w):
     return (v+'[0]'+'*'+w+'[0]' + '+' + v+'[1]'+'*'+w+'[1]' + '+' + v +'[2]'+'*'+w+'[2]')
-"""
 
 def nested_cross(x):
     if isinstance(x, tuple):
         return 'cross({},{})'.format(*map(nested_cross, x))
     str = 'v{}'.format(x)
     return str
-
-"""def complex_mult(a,b,c,d):
-    #encode a+bi * c+di = (ac-bd, ad+bc)
-    return (ac-bd, ad+bc)
-
-def complex_minus(a,b,c,d):
-    return (a-c, b-d)"""
 
 def _to_complex(a):
     if isinstance(a, ComplexExpr):
