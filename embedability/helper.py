@@ -1,22 +1,28 @@
 from z3 import * 
 
-"""
 #Complex Functions
-def cross(v,w):
-    return ((v[1]*w[2]-v[2]*w[1]).conjugate(), v[2]*w[0]-v[0]*w[2].conjugate(), v[0]*w[1]-v[1]*w[0].conjugate())
+def crossc(v,w):
+    return ((v[1]*w[2]-v[2]*w[1]).conjugate(), (v[2]*w[0]-v[0]*w[2]).conjugate(), (v[0]*w[1]-v[1]*w[0]).conjugate())
 
-
-def dot(v,w):
+def dotc(v,w):
     return (v+'[0]'+'*'+w+'[0]' + '.conjugate()' + '+' + v+'[1]'+'*'+w+'[1]' + '.conjugate()' + '+' + v +'[2]'+'*'+w+'[2]' + '.conjugate()')
-"""
+
 
 #Real Functions
 
 def cross(v,w):
     return ((v[1]*w[2]-v[2]*w[1]), v[2]*w[0]-v[0]*w[2], v[0]*w[1]-v[1]*w[0])
 
+#define new variable, pass 
+
 def dot(v,w):
     return (v+'[0]'+'*'+w+'[0]' + '+' + v+'[1]'+'*'+w+'[1]' + '+' + v +'[2]'+'*'+w+'[2]')
+
+def nested_crossc(x):
+    if isinstance(x, tuple):
+        return 'crossc({},{})'.format(*map(nested_crossc, x))
+    str = 'v{}'.format(x)
+    return str
 
 def nested_cross(x):
     if isinstance(x, tuple):
