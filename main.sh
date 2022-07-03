@@ -52,7 +52,7 @@ then
     then
         echo "$simp1 already exist, skip simplification"
     else
-        ./simplification/simplify.sh constraints_${n}_${t}_${s}_${b} $t
+        ./simplification/simplify.sh constraints_${n}_${t}_${s}_${b} $n $t
         mv constraints_${n}_${t}_${s}_${b}.simp $simp1
     fi
 fi
@@ -102,7 +102,7 @@ then
     then
         echo "$simp2 already exist, skip simplification"
     else
-        ./simplification/simplify.sh $simp_non $t
+        ./simplification/simplify.sh $simp_non $n $t
         cp $simp_non.simp $simp2
     fi
 fi
@@ -131,7 +131,7 @@ else
 fi
 
 #step 5.5: verify all constraints are satisfied
-./verify.sh.sh $n.exhaust $n
+./verify.sh $n.exhaust $n
 
 #step 6: checking if there exist embeddable solution
 echo "checking embeddability of KS candidates using Z3..."

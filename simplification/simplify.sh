@@ -3,12 +3,13 @@
 # Ensure parameters are specified on the command-line
 if [ -z "$2" ]
 then
-	echo "Need filename, option (t/s), and the number of times to run the simplification/total times to simplify"
+	echo "Need filename, order, and the number of times to run the simplification/total times to simplify"
 	exit
 fi
 
 f=$1
-m=$2
+o=$2
+m=$3
 
 # Directory to log simplification output
 mkdir -p log
@@ -42,9 +43,12 @@ numlines=$(head -n 1 simp/"$f".simp"$m" | cut -d' ' -f4)
 
 # Lines in reconstruction stack
 extlines_total=0
+
+e=$((o*(o-1)/2))
 for i in $(seq 1 "$m")
 do
-	extlines_i=$(wc -l simp/"$f".ext"$i" | cut -d' ' -f1)
+	extlines_i=$(awk "sqrt(\$(NF-1)*\$(NF-1))<=$e" "simp/"$f".ext$i" | wc -l | cut -d' ' -f1)
+	echo $extlines_i
 	extlines_total=$((extlines_total+extlines_i))
 done
 
@@ -56,6 +60,6 @@ echo "p cnf $numvars $newlines" > "$f".simp
 tail simp/"$f".simp"$m" -n +2 >> "$f".simp
 for i in $(seq 1 "$m")
 do
-	cat simp/"$f".ext"$i" >> "$f".simp
+	awk "sqrt(\$(NF-1)*\$(NF-1))<=$e" "simp/"$f".ext$i" | sed 's/ 0.*/ 0/' >> "$f".simp
 done
 sed -i 's/ 0.*/ 0/' "$f".simp

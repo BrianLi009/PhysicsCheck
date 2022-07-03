@@ -27,6 +27,7 @@ else
     ./generate_nonembed_sat.sh 10
     ./generate_nonembed_sat.sh 11
     ./generate_nonembed_sat.sh 12
+    #need to append all output file together as min_nonembed_graph_10-12.txt
     #this part to be finished
 fi 
 ./check_embedability.sh $n

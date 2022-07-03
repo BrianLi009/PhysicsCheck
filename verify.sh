@@ -9,7 +9,7 @@ while read line; do
     then
         rm non_colorable_check_$n
     fi
-    python3 verify.sh.py "$line" $n
+    python3 verify.py "$line" $n
     if cadical/build/cadical non_colorable_check_$n | grep -q "exit 10"
     then
         echo "$line" >> not_verified_$n

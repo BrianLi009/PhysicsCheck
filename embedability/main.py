@@ -244,7 +244,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
         v = nested_cross(dot_relation[0])
         w = nested_cross(dot_relation[1])
         io.write('s.add(' + dot(v,w) + '== 0) \n')
-    #io.write('s.set("timeout", 10000) \n')
     io.write('s.set("timeout", 10000) \n')
     io.write('if s.check() == unknown: \n')
     io.write('    index = int(index) + 1 \n')
@@ -264,8 +263,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     io.write('else: \n')
     io.write('  print (s.check())')
     #io.write('print (s.model())')
-    with open('file.py', mode='w') as f:
-        print(io.getvalue(), file=f)
+    """with open('file.py', mode='w') as f:
+        print(io.getvalue(), file=f)"""
     exec (io.getvalue())
 
 #graph in sat labeling format
@@ -323,11 +322,11 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
             determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
-"""
-if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])"""
 
-main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 -21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 43 -44 -45 0', 10, 0, False, "testing.txt", "testing2.txt")
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+
+#main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 -21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 43 -44 -45 0', 10, 0, False, "testing.txt", "testing2.txt")
 
 #Express each vertex variable explicitely in z3
 #don't import dot, nested-cross
