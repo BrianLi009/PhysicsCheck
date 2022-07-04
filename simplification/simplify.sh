@@ -3,7 +3,7 @@
 # Ensure parameters are specified on the command-line
 if [ -z "$2" ]
 then
-	echo "Need filename, order, and the number of times to run the simplification/total times to simplify"
+	echo "Need filename, order, and the time in seconds for which to simplify"
 	exit
 fi
 
@@ -48,7 +48,6 @@ e=$((o*(o-1)/2))
 for i in $(seq 1 "$m")
 do
 	extlines_i=$(awk "sqrt(\$(NF-1)*\$(NF-1))<=$e" "simp/"$f".ext$i" | wc -l | cut -d' ' -f1)
-	echo $extlines_i
 	extlines_total=$((extlines_total+extlines_i))
 done
 
