@@ -12,7 +12,7 @@ Usage:
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <t>: total number of seconds (s)
+    <t>: time in seconds for which to simplify each time CaDiCal is called
     <s>: option for simplifiation, takes in argument 1 (before), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
@@ -30,7 +30,7 @@ fi
 set -x
 
 n=$1 #order
-t=${2:-3} #number of time to simplify each to simplification is called or amount of seconds
+t=${2:-3} #time in seconds for which to simplify each time CaDiCal is called
 s=${3:-3} #by default we simplify twice, before and after noncanonical blocking clauses
 b=${4:-2} #by default we generate noncanonical blocking clauses in real time
 r=${5:-0} #number of variables to eliminate until the cubing terminates
