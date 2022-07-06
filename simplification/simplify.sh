@@ -23,9 +23,9 @@ i=1
 ./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -t $m | tee log/"$f".simp1
 str=$(less log/"$f".simp1 | grep "total process time since initialization:")
 time_used=$(echo $str | awk -F ' ' '{print $7; exit;}')
+echo "$time_used seconds used for simplification"
 time_left=$(echo $m-$time_used | bc)
 time_left=$(printf "%.0f\n" "$time_left")
-echo "$time_left seconds used for simplification"
 while [ $(echo "$time_used < $m" | bc) -ne 0 ] && [ "$time_left" != 0 ]
 do
 	time_left=$(echo $m-$time_used | bc)
@@ -35,7 +35,7 @@ do
 	time_used_2=$(echo $str | awk -F ' ' '{print $7; exit;}')
 	time_used=$(echo $time_used+$time_used_2+1 | bc)
 	((i+=1))
-	echo "$time_left seconds used for simplification"
+	echo "$time_used seconds used for simplification"
 done
 
 m=$i
