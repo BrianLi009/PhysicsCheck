@@ -27,7 +27,7 @@ then
     exit
 fi
 
-set -x
+#set -x
 
 n=$1 #order
 t=${2:-3} #time in seconds for which to simplify each time CaDiCal is called
