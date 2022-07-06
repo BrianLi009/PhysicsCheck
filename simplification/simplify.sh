@@ -23,10 +23,10 @@ i=1
 ./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -t $m | tee log/"$f".simp1
 str=$(less log/"$f".simp1 | grep "total process time since initialization:")
 time_used=$(echo $str | awk -F ' ' '{print $7; exit;}')
-while [ $(echo "$time_used < $m" | bc) -ne 0 ]
-do
-	time_left=$(echo $m-$time_used | bc)
+time_left=$(echo $m-$time_used | bc)
 	time_left=$(printf "%.0f\n" "$time_left")
+while [ $(echo "$time_used < $m" | bc) -ne 0 ] && [ "$time_left" != 0 ]
+do
 	./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -t $time_left | tee log/"$f".simp$((i+1))
 	str=$(less log/"$f".simp$((i+1)) | grep "total process time since initialization:")
 	time_used_2=$(echo $str | awk -F ' ' '{print $7; exit;}')
