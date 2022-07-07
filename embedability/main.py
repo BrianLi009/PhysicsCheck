@@ -172,8 +172,8 @@ def find_assignments(g):
     return completed
 
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
-    print (g)
-    print (assignment)
+    #print (g)
+    #print (assignment)
     io = StringIO()
     io.write('from helper import cross \n')
     io.write('from z3 import * \n')
@@ -254,14 +254,15 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     io.write('if s.check() == sat: \n')
     io.write('    with open(output_sat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
-    io.write('    m = s.model() \n')
-    for i in range(len(assignment.assign)):
-        io.write("    print ( " + " '" + "vertex " + str(i) + ":' )" + "\n")
-        io.write('    print (m.evaluate(ver' + str(i) + '[0]))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[1]))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')
+    #io.write('    m = s.model() \n')
+    #for i in range(len(assignment.assign)):
+    #    io.write("    print ( " + " '" + "vertex " + str(i) + ":' )" + "\n")
+    #    io.write('    print (m.evaluate(ver' + str(i) + '[0]))' + '\n')
+    #    io.write('    print (m.evaluate(ver' + str(i) + '[1]))' + '\n')
+    #    io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')
     io.write('else: \n')
-    io.write('  print (s.check())')
+    #Uncomment this part above, if you want z3 to print out the solution after sat
+    io.write('    print (s.check())')
     #io.write('print (s.model())')
     """with open('file.py', mode='w') as f:
         print(io.getvalue(), file=f)"""
@@ -286,11 +287,13 @@ def maple_to_edges(input, v):
 def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
+    order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     degree_sequence = [d for n, d in G.degree()]
-    if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
+    if nx.is_empty(G) or (len(degree_sequence) < order) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
+        #graph is either empty, disconnected, or has a vertex of degree 1. 
         with open(output_sat_f, "a+") as f:
             f.write(g + "\n")
     else:
