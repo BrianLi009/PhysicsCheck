@@ -5,7 +5,7 @@ def mindegree(n, edge_dict):
     vertices_lst = list(range(1, n+1))
     if n <= 3:
         for v in vertices_lst:
-            constraint = constraint + [[-v]]
+            constraint.append([-v])
     else:
         for v in vertices_lst:
             #pick a vertex
@@ -17,5 +17,5 @@ def mindegree(n, edge_dict):
                 for v_2 in choice:
                     edge = tuple(sorted((v, v_2)))
                     constraint_1.append(edge_dict[edge])
-                constraint = constraint + [constraint_1]
+                constraint.append(constraint_1)
     return constraint

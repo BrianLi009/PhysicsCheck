@@ -22,11 +22,14 @@ def triangle(n, edge_dict, tri_dict):
         constraint_2 = [edge_dict[edge_2], -tri_dict[triangle]]
         constraint_3 = [edge_dict[edge_3], -tri_dict[triangle]]
         constraint_4 = [-edge_dict[edge_1], -edge_dict[edge_2], -edge_dict[edge_3], tri_dict[triangle]]
-        constraint = constraint + [constraint_1, constraint_2, constraint_3, constraint_4]
+        constraint.append(constraint_1)
+        constraint.append(constraint_2)
+        constraint.append(constraint_3)
+        constraint.append(constraint_4)
     for vertex in vertices_lst:
         all_in = []
         for triangle in list(itertools.combinations(vertices_lst, 3)):
             if vertex in triangle:
                 all_in.append(tri_dict[triangle])   #at least one triangle variable that includes this particular vertex is True
-        constraint = constraint + [all_in]
+        constraint.append(all_in)
     return constraint
