@@ -191,12 +191,13 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             io.write('ver'+str(i)+'='+nested_cross((assignment.assign[i][0],assignment.assign[i][1])) + '\n')
         else:
             io.write('ver'+str(i)+'=v'+str(assignment.assign[i])+'\n')
-    io.write('s.add('+v_dict[0][0] +'== 1) \n')
-    io.write('s.add('+v_dict[0][1] +'== 0) \n')
-    io.write('s.add('+v_dict[0][2] +'== 0) \n')
-    io.write('s.add('+v_dict[1][0] +'== 0) \n')
-    io.write('s.add('+v_dict[1][1] +'== 1) \n')
-    io.write('s.add('+v_dict[1][2] +'== 0) \n')
+        io.write( 's.add('+'ver'+str(i)+'[2]' +' >= 0) \n')
+    io.write('s.add('+v_dict[0][0] +' == 1) \n')
+    io.write('s.add('+v_dict[0][1] +' == 0) \n')
+    io.write('s.add('+v_dict[0][2] +' == 0) \n')
+    io.write('s.add('+v_dict[1][0] +' == 0) \n')
+    io.write('s.add('+v_dict[1][1] +' == 1) \n')
+    io.write('s.add('+v_dict[1][2] +' == 0) \n')
     x = assignment.var[0]
     y = assignment.var[1]
     fvars = set()
@@ -238,6 +239,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             if (v2, v1) in had:
                 continue
             had.add((v1, v2))
+            #io.write('s.add(Or(Not(' + "ver" + str(v1) + '[0]' + '==' +  "ver" + str(v2) + '[0]' + '), Not(' + "ver" + str(v1) + '[1]' + '==' +  "ver" + str(v2) + '[1]' + '), Not(' + "ver" + str(v1) + '[2]' + '==' +  "ver" + str(v2) + '[2]' + '))) \n')
             cross_product = "cross(" + "ver" + str(v1) + "," + "ver" + str(v2) + ")"
             io.write('s.add(Or(Not(' + cross_product + '[0] == 0), Not(' + cross_product + '[1] == 0), Not(' + cross_product + '[2] == 0)))\n')
     for dot_relation in assignment.ortho:
@@ -247,7 +249,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     io.write('s.set("timeout", 10000) \n')
     io.write('if s.check() == unknown: \n')
     io.write('    index = int(index) + 1 \n')
-    io.write('    main(g_sat, order, index, using_subgraph) \n')
+    io.write('    main(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f) \n')
     io.write('if s.check() == unsat: \n')
     io.write('    with open(output_unsat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
@@ -329,7 +331,6 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
 
-#main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 -21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 43 -44 -45 0', 10, 0, False, "testing.txt", "testing2.txt")
 
 #Express each vertex variable explicitely in z3
 #don't import dot, nested-cross
