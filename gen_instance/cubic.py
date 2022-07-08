@@ -1,18 +1,18 @@
 #https://www.cs.cmu.edu/~mheule/publications/MiCS.pdf
 
 def generate_clause(X):
-	clause = []
-	for x in X:
-		clause.append(x)
-	return clause
+    clause = []
+    for x in X:
+        clause.append(x)
+    return clause
 
 def generate_implication_clause(X, Y):
-	clause = []
-	for x in X:
-		clause.append(-x)
-	for y in Y:
-		clause.append(y)
-	return clause
+    clause = []
+    for x in X:
+        clause.append(-x)
+    for y in Y:
+        clause.append(y)
+    return clause
 
 # Generate clauses encoding that the vector X is lexicographically less than (or equal to if strict is false) vector Y
 def generate_lex_clauses(X, Y, strict, total_vars):
@@ -30,14 +30,14 @@ def generate_lex_clauses(X, Y, strict, total_vars):
         clauses.append(generate_implication_clause({total_vars+n-1}, {Y[n-1]}))
     else:
         clauses.append(generate_implication_clause({total_vars+n-1}, {-X[n-1], Y[n-1]}))
-    return (clauses, total_vars+n-1) 
+    return (clauses, total_vars+n-1)
 
 def cubic(n, count):
     clauses = []
     total_vars = 0
     B = [[0 for j in range(n)] for i in range(n)]
     for j in range(n):
-	    for i in range(j):
+        for i in range(j):
                 total_vars += 1
                 B[i][j] = total_vars
                 B[j][i] = total_vars
