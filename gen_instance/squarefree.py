@@ -17,7 +17,9 @@ def squarefree(n, edge_dict):
         constraint_1 = [-edge_dict[all_edges[0]],-edge_dict[all_edges[2]], -edge_dict[all_edges[3]], -edge_dict[all_edges[5]]]
         constraint_2 = [-edge_dict[all_edges[1]],-edge_dict[all_edges[2]], -edge_dict[all_edges[3]], -edge_dict[all_edges[4]]]
         constraint_3 = [-edge_dict[all_edges[0]],-edge_dict[all_edges[1]], -edge_dict[all_edges[4]], -edge_dict[all_edges[5]]]
-        constraint = constraint + [constraint_1, constraint_2, constraint_3]
+        constraint.append(constraint_1)
+        constraint.append(constraint_2)
+        constraint.append(constraint_3)
     """
     add the constraints of each square
     """

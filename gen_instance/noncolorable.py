@@ -22,5 +22,5 @@ def noncolorable(n, edge_dict, tri_dict, blocked=0.5):
                 all_triangle  = list(itertools.combinations(trig_vertices, 3))
                 for triangle in all_triangle: 
                     constraint_1.append(tri_dict[triangle]) # At least a set of three label-0 vertices form a C_3 subgraph.
-            constraint = constraint + [constraint_1]
+            constraint.append(constraint_1)
     return constraint
