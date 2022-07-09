@@ -173,7 +173,7 @@ def find_assignments(g):
 
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
     #print (g)
-    print (assignment)
+    #print (assignment)
     io = StringIO()
     io.write('from helper import cross \n')
     io.write('from z3 import * \n')
@@ -279,8 +279,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     #Uncomment this part above, if you want z3 to print out the solution after sat
     io.write('    print (s.check())')
     #io.write('print (s.model())')
-    with open('file.py', mode='w') as f:
-        print(io.getvalue(), file=f)
+    """with open('file.py', mode='w') as f:
+        print(io.getvalue(), file=f)"""
     exec (io.getvalue())
 
 #graph in sat labeling format
