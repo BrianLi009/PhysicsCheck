@@ -11,10 +11,6 @@ Usage:
 
 echo "prerequisite: pip and make installed"
 
-dos2unix *.sh
-cd embedability | dos2unix *.sh | cd ..
-cd simplification | dos2unix *.sh | cd ..
-cd gen_cubes | dos2unix *.sh | cd ..
 #install maplesat-ks
 if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
 then
