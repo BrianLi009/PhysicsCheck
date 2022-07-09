@@ -173,25 +173,37 @@ def find_assignments(g):
 
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
     #print (g)
-    #print (assignment)
+    print (assignment)
     io = StringIO()
     io.write('from helper import cross \n')
     io.write('from z3 import * \n')
     io.write("s = Solver()\n")
     v_dict = {}
-    for i in range(order):
+    for i in range(len(assignment.var)):
+        v_dict[i] = ('v'+str(i)+'c1', 'v'+str(i)+'c2', 'v'+str(i)+'c3') #{0: (v0c1, v0c2, v0c3)}
+    for i in range(len(assignment.var)):
+        #first define the base vectors
         io.write( 'v'+str(i)+'c1 = Real("v'+ str(i) + 'c1")\n')
         io.write( 'v'+str(i)+'c2 = Real("v'+ str(i) + 'c2")\n')
         io.write( 'v'+str(i)+'c3 = Real("v'+ str(i) + 'c3")\n')
         io.write( 'v' + str(i) + '= (' + 'v' + str(i) + 'c1, v' + str(i) + 'c2, v' + str(i) + 'c3)\n')
         io.write('s.add(' + 'v' + str(i) + 'c3 >= 0)\n')
-    for i in range(len(assignment.var)):
-        v_dict[i] = ('v'+str(i)+'c1', 'v'+str(i)+'c2', 'v'+str(i)+'c3') #{0: (v0c1, v0c2, v0c3)}
+    #no need to define the rest of the vectors
     for i in assignment.assign:
-        if isinstance(assignment.assign[i], tuple):
-            io.write('ver'+str(i)+'='+nested_cross((assignment.assign[i][0],assignment.assign[i][1])) + '\n')
+        #now define every vertex, s.add() its corresponding vector as a condition
+        io.write( 'ver'+str(i)+'c1 = Real("ver'+ str(i) + 'c1")\n')
+        io.write( 'ver'+str(i)+'c2 = Real("ver'+ str(i) + 'c2")\n')
+        io.write( 'ver'+str(i)+'c3 = Real("ver'+ str(i) + 'c3")\n')
+        io.write( 'ver' + str(i) + '= (' + 'ver' + str(i) + 'c1, ver' + str(i) + 'c2, ver' + str(i) + 'c3)\n')
+        io.write('s.add(' + 'ver' + str(i) + 'c3 >= 0)\n')
+        if isinstance(assignment.assign[i], int):
+            io.write('s.add('+'ver'+str(i)+'[0]=='+'v'+str(assignment.assign[i])+'[0]) \n')
+            io.write('s.add('+'ver'+str(i)+'[1]=='+'v'+str(assignment.assign[i])+'[1]) \n')
+            io.write('s.add('+'ver'+str(i)+'[2]=='+'v'+str(assignment.assign[i])+'[2]) \n')
         else:
-            io.write('ver'+str(i)+'=v'+str(assignment.assign[i])+'\n')
+            io.write('s.add(Or('+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[0],' + 'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[0]'+'))\n')
+            io.write('s.add(Or('+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[1],' + 'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[1]'+'))\n')
+            io.write('s.add(Or('+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[2],' + 'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[2]'+'))\n')
         #io.write( 's.add('+'ver'+str(i)+'[2]' +' >= 0) \n')
     io.write('s.add('+v_dict[0][0] +' == 1) \n')
     io.write('s.add('+v_dict[0][1] +' == 0) \n')
@@ -267,8 +279,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     #Uncomment this part above, if you want z3 to print out the solution after sat
     io.write('    print (s.check())')
     #io.write('print (s.model())')
-    """with open('file.py', mode='w') as f:
-        print(io.getvalue(), file=f)"""
+    with open('file.py', mode='w') as f:
+        print(io.getvalue(), file=f)
     exec (io.getvalue())
 
 #graph in sat labeling format
@@ -328,11 +340,11 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
             determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
-
+"""
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
-
-#main("a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 15 -16 -17 -18 19 -20 21 -22 23 24 -25 -26 -27 28 29 -30 31 -32 33 34 -35 -36 37 38 -39 40 -41 -42 -43 -44 45 0", 10, 0, False, "testing1.txt", "testing2.txt")
+"""
+main("a -1 -2 -3 -4 -5 -6 -7 -8 -9 10 -11 -12 -13 14 15 -16 -17 18 -19 -20 21 -22 23 24 -25 26 -27 -28 29 30 -31 -32 -33 -34 -35 -36 0", 9, 0, False, "testing1.txt", "testing2.txt")
 
 
 #Express each vertex variable explicitely in z3
