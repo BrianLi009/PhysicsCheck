@@ -300,6 +300,7 @@ def maple_to_edges(input, v):
 def main(g, order, index, using_subgraph):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
+    order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)

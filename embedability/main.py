@@ -295,39 +295,38 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     degree_sequence = [d for n, d in G.degree()]
-    if nx.is_empty(G) or (len(degree_sequence) < order) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
+    if nx.is_empty(G):
         #graph is either empty, disconnected, or has a vertex of degree 1. 
         with open(output_sat_f, "a+") as f:
             f.write(g + "\n")
+    if using_subgraph == "True":
+        print ("Checking minimum nonembeddable subgraph")
+        my_file = open("min_nonembed_graph_10-12.txt", "r")
+        content = my_file.read()
+        min_non_subgraphs = content.split("\n")
+        my_file.close()
+        for string in min_non_subgraphs:
+            min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
+            gm = isomorphism.GraphMatcher(G, min_g)
+            if gm.subgraph_is_monomorphic():
+                with open(output_unsat_f, "a+") as f:
+                    f.write(g + "\n")
+                    return
+        #check if G contains a minimum nonembedabble subgraph
+        print ("this graph does not contain known minimal nonembeddable subgraph")
+        graph_dict = {}
+        for v in list(G.nodes()):
+            graph_dict[v] = (list(G.neighbors(v)))
+        assignments = find_assignments(graph_dict)
+        assignment = assignments[int(index)]
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
     else:
-        if using_subgraph == "True":
-            print ("Checking minimum nonembeddable subgraph")
-            my_file = open("min_nonembed_graph_10-12.txt", "r")
-            content = my_file.read()
-            min_non_subgraphs = content.split("\n")
-            my_file.close()
-            for string in min_non_subgraphs:
-                min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
-                gm = isomorphism.GraphMatcher(G, min_g)
-                if gm.subgraph_is_monomorphic():
-                    with open(output_unsat_f, "a+") as f:
-                        f.write(g + "\n")
-                        return
-            #check if G contains a minimum nonembedabble subgraph
-            print ("this graph does not contain known minimal nonembeddable subgraph")
-            graph_dict = {}
-            for v in list(G.nodes()):
-                graph_dict[v] = (list(G.neighbors(v)))
-            assignments = find_assignments(graph_dict)
-            assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
-        else:
-            graph_dict = {}
-            for v in list(G.nodes()):
-                graph_dict[v] = (list(G.neighbors(v)))
-            assignments = find_assignments(graph_dict)
-            assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
+        graph_dict = {}
+        for v in list(G.nodes()):
+            graph_dict[v] = (list(G.neighbors(v)))
+        assignments = find_assignments(graph_dict)
+        assignment = assignments[int(index)]
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])

@@ -86,6 +86,7 @@ echo "Embedability check using Z3 started"
 #add a parameter for starting count
 start=`date +%s.%N`
 index=0
+echo "running embeddability check on all graphs"
 while read line; do
     python3 main.py "$line" $n $index False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt
 done < squarefree_$n.exhaust
@@ -96,4 +97,4 @@ runtime=$( echo "$end - $start" | bc -l )
 echo "total runtime is $runtime"
 
 #filtering all output and only keep minimal nonembeddable subgraph
-python3 analyze_subgraph.py $n
+#python3 analyze_subgraph.py $n
