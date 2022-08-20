@@ -58,7 +58,7 @@ then
     then
         echo "$simp1 already exist, skip simplification"
     else
-        if [ "$o" -eq "s" ]
+        if [ "$o" == "s" ]
         then
             ./simplification/simplify.sh constraints_${n}_${o}_${t}_${s}_${b} $n $t
         else
@@ -113,7 +113,7 @@ then
     then
         echo "$simp2 already exist, skip simplification"
     else
-        if [ "$o" -eq "s" ]
+        if [ "$o" == "s" ]
         then
             ./simplification/simplify.sh $simp_non $n $t
         else
