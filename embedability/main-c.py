@@ -1,4 +1,6 @@
 #!/usr/bin/python
+
+#embeddability checking script but in complex hilbert space
 from io import StringIO
 from networkx.algorithms import isomorphism
 import os
