@@ -30,13 +30,19 @@ fi
 #set -x
 
 n=$1 #order
-t=${2:-3} #time in seconds for which to simplify each time CaDiCal is called
-s=${3:-3} #by default we simplify twice, before and after noncanonical blocking clauses
-b=${4:-2} #by default we generate noncanonical blocking clauses in real time
-r=${5:-0} #number of variables to eliminate until the cubing terminates
-c=${6:-1} #-s apply CaDiCaL on the instances simplified on the previous depth
-p=${7:-0} #default turn off parallel cubing
+o=$2 #implification option, option "t" means simplifying for t seconds, option "v" means simplify until v% of variables are eliminated
+t=${3:-3} #time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate
+s=${4:-3} #by default we simplify twice, before and after noncanonical blocking clauses
+b=${5:-2} #by default we generate noncanonical blocking clauses in real time
+r=${6:-0} #number of variables to eliminate until the cubing terminates
+c=${7:-1} #-s apply CaDiCaL on the instances simplified on the previous depth
+p=${8:-0} #default turn off parallel cubing
 
+if [ "$o" != "s" ] && [ "$o" != "v" ]
+then
+    echo "Need simplification option, option "t" means simplifying for t seconds, option "v" means simplify until v% of variables are eliminated"
+    exit
+fi
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -44,16 +50,21 @@ p=${7:-0} #default turn off parallel cubing
 #step 3: generate instances
 ./1-instance-generation.sh $n
 
-simp1=constraints_${n}_${t}_${s}_${b}.simp1
-cp constraints_$n constraints_${n}_${t}_${s}_${b}
+simp1=constraints_${n}_${o}_${t}_${s}_${b}.simp1
+cp constraints_$n constraints_${n}_${o}_${t}_${s}_${b}
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
     if [ -f $simp1 ]
     then
         echo "$simp1 already exist, skip simplification"
     else
-        ./simplification/simplify.sh constraints_${n}_${t}_${s}_${b} $n $t
-        mv constraints_${n}_${t}_${s}_${b}.simp $simp1
+        if [ "$o" -eq "s" ]
+        then
+            ./simplification/simplify.sh constraints_${n}_${o}_${t}_${s}_${b} $n $t
+        else
+            ./simplification/simplify-by-var-removal.sh $n "constraints_${n}_${o}_${t}_${s}_${b}" $t
+        fi
+        mv constraints_${n}_${o}_${t}_${s}_${b}.simp $simp1
     fi
 fi
 if [ "$s" -eq 2 ]
@@ -95,14 +106,19 @@ then
     cp $simp1 $simp_non
 fi
 
-simp2=constraints_${n}_${t}_${s}_${b}.simp2
+simp2=constraints_${n}_${o}_${t}_${s}_${b}.simp2
 if [ "$s" -eq 2 ] || [ "$s" -eq 3 ]
 then
     if [ -f $simp2 ]
     then
         echo "$simp2 already exist, skip simplification"
     else
-        ./simplification/simplify.sh $simp_non $n $t
+        if [ "$o" -eq "s" ]
+        then
+            ./simplification/simplify.sh $simp_non $n $t
+        else
+            ./simplification/simplify-by-var-removal.sh $n $simp_non $t
+        fi
         cp $simp_non.simp $simp2
     fi
 fi
