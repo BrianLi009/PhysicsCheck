@@ -260,13 +260,14 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
         w = nested_cross(dot_relation[1])
         io.write('s.add(' + dot(v,w) + '== 0) \n')
     io.write('s.set("timeout", 10000) \n')
-    io.write('if s.check() == unknown: \n')
+    io.write('result = s.check() \n')
+    io.write('if result == unknown: \n')
     io.write('    index = int(index) + 1 \n')
     io.write('    main(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f) \n')
-    io.write('if s.check() == unsat: \n')
+    io.write('if result == unsat: \n')
     io.write('    with open(output_unsat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
-    io.write('if s.check() == sat: \n')
+    io.write('if result == sat: \n')
     io.write('    with open(output_sat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
     #io.write('    m = s.model() \n')
@@ -277,7 +278,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     #    io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')
     io.write('else: \n')
     #Uncomment this part above, if you want z3 to print out the solution after sat
-    io.write('    print (s.check())')
+    io.write('    print (result)')
     #io.write('print (s.model())')
     """with open('file.py', mode='w') as f:
         print(io.getvalue(), file=f)"""
