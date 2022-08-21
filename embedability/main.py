@@ -213,24 +213,10 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     io.write('s.add('+v_dict[1][2] +' == 0) \n')
     x = assignment.var[0]
     y = assignment.var[1]
-    fvars = set()
     try:
         z = next(iter(assignment.base - set([x, y])))
     except StopIteration:
         z = None
-    for i in range(2, len(assignment.var)):
-        fvars.add(v_dict[i][0])
-        fvars.add(v_dict[i][1])
-        fvars.add(v_dict[i][2])
-        if x in g[assignment.var[i]]:
-            io.write('s.add('+v_dict[i][0]+' == 0)\n')
-            fvars.remove(v_dict[i][0])
-        elif y in g[assignment.var[i]]:
-            io.write('s.add('+v_dict[i][1]+' == 0)\n')
-            fvars.remove(v_dict[i][1])
-        elif z in g[assignment.var[i]]:
-            io.write('s.add('+v_dict[i][2]+' == 0)\n')
-            fvars.remove(v_dict[i][2])
     try:
         cross_product = nested_cross(assignment.eqs[0])
         io.write('s.add(' + cross_product + '[0] == 0) \n')
@@ -280,8 +266,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     #Uncomment this part above, if you want z3 to print out the solution after sat
     io.write('    print (result)')
     #io.write('print (s.model())')
-    """with open('file.py', mode='w') as f:
-        print(io.getvalue(), file=f)"""
+    with open('file.py', mode='w') as f:
+        print(io.getvalue(), file=f)
     exec (io.getvalue())
 
 #graph in sat labeling format
@@ -341,12 +327,11 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
             determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
-
+"""
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
-
-#main("a -1 -2 -3 -4 -5 -6 -7 -8 -9 10 -11 -12 -13 14 15 -16 -17 18 -19 -20 21 -22 23 24 -25 26 -27 -28 29 30 -31 -32 -33 -34 -35 -36 0", 9, 0, False, "testing1.txt", "testing2.txt")
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])"""
 
 
-#Express each vertex variable explicitely in z3
-#don't import dot, nested-cross
+with open("12.exhaust") as file:
+    for line in file:
+        main(line, 12, 0, False, "testing1.txt", "testing2.txt")
