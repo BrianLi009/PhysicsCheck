@@ -24,4 +24,6 @@
 
 dependencies: maplesat-ks, cadical, networkx, z3-solver, and march_cu from cube and conquer. Run dependency-setup.sh for dependency setup
 
+See [PhysicsCheck_log](https://github.com/BrianLi009/PhysicsCheck_log) repository for log files of jobs described in the paper "A SAT Solver + Computer Algebra Attack on the Minimal Kochen-Specker Problem"
+
 ![Showing pipeline and which directory to enter for each step](pipeline.png?raw=true "Pipeline")
