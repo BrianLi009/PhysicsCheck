@@ -37,7 +37,6 @@ def find_assignments(g):
                                  'to_visit',
                                  'nvar',
                                  'ortho',
-                                 'eqs',
                                  'var',
                                  'assign',
                                  'easily_embeddable',
@@ -52,7 +51,6 @@ def find_assignments(g):
                 to_visit=set(first_edge),
                 nvar=0,
                 ortho=[],
-                eqs=[],
                 var=[first_edge[0], first_edge[1]],
                 assign={first_edge[0]: 0,
                         first_edge[1]: 1},
@@ -108,8 +106,6 @@ def find_assignments(g):
                     if w in f.assign:
                         f = f._replace(easily_embeddable=False)
                         f.ortho.append((f.assign[w], f.assign[v]))
-                        """f.eqs.append(((f.assign[v], f.assign[v2]),
-                                       f.assign[w]))"""
                         continue
                     # (ii) the node has not been assigned a value --- assign it
                     f.edges_used.add((v2, w))
@@ -140,7 +136,6 @@ def find_assignments(g):
                         to_visit=set([v]),
                         nvar=f.nvar+3,
                         ortho=list(f.ortho),
-                        eqs=list(f.eqs),
                         var=f.var + [v],
                         assign=dict(f.assign),
                         easily_embeddable=f.easily_embeddable,
@@ -168,12 +163,11 @@ def find_assignments(g):
     # Find best assignment: we want the least number of variables;
     # then the least number of cross-product equations and finally
     # the least number of orthogonallity requirements.
-    completed.sort(key=lambda f: (f.nvar, len(f.eqs), len(f.ortho)))
+    completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
     return completed
 
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
     #print (g)
-    #print (assignment)
     io = StringIO()
     io.write('from helper import cross \n')
     io.write('from z3 import * \n')
@@ -211,19 +205,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     io.write('s.add('+v_dict[1][0] +' == 0) \n')
     io.write('s.add('+v_dict[1][1] +' == 1) \n')
     io.write('s.add('+v_dict[1][2] +' == 0) \n')
-    x = assignment.var[0]
-    y = assignment.var[1]
-    try:
-        z = next(iter(assignment.base - set([x, y])))
-    except StopIteration:
-        z = None
-    try:
-        cross_product = nested_cross(assignment.eqs[0])
-        io.write('s.add(' + cross_product + '[0] == 0) \n')
-        io.write('s.add(' + cross_product + '[1] == 0) \n')
-        io.write('s.add(' + cross_product + '[2] == 0) \n')
-    except:
-        pass
     edges = set()
     for v in g:
         for w in g[v]:
@@ -327,11 +308,6 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
             determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
-"""
+
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])"""
-
-
-with open("12.exhaust") as file:
-    for line in file:
-        main(line, 12, 0, False, "testing1.txt", "testing2.txt")
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
