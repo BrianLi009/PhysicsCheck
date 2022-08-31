@@ -195,10 +195,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             io.write('s.add('+'ver'+str(i)+'[1]=='+'v'+str(assignment.assign[i])+'[1]) \n')
             io.write('s.add('+'ver'+str(i)+'[2]=='+'v'+str(assignment.assign[i])+'[2]) \n')
         else:
-            io.write('s.add(Or('+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[0],' + 'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[0]'+'))\n')
-            io.write('s.add(Or('+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[1],' + 'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[1]'+'))\n')
-            io.write('s.add(Or('+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[2],' + 'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[2]'+'))\n')
-        #io.write( 's.add('+'ver'+str(i)+'[2]' +' >= 0) \n')
+            io.write("s.add(Or(And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[2])' + ", And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[2])))\n')
     io.write('s.add('+v_dict[0][0] +' == 1) \n')
     io.write('s.add('+v_dict[0][1] +' == 0) \n')
     io.write('s.add('+v_dict[0][2] +' == 0) \n')
@@ -243,12 +240,11 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     #    io.write('    print (m.evaluate(ver' + str(i) + '[0]))' + '\n')
     #    io.write('    print (m.evaluate(ver' + str(i) + '[1]))' + '\n')
     #    io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')
-    io.write('else: \n')
     #Uncomment this part above, if you want z3 to print out the solution after sat
-    io.write('    print (result)')
+    io.write('print (result)')
     #io.write('print (s.model())')
-    with open('file.py', mode='w') as f:
-        print(io.getvalue(), file=f)
+    """with open('file.py', mode='w') as f:
+        print(io.getvalue(), file=f)"""
     exec (io.getvalue())
 
 #graph in sat labeling format
