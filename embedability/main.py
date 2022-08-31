@@ -7,6 +7,7 @@ import networkx as nx
 import collections
 import itertools
 from collections import Counter
+from collections import defaultdict
 
 from networkx.algorithms.isomorphism.isomorph import is_isomorphic
 from networkx.generators.classic import cycle_graph
@@ -110,7 +111,7 @@ def find_assignments(g):
                     # (ii) the node has not been assigned a value --- assign it
                     f.edges_used.add((v2, w))
                     f.edges_used.add((w, v2))
-                    f.assign[w] = (f.assign[v], f.assign[v2])
+                    f.assign[w] = (v, v2)
                     f.to_visit.add(w)
             # Check whether finished
             if len(f.assign) == len(g):
@@ -184,18 +185,24 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
         io.write('s.add(' + 'v' + str(i) + 'c3 >= 0)\n')
     #no need to define the rest of the vectors
     for i in assignment.assign:
-        #now define every vertex, s.add() its corresponding vector as a condition
+        #now define every vertex
         io.write( 'ver'+str(i)+'c1 = Real("ver'+ str(i) + 'c1")\n')
         io.write( 'ver'+str(i)+'c2 = Real("ver'+ str(i) + 'c2")\n')
         io.write( 'ver'+str(i)+'c3 = Real("ver'+ str(i) + 'c3")\n')
         io.write( 'ver' + str(i) + '= (' + 'ver' + str(i) + 'c1, ver' + str(i) + 'c2, ver' + str(i) + 'c3)\n')
         io.write('s.add(' + 'ver' + str(i) + 'c3 >= 0)\n')
+    for i in assignment.assign:
+        #s.add() its corresponding vector as a condition
         if isinstance(assignment.assign[i], int):
             io.write('s.add('+'ver'+str(i)+'[0]=='+'v'+str(assignment.assign[i])+'[0]) \n')
             io.write('s.add('+'ver'+str(i)+'[1]=='+'v'+str(assignment.assign[i])+'[1]) \n')
             io.write('s.add('+'ver'+str(i)+'[2]=='+'v'+str(assignment.assign[i])+'[2]) \n')
         else:
-            io.write("s.add(Or(And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[2])' + ", And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[2])))\n')
+            if i in assignment.base:
+                io.write("s.add(Or(And(" + 'ver'+str(i)+'[0]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[2]'+ "), " + "And(" + 'ver'+str(i)+'[0]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[2]' + ")))\n")
+            else:
+                io.write("s.add(Or(And(" + 'ver'+str(i)+'[0]=='+"cross(" + "ver" + str(assignment.assign[i][0]) + "," + "ver" + str(assignment.assign[i][1]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "ver" + str(assignment.assign[i][0]) + "," + "ver" + str(assignment.assign[i][1]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "ver" + str(assignment.assign[i][0]) + "," + "ver" + str(assignment.assign[i][1]) + ')[2]'+ "), " + "And(" + 'ver'+str(i)+'[0]=='+"cross(" + "ver" + str(assignment.assign[i][1]) + "," + "ver" + str(assignment.assign[i][0]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "ver" + str(assignment.assign[i][1]) + "," + "ver" + str(assignment.assign[i][0]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "ver" + str(assignment.assign[i][1]) + "," + "ver" + str(assignment.assign[i][0]) + ')[2]' + ")))\n")
+            #io.write("s.add(Or(And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[2])' + ", And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[2])))\n')
     io.write('s.add('+v_dict[0][0] +' == 1) \n')
     io.write('s.add('+v_dict[0][1] +' == 0) \n')
     io.write('s.add('+v_dict[0][2] +' == 0) \n')
@@ -219,9 +226,24 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             #io.write('s.add(Or(Not(' + "ver" + str(v1) + '[0]' + '==' +  "ver" + str(v2) + '[0]' + '), Not(' + "ver" + str(v1) + '[1]' + '==' +  "ver" + str(v2) + '[1]' + '), Not(' + "ver" + str(v1) + '[2]' + '==' +  "ver" + str(v2) + '[2]' + '))) \n')
             cross_product = "cross(" + "ver" + str(v1) + "," + "ver" + str(v2) + ")"
             io.write('s.add(Or(Not(' + cross_product + '[0] == 0), Not(' + cross_product + '[1] == 0), Not(' + cross_product + '[2] == 0)))\n')
+    #revert assign dict
+    assign_inv = defaultdict(list)
+    for k, v in assignment.assign.items():
+        assign_inv[v].append(k)
+    print (assign_inv)
     for dot_relation in assignment.ortho:
-        v = nested_cross(dot_relation[0])
-        w = nested_cross(dot_relation[1])
+        if len(assign_inv[dot_relation[0]]) > 1:
+            for v_base in assign_inv[dot_relation[0]]:
+                if v_base in assignment.base:
+                    v = "ver" + str(v_base)
+        else:
+            v = "ver" + str(assign_inv[dot_relation[0]][0])
+        if len(assign_inv[dot_relation[1]]) > 1:
+            for w_base in assign_inv[dot_relation[1]]:
+                if w_base in assignment.base:
+                    w = "ver" + str(w_base)
+        else:
+            w = "ver" + str(assign_inv[dot_relation[1]][0])
         io.write('s.add(' + dot(v,w) + '== 0) \n')
     io.write('s.set("timeout", 10000) \n')
     io.write('result = s.check() \n')
