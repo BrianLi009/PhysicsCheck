@@ -167,7 +167,8 @@ def find_assignments(g):
     completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
     return completed
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f):
+def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f):
+    #print (assignment)
     #print (g)
     io = StringIO()
     io.write('from helper import cross \n')
@@ -191,12 +192,15 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
         io.write( 'ver'+str(i)+'c3 = Real("ver'+ str(i) + 'c3")\n')
         io.write( 'ver' + str(i) + '= (' + 'ver' + str(i) + 'c1, ver' + str(i) + 'c2, ver' + str(i) + 'c3)\n')
         io.write('s.add(' + 'ver' + str(i) + 'c3 >= 0)\n')
+        #io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
     for i in assignment.assign:
         #s.add() its corresponding vector as a condition
         if isinstance(assignment.assign[i], int):
             io.write('s.add('+'ver'+str(i)+'[0]=='+'v'+str(assignment.assign[i])+'[0]) \n')
             io.write('s.add('+'ver'+str(i)+'[1]=='+'v'+str(assignment.assign[i])+'[1]) \n')
             io.write('s.add('+'ver'+str(i)+'[2]=='+'v'+str(assignment.assign[i])+'[2]) \n')
+            if normalize:
+                io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
         else:
             if i in assignment.base:
                 io.write("s.add(Or(And(" + 'ver'+str(i)+'[0]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[2]'+ "), " + "And(" + 'ver'+str(i)+'[0]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[2]' + ")))\n")
@@ -230,7 +234,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     assign_inv = defaultdict(list)
     for k, v in assignment.assign.items():
         assign_inv[v].append(k)
-    print (assign_inv)
     for dot_relation in assignment.ortho:
         if len(assign_inv[dot_relation[0]]) > 1:
             for v_base in assign_inv[dot_relation[0]]:
@@ -285,7 +288,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
+def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     order = int(order)
@@ -318,14 +321,14 @@ def main(g, order, index, using_subgraph, output_unsat_f, output_sat_f):
                 graph_dict[v] = (list(G.neighbors(v)))
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
+            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f) #write the file
         else:
             graph_dict = {}
             for v in list(G.nodes()):
                 graph_dict[v] = (list(G.neighbors(v)))
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f) #write the file
+            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f) #write the file
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7])
