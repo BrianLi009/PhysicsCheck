@@ -252,7 +252,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('result = s.check() \n')
     io.write('if result == unknown: \n')
     io.write('    index = int(index) + 1 \n')
-    io.write('    main(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f) \n')
+    io.write('    main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f) \n')
     io.write('if result == unsat: \n')
     io.write('    with open(output_unsat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
