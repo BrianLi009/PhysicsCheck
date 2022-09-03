@@ -60,7 +60,7 @@ numline=$(< $cube_file wc -l)
 new_index=$((numline-1))
 for i in $(seq 0 $new_index)
 do 
-    ./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 60
+    ./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50
     #join the cube to the instance, simplified until 50% of the variables are eliminated
     ./maplesat-ks/simp/maplesat_static $cube_file$i.adj.simp -no-pre -exhaustive=$n.exhaust -order=$n
 done
