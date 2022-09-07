@@ -88,7 +88,7 @@ start=`date +%s.%N`
 index=0
 echo "running embeddability check on all graphs"
 while read line; do
-    python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False
+    python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False False
 done < squarefree_$n.exhaust
 
 end=`date +%s.%N`
