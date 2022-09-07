@@ -167,7 +167,7 @@ def find_assignments(g):
     completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
     return completed
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f):
+def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify):
     #print (assignment)
     #print (g)
     io = StringIO()
@@ -253,40 +253,36 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('if result == unknown: \n')
     io.write('    io.close() \n')
     io.write('    index = int(index) + 1 \n')
-    io.write('    main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f) \n')
+    io.write('    main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) \n')
     io.write('if result == unsat: \n')
     io.write('    with open(output_unsat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
     io.write('if result == sat: \n')
     io.write('    with open(output_sat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
-    """io.write('    m = s.model() \n')
-    for i in range(len(assignment.assign)):
-        io.write("    print ( " + " '" + "vertex " + str(i) + ":' )" + "\n")
-        io.write('    print (m.evaluate(ver' + str(i) + '[0]))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[1]))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')"""
-    #Uncomment this part above, if you want z3 to print out the solution after sat
-    #io.write('    print (result)\n')
-    #Uncomment the code below to verify embeddable graphs
-    """
-    io.write('    check = Solver()\n')
-    for v in g:
-        for v2 in assignment.assign:
-            if v2 in g[v]:
-                #check dot product
-                io.write("    check.add(m.evaluate(ver" + str(v) + '[0] * ' + "ver" + str(v2) + '[0]' + "+" + "ver" + str(v) + '[1] * ' + "ver" + str(v2) + '[1]' + "+" + "ver" + str(v) + '[2] * ' + "ver" + str(v2) + '[2] == 0))\n')
-            #check noncolinear
-            if v2 != v:
-                #io.write("print(" + str(v) + ","  + str(v2) + ")\n")
-                bool1 = "    m.evaluate(ver" + str(v) + '[1] * ver' + str(v2) + '[2] - ' + "ver" + str(v) + '[2]* ver' + str(v2) + '[1] == 0)'
-                bool2 = "    m.evaluate(ver" + str(v) + '[2] * ver' + str(v2) + '[0] - ' + "ver" + str(v) + '[0]* ver' + str(v2) + '[2] == 0)'
-                bool3 = "    m.evaluate(ver" + str(v) + '[0] * ver' + str(v2) + '[1] - ' + "ver" + str(v) + '[1]* ver' + str(v2) + '[0] == 0)'
-                io.write("    check.add(Not(And(" + bool1 + ", " + bool2 + ", " +  bool3 + ")))\n")
-                #io.write("check.add(Or(Not(m.evaluate(ver" + str(v) + '[1]) * m.evaluate(ver' + str(v2) + '[2]) - ' + "m.evaluate(ver" + str(v) + '[2]) * m.evaluate(ver' + str(v2) + '[1]) == 0)),' + "Not(m.evaluate(ver" + str(v) + '[2]) * m.evaluate(ver' + str(v2) + '[0]) - ' + "m.evaluate(ver" + str(v) + '[0]) * m.evaluate(ver' + str(v2) + '[2]) == 0),' + "Not(m.evaluate(ver" + str(v) + '[0]) * m.evaluate(ver' + str(v2) + '[1]) - ' + "m.evaluate(ver" + str(v) + '[1]) * m.evaluate(ver' + str(v2) + '[0]) == 0))\n')
-    io.write('    if check.check() == unsat:\n')
-    io.write('        print ("not verified")')
-    """
+    if verify:
+        io.write('    m = s.model() \n')
+        for i in range(len(assignment.assign)):
+            io.write("    print ( " + " '" + "vertex " + str(i) + ":' )" + "\n")
+            io.write('    print (m.evaluate(ver' + str(i) + '[0]))' + '\n')
+            io.write('    print (m.evaluate(ver' + str(i) + '[1]))' + '\n')
+            io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')
+            io.write('    check = Solver()\n')
+        for v in g:
+            for v2 in assignment.assign:
+                if v2 in g[v]:
+                    #check dot product
+                    io.write("    check.add(m.evaluate(ver" + str(v) + '[0] * ' + "ver" + str(v2) + '[0]' + "+" + "ver" + str(v) + '[1] * ' + "ver" + str(v2) + '[1]' + "+" + "ver" + str(v) + '[2] * ' + "ver" + str(v2) + '[2] == 0))\n')
+                #check noncolinear
+                if v2 != v:
+                    #io.write("print(" + str(v) + ","  + str(v2) + ")\n")
+                    bool1 = "    m.evaluate(ver" + str(v) + '[1] * ver' + str(v2) + '[2] - ' + "ver" + str(v) + '[2]* ver' + str(v2) + '[1] == 0)'
+                    bool2 = "    m.evaluate(ver" + str(v) + '[2] * ver' + str(v2) + '[0] - ' + "ver" + str(v) + '[0]* ver' + str(v2) + '[2] == 0)'
+                    bool3 = "    m.evaluate(ver" + str(v) + '[0] * ver' + str(v2) + '[1] - ' + "ver" + str(v) + '[1]* ver' + str(v2) + '[0] == 0)'
+                    io.write("    check.add(Not(And(" + bool1 + ", " + bool2 + ", " +  bool3 + ")))\n")
+                    #io.write("check.add(Or(Not(m.evaluate(ver" + str(v) + '[1]) * m.evaluate(ver' + str(v2) + '[2]) - ' + "m.evaluate(ver" + str(v) + '[2]) * m.evaluate(ver' + str(v2) + '[1]) == 0)),' + "Not(m.evaluate(ver" + str(v) + '[2]) * m.evaluate(ver' + str(v2) + '[0]) - ' + "m.evaluate(ver" + str(v) + '[0]) * m.evaluate(ver' + str(v2) + '[2]) == 0),' + "Not(m.evaluate(ver" + str(v) + '[0]) * m.evaluate(ver' + str(v2) + '[1]) - ' + "m.evaluate(ver" + str(v) + '[1]) * m.evaluate(ver' + str(v2) + '[0]) == 0))\n')
+        io.write('    if check.check() == unsat:\n')
+        io.write('        print ("not verified")')
     #with open('file.py', mode='w') as f:
     #    print(io.getvalue(), file=f)
     exec (io.getvalue())
@@ -308,7 +304,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f):
+def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     order = int(order)
@@ -341,14 +337,14 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
                 graph_dict[v] = (list(G.neighbors(v)))
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f) #write the file
+            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) #write the file
         else:
             graph_dict = {}
             for v in list(G.nodes()):
                 graph_dict[v] = (list(G.neighbors(v)))
             assignments = find_assignments(graph_dict)
             assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f) #write the file
+            determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) #write the file
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
