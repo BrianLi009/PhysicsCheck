@@ -203,10 +203,10 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
                 io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
         else:
             if i in assignment.base:
-                io.write("s.add(Or(And(" + 'ver'+str(i)+'[0]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "v" + str(assignment.assign[i][0]) + "," + "v" + str(assignment.assign[i][1]) + ')[2]'+ "), " + "And(" + 'ver'+str(i)+'[0]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "v" + str(assignment.assign[i][1]) + "," + "v" + str(assignment.assign[i][0]) + ')[2]' + ")))\n")
+                str_format = "s.add(Or(And(ver{2}[0]==cross({0},{1})[0], ver{2}[1]==cross({0},{1})[1], ver{2}[2]==cross({0},{1})[2]), And(ver{2}[0]==cross({1},{0})[0], ver{2}[1]==cross({1},{0})[1], ver{2}[2]==cross({1},{0})[2])))\n"
+                io.write(str_format.format("v" + str(assignment.assign[i][0]), "v" + str(assignment.assign[i][1]), str(i)))
             else:
-                io.write("s.add(Or(And(" + 'ver'+str(i)+'[0]=='+"cross(" + "ver" + str(assignment.assign[i][0]) + "," + "ver" + str(assignment.assign[i][1]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "ver" + str(assignment.assign[i][0]) + "," + "ver" + str(assignment.assign[i][1]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "ver" + str(assignment.assign[i][0]) + "," + "ver" + str(assignment.assign[i][1]) + ')[2]'+ "), " + "And(" + 'ver'+str(i)+'[0]=='+"cross(" + "ver" + str(assignment.assign[i][1]) + "," + "ver" + str(assignment.assign[i][0]) + ')[0]' + ", " + 'ver'+str(i)+'[1]=='+"cross(" + "ver" + str(assignment.assign[i][1]) + "," + "ver" + str(assignment.assign[i][0]) + ')[1]' + ", " + 'ver'+str(i)+'[2]=='+"cross(" + "ver" + str(assignment.assign[i][1]) + "," + "ver" + str(assignment.assign[i][0]) + ')[2]' + ")))\n")
-            #io.write("s.add(Or(And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][0],assignment.assign[i][1]))+'[2])' + ", And("+'ver'+str(i)+'[0]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[0],'+'ver'+str(i)+'[1]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[1],'+'ver'+str(i)+'[2]=='+nested_cross((assignment.assign[i][1],assignment.assign[i][0]))+'[2])))\n')
+                io.write(str_format.format("ver" + str(assignment.assign[i][0]), "ver" + str(assignment.assign[i][1]), str(i)))
     io.write('s.add('+v_dict[0][0] +' == 1) \n')
     io.write('s.add('+v_dict[0][1] +' == 0) \n')
     io.write('s.add('+v_dict[0][2] +' == 0) \n')
@@ -271,16 +271,12 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         for v in g:
             for v2 in assignment.assign:
                 if v2 in g[v]:
-                    #check dot product
-                    io.write("    check.add(m.evaluate(ver" + str(v) + '[0] * ' + "ver" + str(v2) + '[0]' + "+" + "ver" + str(v) + '[1] * ' + "ver" + str(v2) + '[1]' + "+" + "ver" + str(v) + '[2] * ' + "ver" + str(v2) + '[2] == 0))\n')
+                    str_format = "    check.add(m.evaluate(ver{0}[0] * ver{1}[0]+ver{0}[1] * ver{1}[1]+ver{0}[2] * ver{1}[2] == 0))\n"
+                    io.write(str_format.format(str(v), str(v2)))
                 #check noncolinear
                 if v2 != v:
-                    #io.write("print(" + str(v) + ","  + str(v2) + ")\n")
-                    bool1 = "    m.evaluate(ver" + str(v) + '[1] * ver' + str(v2) + '[2] - ' + "ver" + str(v) + '[2]* ver' + str(v2) + '[1] == 0)'
-                    bool2 = "    m.evaluate(ver" + str(v) + '[2] * ver' + str(v2) + '[0] - ' + "ver" + str(v) + '[0]* ver' + str(v2) + '[2] == 0)'
-                    bool3 = "    m.evaluate(ver" + str(v) + '[0] * ver' + str(v2) + '[1] - ' + "ver" + str(v) + '[1]* ver' + str(v2) + '[0] == 0)'
-                    io.write("    check.add(Not(And(" + bool1 + ", " + bool2 + ", " +  bool3 + ")))\n")
-                    #io.write("check.add(Or(Not(m.evaluate(ver" + str(v) + '[1]) * m.evaluate(ver' + str(v2) + '[2]) - ' + "m.evaluate(ver" + str(v) + '[2]) * m.evaluate(ver' + str(v2) + '[1]) == 0)),' + "Not(m.evaluate(ver" + str(v) + '[2]) * m.evaluate(ver' + str(v2) + '[0]) - ' + "m.evaluate(ver" + str(v) + '[0]) * m.evaluate(ver' + str(v2) + '[2]) == 0),' + "Not(m.evaluate(ver" + str(v) + '[0]) * m.evaluate(ver' + str(v2) + '[1]) - ' + "m.evaluate(ver" + str(v) + '[1]) * m.evaluate(ver' + str(v2) + '[0]) == 0))\n')
+                    str_format = "    check.add(Not(And(m.evaluate(ver{0}[1] * ver{1}[2] - ver{0}[2]* ver{1}[1] == 0), m.evaluate(ver{0}[2] * ver{1}[0] - ver{0}[0]* ver{1}[2] == 0), m.evaluate(ver{0}[0] * ver{1}[1] - ver{0}[1]* ver{1}[0] == 0)))) \n"
+                    io.write(str_format.format(str(v), str(v2)))
         io.write('    if check.check() == unsat:\n')
         io.write('        print ("not verified")')
     #with open('file.py', mode='w') as f:
