@@ -167,7 +167,7 @@ def find_assignments(g):
     completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
     return completed
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify, prop1):
+def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
     #print (assignment)
     #print (g)
     io = StringIO()
@@ -253,7 +253,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('if result == unknown: \n')
     io.write('    io.close() \n')
     io.write('    index = int(index) + 1 \n')
-    io.write('    main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify, prop1) \n')
+    io.write('    main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) \n')
     io.write('if result == unsat: \n')
     io.write('    with open(output_unsat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
@@ -304,7 +304,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify, prop1):
+def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     order = int(order)
@@ -339,14 +339,14 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify, prop1) #write the file
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
     else:
         graph_dict = {}
         for v in list(G.nodes()):
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify, prop1) #write the file
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
