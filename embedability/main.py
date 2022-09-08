@@ -190,7 +190,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         io.write( 'ver'+str(i)+'c1 = Real("ver'+ str(i) + 'c1")\n')
         io.write( 'ver'+str(i)+'c2 = Real("ver'+ str(i) + 'c2")\n')
         io.write( 'ver'+str(i)+'c3 = Real("ver'+ str(i) + 'c3")\n')
-        io.write( 'ver' + str(i) + '= (' + 'ver' + str(i) + 'c1, ver' + str(i) + 'c2, ver' + str(i) + 'c3)\n')
+        str_format = "ver{0}= (ver{0}c1, ver{0}c2, ver{0}c3)\n"
+        io.write(str_format.format(str(i)))
         io.write('s.add(' + 'ver' + str(i) + 'c3 >= 0)\n')
         #io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
     for i in assignment.assign:
@@ -227,9 +228,9 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             if (v2, v1) in had:
                 continue
             had.add((v1, v2))
-            #io.write('s.add(Or(Not(' + "ver" + str(v1) + '[0]' + '==' +  "ver" + str(v2) + '[0]' + '), Not(' + "ver" + str(v1) + '[1]' + '==' +  "ver" + str(v2) + '[1]' + '), Not(' + "ver" + str(v1) + '[2]' + '==' +  "ver" + str(v2) + '[2]' + '))) \n')
             cross_product = "cross(" + "ver" + str(v1) + "," + "ver" + str(v2) + ")"
-            io.write('s.add(Or(Not(' + cross_product + '[0] == 0), Not(' + cross_product + '[1] == 0), Not(' + cross_product + '[2] == 0)))\n')
+            str_format = "s.add(Or(Not({0}[0]==0), Not({0}[1]==0), Not({0}[2]==0))) \n"
+            io.write(str_format.format(cross_product))
     #revert assign dict
     assign_inv = defaultdict(list)
     for k, v in assignment.assign.items():
