@@ -315,10 +315,10 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
     if prop1:
         #graph is either empty, disconnected, or has a vertex of degree 1. 
         if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence):
-            continue
+            return
     else:
         if nx.is_empty(G):
-            continue
+            return
     if using_subgraph == "True":
         print ("Checking minimum nonembeddable subgraph")
         my_file = open("min_nonembed_graph_10-12.txt", "r")

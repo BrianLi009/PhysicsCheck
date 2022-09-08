@@ -12,13 +12,29 @@ Options:
 " && exit
 
 n=$1
+verify=${2:-0}
+
+if [ "$verify" -ne 0 ] && [ "$verify" -ne 1 ]
+then
+    echo "verify must be a boolean"
+    exit
+fi
+
 index=0
 
 touch embeddable_$n.txt
 
-while read line; do
-    python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt
-done < $n.exhaust
+if [ "$verify" -eq 0 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt False False
+    done < $n.exhaust
+else
+    echo "verification enabled"
+    while read line; do
+        python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt False True
+    done < $n.exhaust
+fi
 
 cd ..
 
