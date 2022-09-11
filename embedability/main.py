@@ -190,7 +190,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         io.write( 'ver'+str(i)+'c1 = Real("ver'+ str(i) + 'c1")\n')
         io.write( 'ver'+str(i)+'c2 = Real("ver'+ str(i) + 'c2")\n')
         io.write( 'ver'+str(i)+'c3 = Real("ver'+ str(i) + 'c3")\n')
-        str_format = "ver{0}= (ver{0}c1, ver{0}c2, ver{0}c3)\n"
+        str_format = "ver{0} = (ver{0}c1, ver{0}c2, ver{0}c3)\n"
         io.write(str_format.format(str(i)))
         io.write('s.add(' + 'ver' + str(i) + 'c3 >= 0)\n')
         #io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
@@ -203,8 +203,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             if normalize:
                 io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
         else:
+            str_format = "s.add(Or(And(ver{2}[0]==cross({0},{1})[0], ver{2}[1]==cross({0},{1})[1], ver{2}[2]==cross({0},{1})[2]), And(ver{2}[0]==cross({1},{0})[0], ver{2}[1]==cross({1},{0})[1], ver{2}[2]==cross({1},{0})[2])))\n"
             if i in assignment.base:
-                str_format = "s.add(Or(And(ver{2}[0]==cross({0},{1})[0], ver{2}[1]==cross({0},{1})[1], ver{2}[2]==cross({0},{1})[2]), And(ver{2}[0]==cross({1},{0})[0], ver{2}[1]==cross({1},{0})[1], ver{2}[2]==cross({1},{0})[2])))\n"
                 io.write(str_format.format("v" + str(assignment.assign[i][0]), "v" + str(assignment.assign[i][1]), str(i)))
             else:
                 io.write(str_format.format("ver" + str(assignment.assign[i][0]), "ver" + str(assignment.assign[i][1]), str(i)))
@@ -263,12 +263,13 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('        f.write(g_sat + "\\n") \n')
     if verify:
         io.write('    m = s.model() \n')
-        for i in range(len(assignment.assign)):
-            io.write("    print ( " + " '" + "vertex " + str(i) + ":' )" + "\n")
-            io.write('    print (m.evaluate(ver' + str(i) + '[0]))' + '\n')
-            io.write('    print (m.evaluate(ver' + str(i) + '[1]))' + '\n')
-            io.write('    print (m.evaluate(ver' + str(i) + '[2]))' + '\n')
-            io.write('    check = Solver()\n')
+        io.write('    with open(output_sat_f, "a+") as f: \n')
+        for i in assignment.assign:
+            io.write("        f.write( " + " '" + "vertex " + str(i) + ":' + '\\n' ) " + "\n")
+            io.write('        f.write(str(m.evaluate(ver' + str(i) + '[0])) + "\\n" )' + '\n')
+            io.write('        f.write(str(m.evaluate(ver' + str(i) + '[1])) + "\\n" )' + '\n')
+            io.write('        f.write(str(m.evaluate(ver' + str(i) + '[2])) + "\\n" )' + '\n')
+        io.write('    check = Solver()\n')
         for v in g:
             for v2 in assignment.assign:
                 if v2 in g[v]:
@@ -278,8 +279,13 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
                 if v2 != v:
                     str_format = "    check.add(Not(And(m.evaluate(ver{0}[1] * ver{1}[2] - ver{0}[2]* ver{1}[1] == 0), m.evaluate(ver{0}[2] * ver{1}[0] - ver{0}[0]* ver{1}[2] == 0), m.evaluate(ver{0}[0] * ver{1}[1] - ver{0}[1]* ver{1}[0] == 0)))) \n"
                     io.write(str_format.format(str(v), str(v2)))
-        io.write('    if check.check() == unsat:\n')
-        io.write('        print ("not verified")')
+        io.write('    with open(output_sat_f, "a+") as f: \n')
+        io.write('        if check.check() == unsat:\n')
+        io.write('            f.write("verification failed") \n')
+        io.write('        if check.check() == sat:\n')
+        io.write('            f.write("verified")\n')
+        io.write('        else:\n')
+        io.write('            f.write("error during verification")')
     #with open('file.py', mode='w') as f:
     #    print(io.getvalue(), file=f)
     exec (io.getvalue())
