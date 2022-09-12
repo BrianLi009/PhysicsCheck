@@ -6,12 +6,14 @@ Description:
     line by line, creating multiple separate instances with a cube embedded in it. Then maplesat-ks is being called to solve each instance (in parallel).
 
 Usage:
-    ./3-cube-merge-solve.sh n r f
+    ./3-cube-merge-solve.sh n r f c p
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
+    <c>: option to enable the -s option in cubing
+    <p>: option to enable the -p option in cubing
 " && exit
  
 n=$1 #order
