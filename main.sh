@@ -12,12 +12,13 @@ Usage:
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <t>: time in seconds for which to simplify each time CaDiCal is called
+    <o>: simplification option, option t means simplifying for t seconds, option v means simplify until v% of variables are eliminated
+    <t>: time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate
     <s>: option for simplifiation, takes in argument 1 (before), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
     <c>: -s apply CaDiCaL on the instances simplified on the previous depth, takes in 1 (on), 0 (off)
-    <p>: cubing in parallel, 1 (on), 0 (off)
+    <p>: cubing in parallel, 1 (on), 0 (off), default turn off parallel cubing
 " && exit
 
 #step 1: input parameters
@@ -30,7 +31,7 @@ fi
 #set -x
 
 n=$1 #order
-o=$2 #implification option, option "t" means simplifying for t seconds, option "v" means simplify until v% of variables are eliminated
+o=$2 #simplification option, option "t" means simplifying for t seconds, option "v" means simplify until v% of variables are eliminated
 t=${3:-3} #time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate
 s=${4:-3} #by default we simplify twice, before and after noncanonical blocking clauses
 b=${5:-2} #by default we generate noncanonical blocking clauses in real time
