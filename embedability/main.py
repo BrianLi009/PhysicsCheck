@@ -15,6 +15,11 @@ from helper import cross, dot, nested_cross
 
 import sys, getopt
 
+"""
+find_assignments take in a graph and find all possible interpretations of its orthogonal relations.
+determine_embed takes in one of the interpretation and convert it into a system of nonlinear equations that's readable by SMT solver Z3
+"""
+
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
     graph_dict = {}
@@ -168,6 +173,19 @@ def find_assignments(g):
     return completed
 
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
+    """
+    g: dictonary of vertices and their adjacent vertices
+    assignment: an assignment generated from find_assignments
+    g_sat: graph in the format of the output from MapleSAT
+    order: order of the graph to solve
+    index: which orthogonality assignment to start solving from, usually we set this to 0 and use the first assignment
+    using_subgraph: option to use minimal unembeddable subgraph with less than 13 vertices
+    normalize: option to restrict every vector on the unit sphere
+    output_unsat_f: file name to log nonembeddable graphs
+    output_sat_f: file name to log embeddable graphs
+    prop1: option to use proposition 1 in the paper that excludes graph with a vertex of degree less than 2
+    verify: option to verify embeddable graph's vector solutions, will log vector solutions and verification results to output_sat_f
+    """
     #print (assignment)
     #print (g)
     io = StringIO()
