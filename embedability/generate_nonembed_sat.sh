@@ -11,7 +11,7 @@ Description:
     is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
 
 Usage:
-    ./generate_nonembed_sat n
+    ./generate_nonembed_sat.sh n
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
