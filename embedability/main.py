@@ -270,7 +270,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('s.set("timeout", 10000) \n')
     io.write('result = s.check() \n')
     io.write('if result == unknown: \n')
-    io.write('    io.close() \n')
     io.write('    index = int(index) + 1 \n')
     io.write('    main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) \n')
     io.write('if result == unsat: \n')

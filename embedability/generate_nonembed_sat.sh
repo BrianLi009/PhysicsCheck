@@ -11,10 +11,13 @@ Description:
     is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
 
 Usage:
-    ./generate_nonembed_sat.sh n
+    ./generate_nonembed_sat.sh n <s> <p> <verify>
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
+    <s>: 1 to use minimal unembeddable subgraphs, 0 to not use minimal unembeddable subgraphs, default is 0
+    <p>: 1 to use prop1, 0 to not to, default 0
+    <verify>: 1 to verify sat result, 0 to not to, default 0
 " && exit
 
 #generate nonembedable subgraphs
@@ -22,6 +25,9 @@ Options:
 #set -x
 
 n=$1
+s=${2:-0}
+p=${3:-0}
+verify=${4:-0}
 
 if [ $# -eq 0 ]; then
     echo "Need to provide order of unembedable subgraph"
@@ -87,9 +93,52 @@ echo "Embedability check using Z3 started"
 start=`date +%s.%N`
 index=0
 echo "running embeddability check on all graphs"
-while read line; do
-    python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False False
-done < squarefree_$n.exhaust
+if [ "$verify" -eq 0 ] && [ "$s" -eq 0 ] && [ "$p" -eq 0 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False False
+    done < squarefree_$n.exhaust
+elif [ "$verify" -eq 1 ] && [ "$s" -eq 1 ] && [ "$p" -eq 1 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index True False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt True True
+    done < squarefree_$n.exhaust
+elif [ "$verify" -eq 0 ] && [ "$s" -eq 1 ] && [ "$p" -eq 1 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index True False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt True False
+    done < squarefree_$n.exhaust
+elif [ "$verify" -eq 0 ] && [ "$s" -eq 0 ] && [ "$p" -eq 1 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt True False
+    done < squarefree_$n.exhaust
+elif [ "$verify" -eq 0 ] && [ "$s" -eq 1 ] && [ "$p" -eq 0 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index True False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False False
+    done < squarefree_$n.exhaust
+elif [ "$verify" -eq 1 ] && [ "$s" -eq 0 ] && [ "$p" -eq 0 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False True
+    done < squarefree_$n.exhaust
+elif [ "$verify" -eq 1 ] && [ "$s" -eq 0 ] && [ "$p" -eq 1 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index False False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt True True
+    done < squarefree_$n.exhaust
+
+elif [ "$verify" -eq 1 ] && [ "$s" -eq 1 ] && [ "$p" -eq 0 ]
+then
+    while read line; do
+        python3 main.py "$line" $n $index True False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt False True
+    done < squarefree_$n.exhaust
+else
+    echo "invalid input"
+    exit 0
+fi
+
 
 end=`date +%s.%N`
 runtime=$( echo "$end - $start" | bc -l )
