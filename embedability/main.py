@@ -287,7 +287,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             io.write('        f.write(str(m.evaluate(ver' + str(i) + '[1])) + "\\n" )' + '\n')
             io.write('        f.write(str(m.evaluate(ver' + str(i) + '[2])) + "\\n" )' + '\n')
         io.write('    check = Solver()\n')
-        for v in g:
+        for v in assignment.assign:
             for v2 in assignment.assign:
                 if v2 in g[v]:
                     str_format = "    check.add(m.evaluate(ver{0}[0] * ver{1}[0]+ver{0}[1] * ver{1}[1]+ver{0}[2] * ver{1}[2] == 0))\n"
