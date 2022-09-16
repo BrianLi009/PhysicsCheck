@@ -8,7 +8,7 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh n t r s b
+    ./main.sh n o t s b r c p
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
