@@ -29,50 +29,10 @@ index=0
 
 touch embeddable_$n.txt
 
-if [ "$verify" -eq 0 ] && [ "$s" -eq 0 ] && [ "$p" -eq 0 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index False False nonembeddable_$n.txt embeddable_$n.txt False False
-    done < $n.exhaust
-elif [ "$verify" -eq 1 ] && [ "$s" -eq 1 ] && [ "$p" -eq 1 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt True True
-    done < $n.exhaust
-elif [ "$verify" -eq 0 ] && [ "$s" -eq 1 ] && [ "$p" -eq 1 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt True False
-    done < $n.exhaust
-elif [ "$verify" -eq 0 ] && [ "$s" -eq 0 ] && [ "$p" -eq 1 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index False False nonembeddable_$n.txt embeddable_$n.txt True False
-    done < $n.exhaust
-elif [ "$verify" -eq 0 ] && [ "$s" -eq 1 ] && [ "$p" -eq 0 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt False False
-    done < $n.exhaust
-elif [ "$verify" -eq 1 ] && [ "$s" -eq 0 ] && [ "$p" -eq 0 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index False False nonembeddable_$n.txt embeddable_$n.txt False True
-    done < $n.exhaust
-elif [ "$verify" -eq 1 ] && [ "$s" -eq 0 ] && [ "$p" -eq 1 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index False False nonembeddable_$n.txt embeddable_$n.txt True True
-    done < $n.exhaust
-elif [ "$verify" -eq 1 ] && [ "$s" -eq 1 ] && [ "$p" -eq 0 ]
-then
-    while read line; do
-        python3 main.py "$line" $n $index True False nonembeddable_$n.txt embeddable_$n.txt False True
-    done < $n.exhaust
-else
-    echo "invalid input"
-    exit 0
-fi
+while read line; do
+    echo $line
+    python3 main.py "$line" $n $index $s 0 nonembeddable_$n.txt embeddable_$n.txt $p $verify
+done < $n.exhaust
 
 cd ..
 
