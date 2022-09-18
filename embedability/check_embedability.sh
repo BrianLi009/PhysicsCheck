@@ -15,8 +15,8 @@ Options:
 " && exit
 
 n=$1
-s=${2:-0}
-p=${3:-0}
+s=${2:-1}
+p=${3:-1}
 verify=${4:-0}
 
 if [ "$verify" -ne 0 ] && [ "$verify" -ne 1 ]

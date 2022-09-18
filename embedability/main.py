@@ -312,25 +312,29 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
     elif using_subgraph == "1":
         using_subgraph = True
     else:
-        print ("invalid parameter subgraph")
+        print ("invalid parameter subgraph, setting default to False")
+        using_subgraph = False
     if normalize == "0":
         normalize = False
     elif normalize == "1":
         normalize = True
     else:
-        print ("invalid parameter normal")
+        print ("invalid parameter normal, setting default to False")
+        normalize = False
     if prop1 == "0":
         prop1 = False
     elif prop1 == "1":
         prop1 = True
     else:
-        print ("invalid parameter prop1")
+        print ("invalid parameter prop1, setting default to False")
+        prop1 = False
     if verify == "0":
         verify = False
     elif verify == "1":
         verify = True
     else:
-        print ("invalid parameter verify")
+        print ("invalid parameter verify, setting default to False")
+        verify = False
     order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
