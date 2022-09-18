@@ -307,6 +307,30 @@ def maple_to_edges(input, v):
 def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
+    if using_subgraph == "0":
+        using_subgraph = False
+    elif using_subgraph == "1":
+        using_subgraph = True
+    else:
+        print ("invalid parameter subgraph")
+    if normalize == "0":
+        normalize = False
+    elif normalize == "1":
+        normalize = True
+    else:
+        print ("invalid parameter normal")
+    if prop1 == "0":
+        prop1 = False
+    elif prop1 == "1":
+        prop1 = True
+    else:
+        print ("invalid parameter prop1")
+    if verify == "0":
+        verify = False
+    elif verify == "1":
+        verify = True
+    else:
+        print ("invalid parameter verify")
     order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
@@ -314,7 +338,7 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
     degree_sequence = [d for n, d in G.degree()]
     if prop1:
         #graph is either empty, disconnected, or has a vertex of degree 1. 
-        if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence):
+        if nx.is_empty(G) or (1 in degree_sequence):
             return
     else:
         if nx.is_empty(G):
