@@ -95,6 +95,8 @@ index=0
 echo "running embeddability check on all graphs"
 
 while read line; do
+    #command="python3 main.py "$line" "$n" "$index" "$s" 0 nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt "$p" "$verify""
+    #echo $command
     python3 main.py "$line" "$n" "$index" "$s" 0 nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt "$p" "$verify"
 done < squarefree_$n.exhaust
 

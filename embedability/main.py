@@ -307,42 +307,20 @@ def maple_to_edges(input, v):
 def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
-    if using_subgraph == "0":
-        using_subgraph = False
-    elif using_subgraph == "1":
-        using_subgraph = True
-    else:
-        print ("invalid parameter subgraph, setting default to False")
-        using_subgraph = False
-    if normalize == "0":
-        normalize = False
-    elif normalize == "1":
-        normalize = True
-    else:
-        print ("invalid parameter normal, setting default to False")
-        normalize = False
-    if prop1 == "0":
-        prop1 = False
-    elif prop1 == "1":
-        prop1 = True
-    else:
-        print ("invalid parameter prop1, setting default to False")
-        prop1 = False
-    if verify == "0":
-        verify = False
-    elif verify == "1":
-        verify = True
-    else:
-        print ("invalid parameter verify, setting default to False")
-        verify = False
+    """print ("original graph: " + str(g))
+    print ("order of the graph: " + str(order))
+    print ("using_subgraph: " + str(using_subgraph))
+    print ("normalize: " + str(normalize))
+    print ("using proposition 1: " + str(prop1))
+    print ("verifying result: " + str(verify))"""
     order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     degree_sequence = [d for n, d in G.degree()]
     if prop1:
-        #graph is either empty, disconnected, or has a vertex of degree 1. 
-        if nx.is_empty(G) or (1 in degree_sequence):
+        #graph is either empty, or has a vertex of degree 1 or 0. 
+        if (1 in degree_sequence) or (0 in degree_sequence):
             return
     else:
         if nx.is_empty(G):
@@ -377,4 +355,32 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
         determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
+    if sys.argv[4] == "0":
+        using_subgraph = False
+    elif sys.argv[4] == "1":
+        using_subgraph = True
+    else:
+        print ("invalid parameter subgraph "+ str(sys.argv[4]) + " setting default to False")
+        using_subgraph = False
+    if sys.argv[5] == "0":
+        normalize = False
+    elif sys.argv[5] == "1":
+        normalize = True
+    else:
+        print ("invalid parameter normal "+ str(sys.argv[5]) + " setting default to False")
+        normalize = False
+    if sys.argv[8] == "0":
+        prop1 = False
+    elif sys.argv[8] == "1":
+        prop1 = True
+    else:
+        print ("invalid parameter prop1 "+ str(sys.argv[8]) + " setting default to False")
+        prop1 = False
+    if sys.argv[9] == "0":
+        verify = False
+    elif sys.argv[9] == "1":
+        verify = True
+    else:
+        print ("invalid parameter verify "+ str(sys.argv[9]) + " setting default to False")
+        verify = False
+    main(sys.argv[1], sys.argv[2], sys.argv[3], using_subgraph, normalize, sys.argv[6], sys.argv[7], prop1, verify)
