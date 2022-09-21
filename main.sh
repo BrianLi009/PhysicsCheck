@@ -72,7 +72,7 @@ fi
 if [ "$s" -eq 2 ]
 then
     echo "skipping the first simplification"
-    cp constraints_$n $simp1
+    mv constraints_$n $simp1
 fi
 
 #step 4: generate non canonical subgraph
