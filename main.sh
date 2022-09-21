@@ -51,10 +51,12 @@ fi
 #step 3: generate instances
 ./1-instance-generation.sh $n
 
-simp1=constraints_${n}_${o}_${t}_${s}_${b}.simp1
-cp constraints_$n constraints_${n}_${o}_${t}_${s}_${b}
+instance_tracking=constraints_$n
+
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
+    simp1=constraints_${n}_${o}_${t}_${s}_${b}.simp1
+    cp $instance_tracking constraints_${n}_${o}_${t}_${s}_${b}
     if [ -f $simp1 ]
     then
         echo "$simp1 already exist, skip simplification"
@@ -67,26 +69,27 @@ then
         fi
         mv constraints_${n}_${o}_${t}_${s}_${b}.simp $simp1
         rm constraints_${n}_${o}_${t}_${s}_${b}
+    instance_tracking=$simp1
     fi
 fi
 if [ "$s" -eq 2 ]
 then
     echo "skipping the first simplification"
-    mv constraints_$n $simp1
 fi
 
 #step 4: generate non canonical subgraph
 
-simp_non=constraints_$n.non_can_${t}_${s}_${b}.simp1
+simp_non=constraints_${n}_${o}_${t}_${s}_${b}.noncanonical
 if [ "$b" -eq 2 ]
 then
     if [ -f $simp_non ]
     then
         echo "$simp_non already exist, skip adding non canonical subgraph"
     else
-        cp $simp1 $simp_non
+        cp $instance_tracking $simp_non
         ./2-add-blocking-clauses.sh $n 12 $simp_non
     fi
+    instance_tracking=$simp_non
 fi
 if [ "$b" -eq 1 ]
 then
@@ -94,7 +97,7 @@ then
     then
         echo "$simp_non already exist, skip adding non canoniacl subgraph"
     else
-        cp $simp1 $simp_non
+        cp $instance_tracking $simp_non
         for file in non_can/*.noncanonical
         do
             cat $file >> $simp_non
@@ -102,14 +105,15 @@ then
             sed -i -E "s/p cnf ([0-9]*) ([0-9]*)/p cnf \1 $((lines-1))/" "$simp_non"
         done
     fi
+    instance_tracking=$simp_non
 fi
 if [ "$b" -eq 3 ]
 then
-    cp $simp1 $simp_non
+    echo "not using noncanonical blocking clauses"
 fi
 
-simp2=constraints_${n}_${o}_${t}_${s}_${b}.simp2
 if [ "$s" -eq 2 ] || [ "$s" -eq 3 ]
+simp2=constraints_${n}_${o}_${t}_${s}_${b}.simp2
 then
     if [ -f $simp2 ]
     then
@@ -117,17 +121,17 @@ then
     else
         if [ "$o" == "s" ]
         then
-            ./simplification/simplify.sh $simp_non $n $t
+            ./simplification/simplify.sh $instance_tracking $n $t
         else
-            ./simplification/simplify-by-var-removal.sh $n $simp_non $t
+            ./simplification/simplify-by-var-removal.sh $n $instance_tracking $t
         fi
-        cp $simp_non.simp $simp2
+        mv $instance_tracking.simp $simp2
     fi
+    instance_tracking=$simp2
 fi
 if [ "$s" -eq 1 ]
 then
     echo "skipping the second simplification"
-    cp $simp_non $simp2
 fi
 
 if [ -f $n.exhaust ]
@@ -143,9 +147,9 @@ fi
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then 
-    ./3-cube-merge-solve.sh $n $r $simp2 $c $p
+    ./3-cube-merge-solve.sh $n $r $instance_tracking $c $p
 else
-    ./maplesat-ks/simp/maplesat_static $simp2 -no-pre -exhaustive=$n.exhaust -order=$n
+    ./maplesat-ks/simp/maplesat_static $instance_tracking -no-pre -exhaustive=$n.exhaust -order=$n
 fi
 
 #step 5.5: verify all constraints are satisfied
