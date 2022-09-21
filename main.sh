@@ -66,6 +66,7 @@ then
             ./simplification/simplify-by-var-removal.sh $n "constraints_${n}_${o}_${t}_${s}_${b}" $t
         fi
         mv constraints_${n}_${o}_${t}_${s}_${b}.simp $simp1
+        rm constraints_${n}_${o}_${t}_${s}_${b}
     fi
 fi
 if [ "$s" -eq 2 ]
