@@ -287,8 +287,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             io.write('        f2.write(str(m.evaluate(ver' + str(i) + '[0]).as_decimal(10)).replace("?","")+' + '"\\n" )' + '\n')
             io.write('        f2.write(str(m.evaluate(ver' + str(i) + '[1]).as_decimal(10)).replace("?","")+' + '"\\n" )' + '\n')
             io.write('        f2.write(str(m.evaluate(ver' + str(i) + '[2]).as_decimal(10)).replace("?","")+' + '"\\n" )' + '\n')
-        with open('file.py', mode='w') as f:
-            print(io.getvalue(), file=f)
         exec (io.getvalue())
         io.close()
         if not verify_sat(g, "solution.log"):
