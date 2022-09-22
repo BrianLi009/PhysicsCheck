@@ -1,3 +1,15 @@
+#!/bin/bash
+
+while getopts "spv" opt
+do
+	case $opt in
+		s) s="-s" ;;
+        p) p="-p" ;;
+        v) v="-v" ;;
+	esac
+done
+shift $((OPTIND-1))
+
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     This script takes in an exhaust file with kochen specker candidates, and determine whether each
@@ -5,19 +17,16 @@ Description:
     Specker graph. We require the existance of n.exhaust in the directory.
 
 Usage:
-    ./check_embedability.sh n <s> <p> <verify>
+    ./check_embedability.sh [-s] [-p] [-v] n
 
 Options:
+    [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
+    [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
+    [-v]: very satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
-    <s>: 1 to use minimal unembeddable subgraphs, 0 to not use minimal unembeddable subgraphs, default is 0
-    <p>: 1 to use prop1, 0 to not to, default 0
-    <verify>: 1 to verify sat result, 0 to not to, default 0
 " && exit
 
 n=$1
-s=${2:-1}
-p=${3:-1}
-verify=${4:-0}
 
 if [ "$verify" -ne 0 ] && [ "$verify" -ne 1 ]
 then
@@ -31,7 +40,7 @@ touch embeddable_$n.txt
 
 while read line; do
     echo $line
-    python3 main.py "$line" $n $index $s 0 nonembeddable_$n.txt embeddable_$n.txt $p $verify
+    python3 main.py "$line" $n $index $using_subgraph False nonembeddable_$n.txt embeddable_$n.txt $prop1 $verify
 done < $n.exhaust
 
 cd ..

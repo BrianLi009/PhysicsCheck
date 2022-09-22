@@ -41,12 +41,13 @@ Description:
     Note: this script is currently outputting graphs in edge-variable format, but graphs6 format
     is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
 Usage:
-    ./generate_nonembed_sat.sh n <s> <p> <verify>
+    ./check_embedability.sh [-s] [-p] [-v] n
+
 Options:
+    [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
+    [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
+    [-v]: very satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
-    <s>: 1 to use minimal unembeddable subgraphs, 0 to not use minimal unembeddable subgraphs, default is 0
-    <p>: 1 to use prop1, 0 to not to, default 0
-    <verify>: 1 to verify sat result, 0 to not to, default 0
 " && exit
 
 #generate nonembedable subgraphs
