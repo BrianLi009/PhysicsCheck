@@ -282,7 +282,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     if verify:
         with open('file.py', mode='w') as f:
             print(io.getvalue(), file=f)
-        verify_sat('file.py', assignment, g, output_unsat_f, output_sat_f)
+        verify_sat('file.py', g, output_unsat_f, output_sat_f)
         exec(open('file.py').read())
     else:
         exec (io.getvalue())
