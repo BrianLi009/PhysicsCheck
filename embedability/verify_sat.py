@@ -1,30 +1,39 @@
+import math
 
-from io import StringIO
+def verify_sat(g, filename):
+    """
+    verify the embeddable solution in [filename] only using edge relations.
+    """
+    f = open(filename, "r")
+    file_data = f.read()
+    lines = file_data.splitlines()
+    f.close()
+    vec_dict = {}
+    count = 0
+    for i in lines:
+        if count % 4 == 0:
+            vec_dict[int(i)] = [float(lines[count+1]), float(lines[count+2]), float(lines[count+3])]
+        count += 1
+    dot_product_verify = True
+    for vec in g:
+        for adj_vec in g[vec]:
+            dot_prod = vec_dict[vec][0]*vec_dict[adj_vec][0]+vec_dict[vec][1]*vec_dict[adj_vec][1]+vec_dict[vec][2]*vec_dict[adj_vec][2]
+            if not (math.isclose(0, dot_prod, abs_tol=0.00001)):
+                dot_product_verify = False
+    if dot_product_verify:
+        print ("all adjacent vertices has corresponding orthogonal vectors")
+    colinear_verify = True
+    for vec_1 in g:
+        for vec_2 in g:
+            if vec_1 != vec_2:
+                cross_product_1 = vec_dict[vec_1][1]*vec_dict[vec_2][2] - vec_dict[vec_1][2]*vec_dict[vec_2][1]
+                cross_product_2 = vec_dict[vec_1][2]*vec_dict[vec_2][0] - vec_dict[vec_1][0]*vec_dict[vec_2][2]
+                cross_product_3 = vec_dict[vec_1][0]*vec_dict[vec_2][1] - vec_dict[vec_1][1]*vec_dict[vec_2][0]
+                if math.isclose(0, cross_product_1, abs_tol=0.00001) and math.isclose(0, cross_product_2, abs_tol=0.00001) and math.isclose(0, cross_product_3, abs_tol=0.00001):
+                    colinear_verify = False
+    if dot_product_verify:
+        print ("all non-adjacent vertices has corresponding noncolinear vectors")
+    if dot_product_verify and colinear_verify:
+        return True
 
-def verify_sat(filename, g, output_unsat_f, output_sat_f):
-    io = StringIO()
-    io.write('        m = s.model() \n')
-    for i in g:
-        io.write("        f.write( " + " '" + "vertex " + str(i) + ":' + '\\n' ) " + "\n")
-        io.write('        f.write(str(m.evaluate(ver' + str(i) + '[0])) + "\\n" )' + '\n')
-        io.write('        f.write(str(m.evaluate(ver' + str(i) + '[1])) + "\\n" )' + '\n')
-        io.write('        f.write(str(m.evaluate(ver' + str(i) + '[2])) + "\\n" )' + '\n')
-    io.write('    check = Solver()\n')
-    for v in g:
-        for v2 in g:
-            if v2 in g[v]:
-                str_format = "    check.add(m.evaluate(ver{0}[0] * ver{1}[0]+ver{0}[1] * ver{1}[1]+ver{0}[2] * ver{1}[2] == 0))\n"
-                io.write(str_format.format(str(v), str(v2)))
-            #check noncolinear
-            if v2 != v:
-                str_format = "    check.add(Not(And(m.evaluate(ver{0}[1] * ver{1}[2] - ver{0}[2]* ver{1}[1] == 0), m.evaluate(ver{0}[2] * ver{1}[0] - ver{0}[0]* ver{1}[2] == 0), m.evaluate(ver{0}[0] * ver{1}[1] - ver{0}[1]* ver{1}[0] == 0)))) \n"
-                io.write(str_format.format(str(v), str(v2)))
-    io.write('    with open(output_sat_f, "a+") as f: \n')
-    io.write('        if check.check() == unsat:\n')
-    io.write('            f.write("verification failed") \n')
-    io.write('        if check.check() == sat:\n')
-    io.write('            f.write("verified")\n')
-    io.write('        else:\n')
-    io.write('            f.write("error during verification")')
-    with open('file.py', mode='a') as f:
-        print(io.getvalue(), file=f)
+

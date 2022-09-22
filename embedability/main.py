@@ -278,12 +278,21 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('        f.write(g_sat + "\\n") \n')
     io.write('if result == sat: \n')
     io.write('    with open(output_sat_f, "a+") as f: \n')
-    io.write('        f.write(g_sat + "\\n")')
+    io.write('        f.write(g_sat + "\\n") \n')
     if verify:
+        io.write('    m = s.model() \n')
+        io.write('    with open("solution.log", "w+") as f2: \n')
+        for i in g:
+            io.write("        f2.write( " + " '" + str(i) + "' + '\\n' ) " + "\n")
+            io.write('        f2.write(str(m.evaluate(ver' + str(i) + '[0]).as_decimal(10)).replace("?","")+' + '"\\n" )' + '\n')
+            io.write('        f2.write(str(m.evaluate(ver' + str(i) + '[1]).as_decimal(10)).replace("?","")+' + '"\\n" )' + '\n')
+            io.write('        f2.write(str(m.evaluate(ver' + str(i) + '[2]).as_decimal(10)).replace("?","")+' + '"\\n" )' + '\n')
         with open('file.py', mode='w') as f:
             print(io.getvalue(), file=f)
-        verify_sat('file.py', g, output_unsat_f, output_sat_f)
-        exec(open('file.py').read())
+        exec (io.getvalue())
+        io.close()
+        if not verify_sat(g, "solution.log"):
+            print ("verification failed")
     else:
         exec (io.getvalue())
         io.close()
