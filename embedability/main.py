@@ -219,7 +219,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             io.write('s.add('+'ver'+str(i)+'[0]=='+'v'+str(assignment.assign[i])+'[0]) \n')
             io.write('s.add('+'ver'+str(i)+'[1]=='+'v'+str(assignment.assign[i])+'[1]) \n')
             io.write('s.add('+'ver'+str(i)+'[2]=='+'v'+str(assignment.assign[i])+'[2]) \n')
-            if normalize:
+            if normalize == "True":
                 io.write('s.add(' + dot('ver' + str(i), 'ver' + str(i)) + '== 1) \n')
         else:
             str_format = "s.add(Or(And(ver{2}[0]==cross({0},{1})[0], ver{2}[1]==cross({0},{1})[1], ver{2}[2]==cross({0},{1})[2]), And(ver{2}[0]==cross({1},{0})[0], ver{2}[1]==cross({1},{0})[1], ver{2}[2]==cross({1},{0})[2])))\n"
@@ -279,7 +279,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     io.write('if result == sat: \n')
     io.write('    with open(output_sat_f, "a+") as f: \n')
     io.write('        f.write(g_sat + "\\n") \n')
-    if verify:
+    if verify == "True":
         io.write('    m = s.model() \n')
         io.write('    with open("solution.log", "w+") as f2: \n')
         for i in g:
@@ -325,14 +325,14 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     degree_sequence = [d for n, d in G.degree()]
-    if prop1:
+    if prop1 == "True":
         #graph is either empty, or has a vertex of degree 1 or 0. 
         if (1 in degree_sequence) or (0 in degree_sequence):
             return
     else:
         if nx.is_empty(G):
             return
-    if using_subgraph == True:
+    if using_subgraph == "True":
         print ("Checking minimum nonembeddable subgraph")
         my_file = open("min_nonembed_graph_10-12.txt", "r")
         content = my_file.read()
@@ -362,32 +362,4 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
         determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
 
 if __name__ == "__main__":
-    if sys.argv[4] == "0":
-        using_subgraph = False
-    elif sys.argv[4] == "1":
-        using_subgraph = True
-    else:
-        print ("invalid parameter subgraph "+ str(sys.argv[4]) + " setting default to False")
-        using_subgraph = False
-    if sys.argv[5] == "0":
-        normalize = False
-    elif sys.argv[5] == "1":
-        normalize = True
-    else:
-        print ("invalid parameter normal "+ str(sys.argv[5]) + " setting default to False")
-        normalize = False
-    if sys.argv[8] == "0":
-        prop1 = False
-    elif sys.argv[8] == "1":
-        prop1 = True
-    else:
-        print ("invalid parameter prop1 "+ str(sys.argv[8]) + " setting default to False")
-        prop1 = False
-    if sys.argv[9] == "0":
-        verify = False
-    elif sys.argv[9] == "1":
-        verify = True
-    else:
-        print ("invalid parameter verify "+ str(sys.argv[9]) + " setting default to False")
-        verify = False
-    main(sys.argv[1], sys.argv[2], sys.argv[3], using_subgraph, normalize, sys.argv[6], sys.argv[7], prop1, verify)
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])

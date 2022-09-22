@@ -1,5 +1,36 @@
 #!/bin/bash
 
+while getopts "spv" opt
+do
+	case $opt in
+		s) s="-s" ;;
+        p) p="-p" ;;
+        v) v="-v" ;;
+	esac
+done
+shift $((OPTIND-1))
+
+using_subgraph=False
+if [ "$s" == "-s" ]
+	then
+        echo "enabling using minimal noembeddable subgraph"
+		using_subgraph=True
+	fi
+
+prop1=False
+if [ "$p" == "-p" ]
+	then
+        echo "enable applying proposition 1"
+		prop1=True
+	fi
+
+verify=False
+if [ "$v" == "-v" ]
+	then
+        echo "enable embeddability verification"
+		verify=True
+	fi
+
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     This script generates all nonembedable subgraph of order n, by first calling maplesat-ks
@@ -9,10 +40,8 @@ Description:
     
     Note: this script is currently outputting graphs in edge-variable format, but graphs6 format
     is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
-
 Usage:
     ./generate_nonembed_sat.sh n <s> <p> <verify>
-
 Options:
     <n>: the order of the instance/number of vertices in the graph
     <s>: 1 to use minimal unembeddable subgraphs, 0 to not use minimal unembeddable subgraphs, default is 0
@@ -25,9 +54,6 @@ Options:
 #set -x
 
 n=$1
-s=${2:-0}
-p=${3:-0}
-verify=${4:-0}
 
 if [ $# -eq 0 ]; then
     echo "Need to provide order of unembedable subgraph"
@@ -95,9 +121,7 @@ index=0
 echo "running embeddability check on all graphs"
 
 while read line; do
-    #command="python3 main.py "$line" "$n" "$index" "$s" 0 nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt "$p" "$verify""
-    #echo $command
-    python3 main.py "$line" "$n" "$index" "$s" 0 nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt "$p" "$verify"
+    python3 main.py "$line" "$n" "$index" $using_subgraph False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt $prop1 $verify
 done < squarefree_$n.exhaust
 
 
@@ -106,5 +130,4 @@ runtime=$( echo "$end - $start" | bc -l )
 
 echo "total runtime is $runtime"
 
-#filtering all output and only keep minimal nonembeddable subgraph
-#python3 analyze_subgraph.py $n
+'
