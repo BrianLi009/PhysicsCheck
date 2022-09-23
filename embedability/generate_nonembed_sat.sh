@@ -22,7 +22,7 @@ Options:
 while getopts "spv" opt
 do
 	case $opt in
-		s) s="-s" ;;
+	s) s="-s" ;;
         p) p="-p" ;;
         v) v="-v" ;;
 	esac
