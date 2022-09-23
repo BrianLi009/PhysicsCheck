@@ -1,15 +1,5 @@
 #!/bin/bash
 
-while getopts "spv" opt
-do
-	case $opt in
-		s) s="-s" ;;
-        p) p="-p" ;;
-        v) v="-v" ;;
-	esac
-done
-shift $((OPTIND-1))
-
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     This script takes in an exhaust file with kochen specker candidates, and determine whether each
@@ -25,6 +15,16 @@ Options:
     [-v]: very satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
 " && exit
+
+while getopts "spv" opt
+do
+	case $opt in
+		s) s="-s" ;;
+        p) p="-p" ;;
+        v) v="-v" ;;
+	esac
+done
+shift $((OPTIND-1))
 
 n=$1
 

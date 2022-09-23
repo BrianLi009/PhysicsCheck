@@ -1,5 +1,24 @@
 #!/bin/bash
 
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    This script generates all nonembedable subgraph of order n, by first calling maplesat-ks
+    to generate all squarefree graph of order n, then run embedability check on every graph,
+    output those that results in unsat. This list is used to fast check embedability or larger
+    graph. 
+    
+    Note: this script is currently outputting graphs in edge-variable format, but graphs6 format
+    is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
+Usage:
+    ./check_embedability.sh [-s] [-p] [-v] n
+
+Options:
+    [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
+    [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
+    [-v]: very satisfiable embeddability result
+    <n>: the order of the instance/number of vertices in the graph
+" && exit
+
 while getopts "spv" opt
 do
 	case $opt in
@@ -30,25 +49,6 @@ if [ "$v" == "-v" ]
         echo "enable embeddability verification"
 		verify=True
 	fi
-
-[ "$1" = "-h" -o "$1" = "--help" ] && echo "
-Description:
-    This script generates all nonembedable subgraph of order n, by first calling maplesat-ks
-    to generate all squarefree graph of order n, then run embedability check on every graph,
-    output those that results in unsat. This list is used to fast check embedability or larger
-    graph. 
-    
-    Note: this script is currently outputting graphs in edge-variable format, but graphs6 format
-    is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
-Usage:
-    ./check_embedability.sh [-s] [-p] [-v] n
-
-Options:
-    [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
-    [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
-    [-v]: very satisfiable embeddability result
-    <n>: the order of the instance/number of vertices in the graph
-" && exit
 
 #generate nonembedable subgraphs
 
