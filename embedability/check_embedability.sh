@@ -12,7 +12,7 @@ Usage:
 Options:
     [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
     [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
-    [-v]: very satisfiable embeddability result
+    [-v]: verify satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
 " && exit
 

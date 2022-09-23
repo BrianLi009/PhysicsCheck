@@ -30,6 +30,6 @@ else
     #need to append all output file together as min_nonembed_graph_10-12.txt
     #this part to be finished
 fi 
-./check_embedability.sh $n
+./check_embedability.sh -s $n
 
 cd -
