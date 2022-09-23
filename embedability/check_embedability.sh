@@ -26,21 +26,35 @@ do
 done
 shift $((OPTIND-1))
 
-n=$1
+using_subgraph=False
+if [ "$s" == "-s" ]
+	then
+        echo "enabling using minimal noembeddable subgraph"
+		using_subgraph=True
+	fi
 
-if [ "$verify" -ne 0 ] && [ "$verify" -ne 1 ]
-then
-    echo "verify must be a boolean 0 or 1"
-    exit
-fi
+prop1=False
+if [ "$p" == "-p" ]
+	then
+        echo "enable applying proposition 1"
+		prop1=True
+	fi
+
+verify=False
+if [ "$v" == "-v" ]
+	then
+        echo "enable embeddability verification"
+		verify=True
+	fi
+
+n=$1
 
 index=0
 
 touch embeddable_$n.txt
 
 while read line; do
-    echo $line
-    python3 main.py "$line" $n $index $using_subgraph False nonembeddable_$n.txt embeddable_$n.txt $prop1 $verify
+    python3 main.py "$line" "$n" "$index" $using_subgraph False nonembeddable_$n.txt embeddable_$n.txt $prop1 $verify
 done < $n.exhaust
 
 cd ..

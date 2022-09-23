@@ -130,5 +130,3 @@ end=`date +%s.%N`
 runtime=$( echo "$end - $start" | bc -l )
 
 echo "total runtime is $runtime"
-
-'
