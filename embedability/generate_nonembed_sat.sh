@@ -10,7 +10,7 @@ Description:
     Note: this script is currently outputting graphs in edge-variable format, but graphs6 format
     is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
 Usage:
-    ./check_embedability.sh [-s] [-p] [-v] n
+    ./generate_nonembed_sat.sh [-s] [-p] [-v] n
 
 Options:
     [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
