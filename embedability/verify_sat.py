@@ -29,7 +29,7 @@ def verify_sat(g, filename):
                 cross_product_1 = vec_dict[vec_1][1]*vec_dict[vec_2][2] - vec_dict[vec_1][2]*vec_dict[vec_2][1]
                 cross_product_2 = vec_dict[vec_1][2]*vec_dict[vec_2][0] - vec_dict[vec_1][0]*vec_dict[vec_2][2]
                 cross_product_3 = vec_dict[vec_1][0]*vec_dict[vec_2][1] - vec_dict[vec_1][1]*vec_dict[vec_2][0]
-                if math.isclose(0, cross_product_1, abs_tol=0.00001) and math.isclose(0, cross_product_2, abs_tol=0.00001) and math.isclose(0, cross_product_3, abs_tol=0.00001):
+                if math.isclose(0, cross_product_1, abs_tol=1e-99) and math.isclose(0, cross_product_2, abs_tol=0.00001) and math.isclose(0, cross_product_3, abs_tol=0.00001):
                     colinear_verify = False
     if dot_product_verify:
         print ("every pair of non-adjacent vertices has corresponding noncolinear vectors")
