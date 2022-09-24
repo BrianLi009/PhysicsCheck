@@ -1,4 +1,7 @@
+from decimal import *
 import math
+
+getcontext().prec = 150
 
 def verify_sat(g, filename):
     """
@@ -12,13 +15,13 @@ def verify_sat(g, filename):
     count = 0
     for i in lines:
         if count % 4 == 0:
-            vec_dict[int(i)] = [float(lines[count+1]), float(lines[count+2]), float(lines[count+3])]
+            vec_dict[int(i)] = [Decimal(lines[count+1]), Decimal(lines[count+2]), Decimal(lines[count+3])]
         count += 1
     dot_product_verify = True
     for vec in g:
         for adj_vec in g[vec]:
             dot_prod = vec_dict[vec][0]*vec_dict[adj_vec][0]+vec_dict[vec][1]*vec_dict[adj_vec][1]+vec_dict[vec][2]*vec_dict[adj_vec][2]
-            if not (math.isclose(0, dot_prod, abs_tol=0.00001)):
+            if not (math.isclose(0, dot_prod, abs_tol=1e-99)):
                 dot_product_verify = False
     if dot_product_verify:
         print ("all adjacent vertices has corresponding orthogonal vectors")
@@ -29,7 +32,7 @@ def verify_sat(g, filename):
                 cross_product_1 = vec_dict[vec_1][1]*vec_dict[vec_2][2] - vec_dict[vec_1][2]*vec_dict[vec_2][1]
                 cross_product_2 = vec_dict[vec_1][2]*vec_dict[vec_2][0] - vec_dict[vec_1][0]*vec_dict[vec_2][2]
                 cross_product_3 = vec_dict[vec_1][0]*vec_dict[vec_2][1] - vec_dict[vec_1][1]*vec_dict[vec_2][0]
-                if math.isclose(0, cross_product_1, abs_tol=1e-99) and math.isclose(0, cross_product_2, abs_tol=0.00001) and math.isclose(0, cross_product_3, abs_tol=0.00001):
+                if math.isclose(0, cross_product_1, abs_tol=0.00001) and math.isclose(0, cross_product_2, abs_tol=0.00001) and math.isclose(0, cross_product_3, abs_tol=0.00001):
                     colinear_verify = False
     if colinear_verify:
         print ("every pair of non-adjacent vertices has corresponding noncolinear vectors")
