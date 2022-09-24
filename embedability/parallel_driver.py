@@ -9,7 +9,7 @@ def solve_line(n, line_index, file_to_solve):
     lines = f.readlines()
     line = lines[n]
     start_time = time.time()
-    call(['python', 'main.py', str(line), n, "0", "0", "0", "test_unsat.txt", "test_sat.txt", "0", "0"])
+    call(['python', 'main.py', str(line), n, "0", "False", "False", "test_unsat.txt", "test_sat.txt", "False", "False"])
     runtime = time.time() - start_time
     file_object = open('runtime_' + str(order) + '.txt', 'a')
     file_object.write(str(n) + ": " + str(runtime) + "\n")
