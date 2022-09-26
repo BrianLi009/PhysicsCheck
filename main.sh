@@ -33,7 +33,7 @@ fi
 n=$1 #order
 o=${2:-v} #simplification option, option "s" means simplifying for t seconds, option "v" means simplify until t% of variables are eliminated
 t=${3:-60} #time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate
-s=${4:-2} #by default we simplify twice, before and after noncanonical blocking clauses
+s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${5:-2} #by default we generate noncanonical blocking clauses in real time
 r=${6:-0} #number of variables to eliminate until the cubing terminates
 c=${7:-0} #-s apply CaDiCaL on the instances simplified on the previous depth
