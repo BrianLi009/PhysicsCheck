@@ -54,8 +54,18 @@ else
 		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat-ks/simp/maplesat_static -order=$n -exhaustive=$dir/$((i-1)).cubes$c.exhaust -keep-blocking=2 -noncanonical-out=$dir/$((i-1)).cubes$c.noncanon -max-conflicts=10000 > $logdir/$((i-1)).cubes$c.ncgen"
 		echo $command
 		eval $command
-		rm $dir/$((i-1)).cubes$c.exhaust
 		printf "Adding %d noncanonical blocking clauses into instance\n" $(wc -l < $dir/$((i-1)).cubes$c.noncanon)
+		if grep -q "UNSATISFIABLE" $logdir/$((i-1)).cubes$c.ncgen
+		then
+			numsols=$(wc -l < $dir/$((i-1)).cubes$c.exhaust)
+			echo "Instance was determined to have ${numsols} solutions by MapleSAT"
+			# If MapleSAT determines there are no solutions make the instance trivially unsatisfiable
+			if [ $numsols -eq 0 ]
+			then
+				echo "0" >> $dir/$((i-1)).cubes$c.simp
+			fi
+		fi
+		rm $dir/$((i-1)).cubes$c.exhaust
 
 		# Add noncanonical blocking clauses into simplified instance
 		mv $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.simp-tmp
