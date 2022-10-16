@@ -51,7 +51,7 @@ else
 	then
 		# Run MapleSAT for 10000 conflicts and output noncanonical blocking clauses
 		rm $dir/$((i-1)).cubes$c.noncanon 2> /dev/null
-		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat_static -order=$n -exhaustive=$dir/$((i-1)).cubes$c.exhaust -keep-blocking=2 -noncanonical-out=$dir/$((i-1)).cubes$c.noncanon -max-conflicts=10000"
+		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat-ks/simp/maplesat_static -order=$n -exhaustive=$dir/$((i-1)).cubes$c.exhaust -keep-blocking=2 -noncanonical-out=$dir/$((i-1)).cubes$c.noncanon -max-conflicts=10000 > $logdir/$((i-1)).cubes$c.ncgen"
 		echo $command
 		eval $command
 		rm $dir/$((i-1)).cubes$c.exhaust
@@ -59,7 +59,7 @@ else
 
 		# Add noncanonical blocking clauses into simplified instance
 		mv $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.simp-tmp
-		./concat.sh $dir/$((i-1)).cubes$c.simp-tmp $dir/$((i-1)).cubes$c.noncanon > $dir/$((i-1)).cubes$c.simp
+		./gen_cubes/concat.sh $dir/$((i-1)).cubes$c.simp-tmp $dir/$((i-1)).cubes$c.noncanon > $dir/$((i-1)).cubes$c.simp
 		rm $dir/$((i-1)).cubes$c.simp-tmp
 	fi
 fi
