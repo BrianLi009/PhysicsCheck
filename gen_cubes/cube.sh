@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Process options
-while getopts "apsb" opt
+while getopts "apsbm" opt
 do
 	case $opt in
 		a) a="-a" ;;
 		p) p="-p" ;;
 		s) s="-s" ;;
 		b) s="-b" ;;
+		m) s="-m" ;;
 	esac
 done
 shift $((OPTIND-1))
@@ -16,7 +17,7 @@ shift $((OPTIND-1))
 if [ -z $3 ]
 then
 	echo "Need order, filename, and number of variables to be removed in every cube (and optionally the depth to start and end at)"
-	echo "Usage: $0 [-a] [-p] [-s] [-b] n f r [d] [e]"
+	echo "Usage: $0 [-a] [-p] [-s] [-b] [-m] n f r [d] [e]"
 	echo "  n is the instance order"
 	echo "  f is the instance filename"
 	echo "  r is the number of edge variables to remove from each cube before splitting stops"
@@ -27,6 +28,7 @@ then
 	echo "  -p run cubing in parallel"
 	echo "  -s apply CaDiCaL on the instances simplified on the previous depth"
 	echo "  -b apply noncanonical clauses to simplified instance (implies -s)"
+	echo "  -m remove instances shown to be unsatisfiable by MapleSAT"
 	exit
 fi
 

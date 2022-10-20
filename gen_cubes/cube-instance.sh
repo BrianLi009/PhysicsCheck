@@ -22,13 +22,27 @@ logdir=$n-log # Directory to store logs
 cubeline=`head $dir/$((i-1)).cubes -n $c | tail -n 1`
 echo "Processing $cubeline..."
 
-# Check if no simplification mode enabled or at initial depth
-if [ -z $s ] || (( i == 1 ))
+# Check if no simplification mode (or mode -m) or at initial depth
+if [ -z $s ] || [ "$s" == "-m" ] || (( i == 1 ))
 then
 	# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
 	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
+
+	if [ "$s" == "-m" ]
+	then
+		# Run MapleSAT for 10000 conflicts to check if unsatisfiability can be discovered
+		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat-ks/simp/maplesat_static -order=$n -max-conflicts=10000 > $logdir/$((i-1)).cubes$c.mslog"
+		echo $command
+		eval $command
+		if grep -q "UNSATISFIABLE" $logdir/$((i-1)).cubes$c.mslog
+		then
+			echo "Instance was determined to be unsatisfiable by MapleSAT"
+			# If MapleSAT determines there are no solutions make the instance trivially unsatisfiable
+			echo "0" >> $dir/$((i-1)).cubes$c.simp
+		fi
+	fi
 # Check if current cube appears in previous list of cubes
 elif grep -q "$cubeline" $dir/$((i-2)).cubes
 then
@@ -108,7 +122,7 @@ then
 	head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
 fi
 # Delete simplified instance if not needed anymore
-if [ -z $s ]
+if [ -z $s ] || [ "$s" == "-m" ]
 then
 	rm $dir/$((i-1)).cubes$c.simp 2> /dev/null
 	rm $dir/$((i-1)).cubes$c.ext 2> /dev/null
