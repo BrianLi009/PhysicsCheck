@@ -22,12 +22,14 @@ logdir=$n-log # Directory to store logs
 cubeline=`head $dir/$((i-1)).cubes -n $c | tail -n 1`
 echo "Processing $cubeline..."
 
+# Check if no simplification mode enabled or at initial depth
 if [ -z $s ] || (( i == 1 ))
 then
 	# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
 	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
+# Check if current cube appears in previous list of cubes
 elif grep -q "$cubeline" $dir/$((i-2)).cubes
 then
 	# Line number of current cube in previous list of cubes
@@ -78,6 +80,10 @@ fi
 if grep -q "^0$" $dir/$((i-1)).cubes$c.simp
 then
 	removedvars=$m # Instance was unsatisfiable so all variables were removed
+	echo "  Depth $i instance $c was shown to be UNSAT; skipping"
+	head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
+	sed 's/a/u/' $dir/$i-$c.cubes -i # Mark cubes that have been shown to be unsatisfiable with 'u'
+	unsat=1
 else
 	# Determine how many edge variables were removed
 	removedvars=$(sed -E 's/.* 0 [-]*([0-9]*) 0$/\1/' < $dir/$((i-1)).cubes$c.ext | awk "\$0<=$m" | sort | uniq | wc -l)
@@ -95,7 +101,8 @@ then
 	# Adjoin the newly generated cubes to the literals in the current cube
 	cubeprefix=`head $dir/$((i-1)).cubes -n $c | tail -n 1 | sed -E 's/(.*) 0/\1/'`
 	sed -E "s/^a (.*)/$cubeprefix \1/" $dir/$((i-1)).cubes$c.cubes > $dir/$i-$c.cubes
-else
+elif [ -z $unsat ]
+then
 	# Current cube should not be split
 	echo "  Depth $i instance $c has $removedvars removed edge variables; not splitting"
 	head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes

@@ -99,6 +99,14 @@ do
 		# Get the c-th cube
 		cubeline=`head $dir/$((i-1)).cubes -n $c | tail -n 1`
 
+		# Skip processing this cube entirely if it was marked as UNSAT
+		if [[ ${cubeline::1} == "u" ]]
+		then
+			echo "  Depth $i instance $c was determined to be UNSAT; skipping"
+			head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
+			continue
+		fi
+
 		# Skip processing this cube entirely if it was not split on the previous depth (can be turned off with -a; ignore option when i > d)
 		if ([ "$a" != "-a" ] || (( i > d ))) && grep -q "$cubeline" $dir/$((i-2)).cubes 2> /dev/null
 		then
@@ -142,6 +150,8 @@ do
 	# Stop cubing when no additional cubes have been generated
 	if [ "$(wc -l < $dir/$((i-1)).cubes)" == "$(wc -l < $dir/$i.cubes)" ]
 	then
+		# Remove cubes marked as unsatisfiable from last cube file
+		sed -i '/^u/d' $dir/$i.cubes
 		break
 	fi
 done
