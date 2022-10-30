@@ -112,7 +112,7 @@ do
 		# Skip processing this cube entirely if it was not split on the previous depth (can be turned off with -a; ignore option when i > d)
 		if ([ "$a" != "-a" ] || (( i > d ))) && grep -q "$cubeline" $dir/$((i-2)).cubes 2> /dev/null
 		then
-			if [ "$s" == "-s" ]
+			if [ "$s" == "-s" ] || [ "$s" == "-b" ]
 			then
 				# Line number of parent cube
 				l=$(grep -n "$cubeline" $dir/$((i-2)).cubes | cut -d':' -f1)
