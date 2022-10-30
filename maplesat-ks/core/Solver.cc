@@ -93,6 +93,9 @@ static BoolOption    opt_randpseudo     (_cat, "randpseudo",  "Use a randomized 
 #endif
 static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
+#ifdef OPT_START_GUB
+static IntOption     opt_start_gub      (_cat, "unembeddable-check-start", "Starting unembeddable subgraphs to check for", 0, IntRange(0, 17));
+#endif
 static IntOption     opt_max_conflicts  (_cat, "max-conflicts", "Limit the number of conflicts (0=unlimited)", 0, IntRange(0, INT32_MAX));
 
 //=================================================================================================
@@ -677,7 +680,11 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             // Run gub subgraph check
             if (i >= 9)
             {
+#ifdef OPT_START_GUB
+                for(int g=opt_start_gub; g<opt_check_gub; g++)
+#else
                 for(int g=0; g<opt_check_gub; g++)
+#endif
                 {
                     if(i == 9 && g >= 2)
                         break;
@@ -1880,7 +1887,7 @@ lbool Solver::solve_()
             printf("          order %2d    : %-12"PRIu64"   (%.0f /sec)\n", i+1, canonarr[i], canonarr[i]/canontimearr[i]);
         }
         printf("Noncanonical subgraphs: %-12"PRIu64"   (%.0f /sec)\n", noncanon, noncanon/noncanontime);
-        for(int i=2; i<n-1; i++) {
+        for(int i=2; i<n; i++) {
             printf("          order %2d    : %-12"PRIu64"   (%.0f /sec)\n", i+1, noncanonarr[i], noncanonarr[i]/noncanontimearr[i]);
         }
         printf("Canonicity checking   : %g s\n", canontime);
