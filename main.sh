@@ -41,7 +41,7 @@ p=${8:-0} #default turn off parallel cubing
 
 if [ "$o" != "s" ] && [ "$o" != "v" ]
 then
-    echo "Need simplification option, option "t" means simplifying for t seconds, option "v" means simplify until v% of variables are eliminated"
+    echo "Need simplification option, option "s" means simplifying for t seconds, option "v" means simplify until t% of variables are eliminated"
     exit
 fi
 
