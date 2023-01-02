@@ -24,6 +24,8 @@
 
 `run-subgraph-generation.sh`: a script that generate blocking clauses to block non-canonical representation of a graph
 
+`verify.sh`: verify all KS candidates satisfy the constraints
+
 `Pipeline`: 
 
 dependencies: maplesat-ks, cadical, networkx, z3-solver, and march_cu from cube and conquer. Run dependency-setup.sh for dependency setup
