@@ -4,6 +4,10 @@
 
 `gen_instance`: include scripts that generate SAT instance of certain order with satisfying certain contraints, can be ran using 1-instance-generation.sh
 
+`maplesat-ks`: MapleSAT solver with orderly generation (SAT + CAS)
+
+`non_can`: pre-generated noncanonical blocking clauses that can be added to the instance
+
 `simplification`: contains script relavant to simplification in the pipeline
 
 `1-instance-generation.sh`: script that initiate instance geenration for order n, can be called with ./1-instance-generation.sh n
