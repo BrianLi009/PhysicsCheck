@@ -1,11 +1,12 @@
 import itertools
 
-def triangle(n, edge_dict, tri_dict):
+def triangle(n, edge_dict, tri_dict, cnf):
     """
     generate encoding for "all vertices are part of a triangle"
     we will use the same dictionary for all constraint for consistency and labeling purposes
     """
-    constraint = []
+    cnf_file = open(cnf, 'a+')
+    clause_count = 0
     vertices_lst = list(range(1, n+1))
     for triangle in list(itertools.combinations(vertices_lst, 3)):
         # the following encoding are applied in every possible triangle in the graph
@@ -18,18 +19,17 @@ def triangle(n, edge_dict, tri_dict):
         edge_1 = (vertices[0], vertices[1])
         edge_2 = (vertices[1], vertices[2])
         edge_3 = (vertices[0], vertices[2])
-        constraint_1 = [edge_dict[edge_1], -tri_dict[triangle]]
-        constraint_2 = [edge_dict[edge_2], -tri_dict[triangle]]
-        constraint_3 = [edge_dict[edge_3], -tri_dict[triangle]]
-        constraint_4 = [-edge_dict[edge_1], -edge_dict[edge_2], -edge_dict[edge_3], tri_dict[triangle]]
-        constraint.append(constraint_1)
-        constraint.append(constraint_2)
-        constraint.append(constraint_3)
-        constraint.append(constraint_4)
+        cnf_file.write('{} {} 0\n'.format(str(edge_dict[edge_1]), str(-tri_dict[triangle])))
+        cnf_file.write('{} {} 0\n'.format(str(edge_dict[edge_2]), str(-tri_dict[triangle])))
+        cnf_file.write('{} {} 0\n'.format(str(edge_dict[edge_3]), str(-tri_dict[triangle])))
+        cnf_file.write('{} {} {} {} 0\n'.format(str(-edge_dict[edge_1]), str(-edge_dict[edge_2]), str(-edge_dict[edge_3]), str(tri_dict[triangle])))
+        clause_count += 4
     for vertex in vertices_lst:
         all_in = []
+        string = ""
         for triangle in list(itertools.combinations(vertices_lst, 3)):
             if vertex in triangle:
-                all_in.append(tri_dict[triangle])   #at least one triangle variable that includes this particular vertex is True
-        constraint.append(all_in)
-    return constraint
+                string = string + str(tri_dict[triangle]) + " "
+        cnf_file.write(string + " 0\n")
+        clause_count += 1
+    return clause_count

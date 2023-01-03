@@ -32,7 +32,9 @@ def generate_lex_clauses(X, Y, strict, total_vars):
         clauses.append(generate_implication_clause({total_vars+n-1}, {-X[n-1], Y[n-1]}))
     return (clauses, total_vars+n-1)
 
-def cubic(n, count):
+def cubic(n, count, cnf):
+    clause_count = 0
+    cnf_file = open(cnf, 'a+')
     clauses = []
     total_vars = 0
     B = [[0 for j in range(n)] for i in range(n)]
@@ -46,5 +48,10 @@ def cubic(n, count):
             clause, count = generate_lex_clauses(B[i][:i]+B[i][i+1:j]+B[i][j+1:], B[j][:i]+B[j][i+1:j]+B[j][j+1:], False, count) #generate the lex constraint here A_{ij} \leq A_{ji}
             #print (count)
             clauses += clause
-    #print (clauses)
-    return clauses
+    for clause in clauses:
+        string = ""
+        for var in clause:
+            string = string + str(var) + " "
+        cnf_file.write(string + " 0\n")
+        clause_count += 1
+    return count, clause_count
