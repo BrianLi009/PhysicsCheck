@@ -15,10 +15,11 @@ def mindegree(n, edge_dict, cnf):
             vertices_lst_copy.remove(v)
             for choice in list(itertools.combinations(vertices_lst_copy, n-3)):
                 # a conjunction over all subsets of size n-3
-                constraint_1 = ""
+                constraint_1_lst = []
                 for v_2 in choice:
                     edge = tuple(sorted((v, v_2)))
-                    constraint_1 = constraint_1 + str(edge_dict[edge]) + " "
+                    constraint_1_lst.append(str(edge_dict[edge]))
+                constraint_1 = ' '.join(constraint_1_lst)
                 cnf_file.write(constraint_1 + " 0\n")
                 clause_count += 1
     return clause_count

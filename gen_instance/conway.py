@@ -9,9 +9,10 @@ def conway(n, edge_dict, tri_dict, v, t, cnf):
     v_tri_lst = [tri for tri in all_tri if v in tri]
     tr_sublst = itertools.combinations(v_tri_lst, int(len(v_tri_lst)-t))
     for comb in tr_sublst:
-        clause = ""
+        clause_lst = []
         for tri in comb:
-            clause = clause + str(tri_dict[tri]) + " "
+            clause_lst.append(str(tri_dict[tri]))
+        clause = ' '.join(clause_lst)
         cnf_file.write(clause + " 0\n")
         clause_count += 1
     return clause_count

@@ -49,9 +49,10 @@ def cubic(n, count, cnf):
             #print (count)
             clauses += clause
     for clause in clauses:
-        string = ""
+        string_lst = []
         for var in clause:
-            string = string + str(var) + " "
+            string_lst.append(str(var))
+        string = ' '.join(string_lst)
         cnf_file.write(string + " 0\n")
         clause_count += 1
     return count, clause_count

@@ -25,11 +25,11 @@ def triangle(n, edge_dict, tri_dict, cnf):
         cnf_file.write('{} {} {} {} 0\n'.format(str(-edge_dict[edge_1]), str(-edge_dict[edge_2]), str(-edge_dict[edge_3]), str(tri_dict[triangle])))
         clause_count += 4
     for vertex in vertices_lst:
-        all_in = []
-        string = ""
+        string_lst = []
         for triangle in list(itertools.combinations(vertices_lst, 3)):
             if vertex in triangle:
-                string = string + str(tri_dict[triangle]) + " "
+                string_lst.append(str(tri_dict[triangle]))
+        string = ' '.join(string_lst)
         cnf_file.write(string + " 0\n")
         clause_count += 1
     return clause_count

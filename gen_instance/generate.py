@@ -41,6 +41,12 @@ def generate(n):
     print ("graph is noncolorable")
     clause_count += mindegree(n, edge_dict, cnf_file)
     print ("minimum degree of each vertex is 3")
+    """
+    conway(n, edge_dict, tri_dict, 1, 3)
+    conway(n, edge_dict, tri_dict, 2, 4)
+    conway(n, edge_dict, tri_dict, 3, 4)
+    print ("conway constraint")
+    """
     var_count, c_count = cubic(n, count, cnf_file) #total number of variables
     clause_count += c_count
     print ("isomorphism blocking applied")
