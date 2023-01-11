@@ -2,8 +2,9 @@
 # Ensure parameters are specified on the command-line
 #set -x
 
-[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 5 ] && echo "
 Description:
+    Updated on 2023-01-11
     This script join the cubes with the instance, then call the simplification script
 
 Usage:

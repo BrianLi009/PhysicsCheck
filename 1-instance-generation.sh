@@ -1,7 +1,8 @@
 #!/bin/bash
 
-[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 1 ] && echo "
 Description:
+    Updated on 2023-01-11
     This script call the python file generate.py in gen_instance to generate the SAT encoding for a Kochen Specker candidates. Such candidate satisfies the following condition:
     1. The graph is squarefree, hence does not contain C4 subgraph
     2. All vertices are part of a triangle

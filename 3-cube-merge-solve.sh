@@ -1,7 +1,8 @@
 #!/bin/bash
 
-[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 5 ] && echo "
 Description:
+    Updated on 2023-01-11
     This script generate cubes for the instance using the incremental cubing technique, then adjoin the deepest cubing file with the instance
     line by line, creating multiple separate instances with a cube embedded in it. Then maplesat-ks is being called to solve each instance (in parallel).
 
@@ -12,8 +13,8 @@ Options:
     <n>: the order of the instance/number of vertices in the graph
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
-    <c>: option to enable the -s option in cubing
-    <p>: option to enable the -p option in cubing
+    <c>: option to enable the -s option in cubing, 1 to enable and 0 to disable
+    <p>: option to enable the -p option in cubing, 1 to enable and 0 to disable
 " && exit
  
 n=$1 #order
@@ -26,7 +27,7 @@ if [ "$c" -eq 1 ] && [ "$p" -eq 1 ]
 then
      echo "both -s, -p enabled"
     ./gen_cubes/cube.sh -p -s $n $f $r #cube till r varaibles are eliminated
-    echo "solving option for -s not yet implemented"
+    echo "WARNING: solving option for -s not yet implemented as it is not used in the default pipeline"
     exit 0
 fi
 
@@ -35,6 +36,7 @@ then
      echo "-s enabled"
     ./gen_cubes/cube.sh -s $n $f $r #cube till r varaibles are eliminated
     echo "solving option for -s not yet implemented"
+    echo "WARNING: solving option for -s not yet implemented as it is not used in the default pipeline"
     exit 0
 fi
 

@@ -1,10 +1,11 @@
 #!/bin/bash
 
-[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 1 ] && echo "
 Description:
+    Updated on 2023-01-11
     Given kochen specker candidates, this script check whether a candidate is indeed
     a kochen specker graph. If a graph is embedabble, and satisfy all constraints specified
-    in gen_instance/generate.py
+    in gen_instance/generate.py. We require the file n.exhaust to be generated
 
 Usage:
     ./4-check-embedability.sh n
@@ -14,6 +15,8 @@ Options:
 " && exit
 
 n=$1 #order
+
+touch $n.exhaust
 
 cp $n.exhaust embedability
 
@@ -28,7 +31,7 @@ else
     ./generate_nonembed_sat.sh 11
     ./generate_nonembed_sat.sh 12
     #need to append all output file together as min_nonembed_graph_10-12.txt
-    #this part to be finished
+    #this part to be finished, currently it does not affect the main pipeline as min_nonembed_graph_10-12.txt has already been generated
 fi 
 ./check_embedability.sh -s $n
 

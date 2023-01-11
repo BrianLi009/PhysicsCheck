@@ -4,17 +4,19 @@
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
+    Updated on 2023-01-11
     This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
     ./main.sh n o t s b r c p
+    If only parameter n is provided, default run ./main.sh n v 60 2 2 0 0 0
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
     <o>: simplification option, option s means simplifying for t seconds, option v means simplify until t% of variables are eliminated
     <t>: time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
-    <s>: option for simplifiation, takes in argument 1 (before), 2 (after), 3(both)
+    <s>: option for simplifiation, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
     <c>: -s apply CaDiCaL on the instances simplified on the previous depth, takes in 1 (on), 0 (off)
