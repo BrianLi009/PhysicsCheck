@@ -17,13 +17,6 @@ Options:
     <p>: percentage of variables to eliminate (1-100)
 " && exit
 
-# Ensure parameters are specified on the command-line
-if [ -z "$2" ]
-then
-	echo "Need filename and the percentage of variables to remove"
-	exit
-fi
-
 n=$1
 f="$2"
 p="$3"
