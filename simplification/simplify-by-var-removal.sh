@@ -30,7 +30,7 @@ mkdir -p log/$sub_dir
 mkdir -p simp/$sub_dir
 
 # Simplify until at least p percent of variables have been removed
-./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c 200000 | tee log/"$f".simp1
+./cadical/build/cadical "$f" --unsat -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c 200000 | tee log/"$f".simp1
 for i in $(seq 1 100)
 do
 	vars_remaining=$(grep "c [*]" log/"$f".simp"$i" | tail -n 1 | rev | cut -d' ' -f1 | rev | sed 's/.$//')
@@ -38,7 +38,7 @@ do
 	then
 		break
 	fi
-	./cadical/build/cadical simp/"$f".simp"$i" -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 | tee log/"$f".simp$((i+1))
+	./cadical/build/cadical simp/"$f".simp"$i" --unsat -o simp/"$f".simp$((i+1)) -e simp/"$f".ext$((i+1)) -n -c 200000 | tee log/"$f".simp$((i+1))
 done
 
 # Number of variables and lines in the final simplified instance
