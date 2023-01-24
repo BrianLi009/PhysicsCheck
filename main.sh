@@ -37,7 +37,7 @@ t=${3:-60} #time in seconds for which to simplify each time CaDiCal is called, o
 s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${5:-2} #by default we generate noncanonical blocking clauses in real time
 r=${6:-0} #number of variables to eliminate until the cubing terminates
-p=${8:-0} #default turn off parallel cubing
+p=${7:-0} #default turn off parallel cubing
 
 if [ "$o" != "s" ] && [ "$o" != "v" ]
 then
