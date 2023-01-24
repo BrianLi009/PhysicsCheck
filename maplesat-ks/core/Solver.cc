@@ -91,6 +91,7 @@ static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-can
 #ifdef RANDPSEUDO
 static BoolOption    opt_randpseudo     (_cat, "randpseudo",  "Use a randomized pseudo-canonicity test", false);
 #endif
+static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", false);
 static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
 #ifdef OPT_START_GUB
@@ -429,8 +430,10 @@ Lit Solver::pickBranchLit()
 
 // Returns true when the k-vertex subgraph (with adjacency matrix M) is canonical
 // M is determined by the current assignment to the first k*(k-1)/2 variables
-bool Solver::is_canonical(int k) {
-    int p[k]; // Permutation on k vertices
+// If M is noncanonical, then p, x, and y will be updated so that
+// * p will be a permutation of the rows of M so that row[i] -> row[p[i]] generates a matrix smaller than M (and therefore demonstrates the noncanonicity of M)
+// * (x,y) will be the indices of the first entry in the permutation of M demonstrating that the matrix is indeed lex-smaller than M
+bool Solver::is_canonical(int k, int p[], int& x, int& y) {
     int pl[k]; // pl[k] contains the current list of possibilities for kth vertex (encoded bitwise)
     int pn[k+1]; // pn[k] contains the initial list of possibilities for kth vertex (encoded bitwise)
     pl[0] = (1 << k) - 1;
@@ -481,8 +484,8 @@ bool Solver::is_canonical(int k) {
 
         // Determine if the permuted matrix p(M) is lex-smaller than M
         bool lex_result_unknown = false;
-        int x = last_x == 0 ? 1 : last_x;
-        int y = last_y;
+        x = last_x == 0 ? 1 : last_x;
+        y = last_y;
         int j;
         for(j=last_x*(last_x-1)/2+last_y; j<k*(k-1)/2; j++) {
             if(x > i) {
@@ -743,7 +746,19 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             // Found a new subgraph of order i+1 to test for canonicity
             const double before = cpuTime();
             // Run canonicity check
-            bool ret = is_canonical(i+1);
+            int p[i+1]; // Permutation on i+1 vertices
+            int x, y;   // These will be the indices of first adjacency matrix entry that demonstrates noncanonicity (when such indices exist)
+            bool ret = is_canonical(i+1, p, x, y);
+#ifdef VERBOSE
+            printf("x: %d y: %d, ", x, y);
+            printf("p^(-1)(x): %d p^(-1)(y): %d, ", p[x], p[y]);
+            for(int j=0; j<i+1; j++) {
+                if(j != p[j]) {
+                    printf("%d ", p[j]);
+                } else printf("* ");
+            }
+            printf("\n");
+#endif
             const double after = cpuTime();
 
             // If subgraph is canonical
@@ -789,13 +804,40 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
                 noncanonarr[i]++;
                 noncanontimearr[i] += (after-before);
                 out_learnts.push();
-                for(int j = 0; j < i*(i+1)/2; j++)
-                    out_learnts[0].push(mkLit(j, assigns[j]==l_True));
+
+                if(opt_minclause) {
+                    // Generate a blocking clause smaller than the naive blocking clause
+                    out_learnts[0].push(~mkLit(x*(x-1)/2+y));
+                    const int px = MAX(p[x], p[y]);
+                    const int py = MIN(p[x], p[y]);
+                    out_learnts[0].push(mkLit(px*(px-1)/2+py));
+                    for(int ii=0; ii < x+1; ii++) {
+                        for(int jj=0; jj < ii; jj++) {
+                            if(ii==x && jj==y) {
+                                break;
+                            }
+                            const int pii = MAX(p[ii], p[jj]);
+                            const int pjj = MIN(p[ii], p[jj]);
+                            if(ii==pii && jj==pjj) {
+                                continue;
+                            } else if(assigns[ii*(ii-1)/2+jj] == l_True) {
+                                out_learnts[0].push(~mkLit(ii*(ii-1)/2+jj));
+                            } else if (assigns[pii*(pii-1)/2+pjj] == l_False) {
+                                out_learnts[0].push(mkLit(pii*(pii-1)/2+pjj));
+                            }
+                        }
+                    }
+                }
+                else {
+                    // Generate the naive blocking clause
+                    for(int j = 0; j < i*(i+1)/2; j++)
+                        out_learnts[0].push(mkLit(j, assigns[j]==l_True));
+                }
                 
                 if(noncanonicaloutfile != NULL) {
                     //fprintf(noncanonicaloutfile, "a ");
-                    for(int j = 0; j < i*(i+1)/2; j++)
-                        fprintf(noncanonicaloutfile, "%s%d ", assigns[j]==l_True ? "-" : "", j+1);
+                    for(int j = 0; j < out_learnts[0].size(); j++)
+                        fprintf(noncanonicaloutfile, "%s%d ", sign(out_learnts[0][j]) ? "-" : "", var(out_learnts[0][j])+1);
                     fprintf(noncanonicaloutfile, "0\n");
                     fflush(noncanonicaloutfile);
                 }

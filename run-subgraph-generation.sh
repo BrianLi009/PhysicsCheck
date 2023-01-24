@@ -29,7 +29,7 @@ mkdir -p "$dir"
 i=$k # Subgraph order
 rm "$dir"/"$i"-solo.exhaust "$dir"/"$i"-solo.noncanonical "$dir"/subgraph-gen-solo-"$i".log 2>/dev/null
 start=$(date +%s.%N)
-command="./maplesat-ks/simp/maplesat_static -order=$n -max-exhaustive-var=$((i*(i-1)/2)) -skip-last=$((n-i)) -exhaustive=$dir/$i-solo.exhaust -no-pre $f -keep-blocking=2 -noncanonical-out=$dir/$i-solo.noncanonical $p | tee $dir/subgraph-gen-solo-$i.log"
+command="./maplesat-ks/simp/maplesat_static -order=$n -max-exhaustive-var=$((i*(i-1)/2)) -skip-last=$((n-i)) -exhaustive=$dir/$i-solo.exhaust -no-pre $f -keep-blocking=2 -noncanonical-out=$dir/$i-solo.noncanonical -minclause $p | tee $dir/subgraph-gen-solo-$i.log"
 echo "$command"
 eval "$command"
 end=$(date +%s.%N)

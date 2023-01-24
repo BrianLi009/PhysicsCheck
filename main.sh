@@ -151,7 +151,7 @@ if [ "$r" != "0" ]
 then 
     ./3-cube-merge-solve.sh $n $r $instance_tracking 0 $p
 else
-    ./maplesat-ks/simp/maplesat_static $instance_tracking -no-pre -exhaustive=$n.exhaust -order=$n | tee solvelog/$instance_tracking.log
+    ./maplesat-ks/simp/maplesat_static $instance_tracking -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee solvelog/$instance_tracking.log
 fi
 
 #step 5.5: verify all constraints are satisfied
