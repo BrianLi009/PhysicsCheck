@@ -41,15 +41,19 @@ def generate(n):
     print ("graph is noncolorable")
     clause_count += mindegree(n, edge_dict, cnf_file)
     print ("minimum degree of each vertex is 3")
-    clause_count += conway(n, edge_dict, tri_dict, 1, 3, cnf_file)
-    clause_count += conway(n, edge_dict, tri_dict, 2, 4, cnf_file)
-    clause_count += conway(n, edge_dict, tri_dict, 3, 4, cnf_file)
-    print ("conway constraint")
-    var_count, c_count = cubic(n, count, cnf_file) #total number of variables
+    var_count, c_count = cubic(n, count, cnf_file) 
     clause_count += c_count
     print ("isomorphism blocking applied")
+    var_count, c_count = conway(n, edge_dict, tri_dict, 1, 3, cnf_file, var_count)
+    clause_count += c_count
+    var_count, c_count = conway(n, edge_dict, tri_dict, 2, 4, cnf_file, var_count)
+    clause_count += c_count
+    var_count, c_count = conway(n, edge_dict, tri_dict, 3, 4, cnf_file, var_count)
+    clause_count += c_count
+    print ("conway constraint")
     firstline = 'p cnf ' + str(var_count) + ' ' + str(clause_count)
     subprocess.call(["./gen_instance/append.sh", cnf_file, cnf_file+"_new", firstline])
+    print ("header added")
 
 if __name__ == "__main__":
    generate(int(sys.argv[1]))
