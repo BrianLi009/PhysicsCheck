@@ -4,18 +4,18 @@
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
-    Updated on 2023-01-11
+    Updated on 2023-01-25
     This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
     ./main.sh n o t s b r p
-    If only parameter n is provided, default run ./main.sh n v 60 2 2 0 0
+    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <o>: simplification option, option s means simplifying for t seconds, option v means simplify until t% of variables are eliminated
-    <t>: time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
+    <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
+    <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
     <s>: option for simplifiation, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
@@ -32,16 +32,16 @@ fi
 #set -x
 
 n=$1 #order
-o=${2:-v} #simplification option, option "s" means simplifying for t seconds, option "v" means simplify until t% of variables are eliminated
-t=${3:-60} #time in seconds for which to simplify each time CaDiCal is called, or % of variables to eliminate
+o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
+t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${5:-2} #by default we generate noncanonical blocking clauses in real time
 r=${6:-0} #number of variables to eliminate until the cubing terminates
 p=${7:-0} #default turn off parallel cubing
 
-if [ "$o" != "s" ] && [ "$o" != "v" ]
+if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
-    echo "Need simplification option, option "s" means simplifying for t seconds, option "v" means simplify until t% of variables are eliminated"
+    echo "Need simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated"
     exit
 fi
 
@@ -61,9 +61,9 @@ then
     then
         echo "$simp1 already exist, skip simplification"
     else
-        if [ "$o" == "s" ]
+        if [ "$o" == "c" ]
         then
-            ./simplification/simplify.sh constraints_${n}_${o}_${t}_${s}_${b} $n $t
+            ./simplification/simplify-by-conflicts.sh constraints_${n}_${o}_${t}_${s}_${b} $n $t
         else
             ./simplification/simplify-by-var-removal.sh $n "constraints_${n}_${o}_${t}_${s}_${b}" $t
         fi
@@ -119,9 +119,9 @@ then
     then
         echo "$simp2 already exist, skip simplification"
     else
-        if [ "$o" == "s" ]
+        if [ "$o" == "c" ]
         then
-            ./simplification/simplify.sh $instance_tracking $n $t
+            ./simplification/simplify-by-conflicts.sh $instance_tracking $n $t
         else
             ./simplification/simplify-by-var-removal.sh $n $instance_tracking $t
         fi

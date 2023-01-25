@@ -14,10 +14,10 @@ function readtime() {
 printf " n    Solving\n"
 for i in `seq 1 22`
 do
-	if [ ! -f solvelog/constraints_${i}_v_60_2_2.simp2.log ]
+	if [ ! -f solvelog/constraints_${i}_c_100000_2_2.simp2.log ]
 	then
 		continue
 	fi
-	readtime "run" "solvelog/constraints_${i}_v_60_2_2.simp2.log"
+	readtime "run" "solvelog/constraints_${i}_c_100000_2_2.simp2.log"
 	printf "%2d %s\n" $i "$run"
 done
