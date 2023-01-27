@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#set -x
-
 [ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 3 ] && echo "
 Description:
 	Updated on 2023-01-11
