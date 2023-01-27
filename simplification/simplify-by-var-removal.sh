@@ -3,16 +3,16 @@
 [ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 3 ] && echo "
 Description:
 	Updated on 2023-01-11
-    This script simplify the instance, add back edge blocking clauses, then repeat
+	This script simplify the instance, add back edge blocking clauses, then repeat
 	until a certain percentage of variables are eliminated
 
 Usage:
-    ./simplify-by-var-removal n f p
+	./simplify-by-var-removal n f p
 
 Options:
 	<n>: the order of the instance/number of vertices in the graph
-    <f>: file name of the current SAT instance
-    <p>: percentage of variables to eliminate (1-100)
+	<f>: file name of the current SAT instance
+	<p>: percentage of variables to eliminate (1-100)
 " && exit
 
 n=$1
