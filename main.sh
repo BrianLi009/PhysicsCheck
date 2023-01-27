@@ -95,7 +95,7 @@ if [ "$b" -eq 1 ]
 then
     if [ -f $simp_non ]
     then
-        echo "$simp_non already exist, skip adding non canoniacl subgraph"
+        echo "$simp_non already exist, skip adding non canonical subgraph"
     else
         cp $instance_tracking $simp_non
         for file in non_can/*.noncanonical
