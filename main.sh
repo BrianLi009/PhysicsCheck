@@ -16,7 +16,7 @@ Options:
     <n>: the order of the instance/number of vertices in the graph
     <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
     <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
-    <s>: option for simplifiation, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
+    <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
     <p>: cubing in parallel, 1 (on), 0 (off), default turn off parallel cubing
