@@ -54,8 +54,9 @@ fi
 
 :
 #find the deepest cube file
-cube_file=$(find . -type f -wholename "./$n-cubes/*.cubes" -exec grep -H -c '[^[:space:]]' {} \; | sort -nr -t":" -k2 | awk -F: '{print $1; exit;}')
-
+files=$(ls ./$n-cubes/*.cubes)
+highest_num=$(echo "$files" | awk -F '[./]' '{print $4}' | sort -nr | head -n 1)
+cube_file=./$n-cubes/$highest_num.cubes
 cp $(echo $cube_file) .
 
 cube_file=$(echo $cube_file | sed 's:.*/::')
