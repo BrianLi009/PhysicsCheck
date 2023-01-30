@@ -90,8 +90,10 @@ int initFormula( FILE* in )
 	freevars    = nrofvars;
 
 	if ((nrofclauses / nrofvars) > 10) {
+/*
           if (quiet_mode == 0)
 	    printf("c full lookahead due to high density!\n");
+*/
 	  percent = 100; }
 	else
 	   percent = PERCENT;
