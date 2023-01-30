@@ -147,9 +147,11 @@ void init_freevars() {
 #else
 	dynamic_preselect_setsize = 0;
 #endif
+/*
         if (quiet_mode == 0) {
 	  if (dynamic_preselect_setsize) printf("c dynamic_preselect_setsize :: on\n");
 	  else                           printf("c dynamic_preselect_setsize :: off\n"); }
+*/
 }
 
 void dispose_freevars()

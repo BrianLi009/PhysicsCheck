@@ -34,10 +34,12 @@ int equivalence_reasoning () {
   shorten_equivalence();
   while (find_and_propagate_bieq ()) { };
 
+/*
 #ifndef EQ
   if (quiet_mode == 0)
     printf("c equivalence reasoning is turned off.\n");
 #endif
+*/
   return 1; }
 
 void init_equivalence () {
