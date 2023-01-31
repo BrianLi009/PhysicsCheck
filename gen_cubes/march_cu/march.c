@@ -131,7 +131,7 @@ int main (int argc, char** argv) {
     if (strcmp(argv[i], "-f"  ) == 0) { fraction   = atof (argv[i+1]); } }
 
   if ((mode != PLAIN_MODE) && (quiet_mode == 0)) {
-    printf("c down fraction = %.3f and down exponent = %.3f\n", (float) fraction, (float) downexp);
+//    printf("c down fraction = %.3f and down exponent = %.3f\n", (float) fraction, (float) downexp);
     if (maxvar) printf("c maximum variable to appear in cubes is %d\n", maxvar);
     printf("c cubes are emitted to %s\n", cubesFile); }
 
@@ -149,11 +149,13 @@ int main (int argc, char** argv) {
           if (Clength[i] > 3) {
             kSAT_flag = 1; break; }
 
+/*
         if (quiet_mode == 0) {
           if (kSAT_flag) {
             printf("c clause-length heuristic with magic constants: bin = %.2f and dec = %.2f\n", h_bin, h_dec); }
 	  else {
             printf("c literal-weight heuristic with magic constants: min = %.2f, bin = %.2f, and max = %.2f\n", h_min, h_bin, h_max); } }
+*/
 
 #ifndef TERNARYLOOK
 #ifdef RESOLVENTLOOK
