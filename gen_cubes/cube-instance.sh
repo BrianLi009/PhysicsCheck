@@ -33,7 +33,7 @@ then
 	if [ "$s" == "-m" ]
 	then
 		# Run MapleSAT for 10000 conflicts to check if unsatisfiability can be discovered
-		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat-ks/simp/maplesat_static -order=$n -max-conflicts=10000 > $logdir/$((i-1)).cubes$c.mslog"
+		command="./gen_cubes/concat-edge.sh $m $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.ext | ./maplesat-ks/simp/maplesat_static -order=$n -max-conflicts=10000 -noncanonical-out=$dir/$((i-1)).cubes$c.noncanon > $logdir/$((i-1)).cubes$c.mslog"
 		echo $command
 		eval $command
 		if grep -q "UNSATISFIABLE" $logdir/$((i-1)).cubes$c.mslog
@@ -41,6 +41,12 @@ then
 			echo "Instance was determined to be unsatisfiable by MapleSAT"
 			# If MapleSAT determines there are no solutions make the instance trivially unsatisfiable
 			echo "0" >> $dir/$((i-1)).cubes$c.simp
+		else
+			printf "Adding %d noncanonical blocking clauses into instance\n" $(wc -l < $dir/$((i-1)).cubes$c.noncanon)
+			# Add noncanonical blocking clauses into simplified instance
+			mv $dir/$((i-1)).cubes$c.simp $dir/$((i-1)).cubes$c.simp-tmp
+			./gen_cubes/concat.sh $dir/$((i-1)).cubes$c.simp-tmp $dir/$((i-1)).cubes$c.noncanon > $dir/$((i-1)).cubes$c.simp
+			rm $dir/$((i-1)).cubes$c.simp-tmp
 		fi
 	fi
 # Check if current cube appears in previous list of cubes
