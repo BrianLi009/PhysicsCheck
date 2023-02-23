@@ -333,7 +333,7 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
         if nx.is_empty(G):
             return
     if using_subgraph == "True":
-        print ("Checking minimum nonembeddable subgraph")
+        #print ("Checking minimum nonembeddable subgraph")
         my_file = open("min_nonembed_graph_10-12.txt", "r")
         content = my_file.read()
         min_non_subgraphs = content.split("\n")
