@@ -35,4 +35,4 @@ else
 fi 
 ./check_embedability.sh -s $n
 
-cd -
+cd ..
