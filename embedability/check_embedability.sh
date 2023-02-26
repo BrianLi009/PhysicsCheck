@@ -18,34 +18,34 @@ Options:
 
 while getopts "spv" opt
 do
-	case $opt in
-		s) s="-s" ;;
+    case $opt in
+        s) s="-s" ;;
         p) p="-p" ;;
         v) v="-v" ;;
-	esac
+    esac
 done
 shift $((OPTIND-1))
 
 using_subgraph=False
 if [ "$s" == "-s" ]
-	then
-        echo "enabling using minimal noembeddable subgraph"
-		using_subgraph=True
-	fi
+    then
+        echo "enabling using minimal nonembeddable subgraph"
+        using_subgraph=True
+    fi
 
 prop1=False
 if [ "$p" == "-p" ]
-	then
+    then
         echo "enable applying proposition 1"
-		prop1=True
-	fi
+        prop1=True
+    fi
 
 verify=False
 if [ "$v" == "-v" ]
-	then
+    then
         echo "enable embeddability verification"
-		verify=True
-	fi
+        verify=True
+    fi
 
 n=$1
 
