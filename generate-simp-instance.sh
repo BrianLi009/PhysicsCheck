@@ -35,6 +35,12 @@ then
     exit
 fi
 
+if [ -f constraints_${n}_${o}_${t}_${s}_${b}_final.simp ]
+then
+    echo "instance with the same parameter has already been generated"
+    exit 0
+fi
+
 #step 3: generate instances
 ./1-instance-generation.sh $n
 
