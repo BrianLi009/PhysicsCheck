@@ -2,8 +2,8 @@
 
 function readtime() {
 	tmp=$(grep "CPU" $2 2>/dev/null | xargs | cut -d' ' -f4)
-	tmp=$(awk "BEGIN { print $tmp }")
-	tmp=$(echo $tmp/60 | bc -l)
+	tmp=$(awk "BEGIN { print $tmp }" 2>/dev/null)
+	tmp=$(echo $tmp/60 | bc -l 2>/dev/null)
 	if [ ! -z "$tmp" ]
 	then
 		eval "$1=$(printf \"%10.2f\" $tmp)"
