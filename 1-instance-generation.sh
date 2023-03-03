@@ -3,26 +3,29 @@
 [ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 1 ] && echo "
 Description:
     Updated on 2023-01-11
-    This script call the python file generate.py in gen_instance to generate the SAT encoding for a Kochen Specker candidates. Such candidate satisfies the following condition:
-    1. The graph is squarefree, hence does not contain C4 subgraph
-    2. All vertices are part of a triangle
-    3. Graph is not 010-colorable (refer to the paper for definition)
-    4. Minimum degree of each vertex is 3
-    5. We also applied the cubic isomorphism blocking clauses
+    This script call the python file generate.py in gen_instance to generate the SAT encoding for Ramsey graphs R(n;p,q). Such candidate satisfies the following condition:
+    1. The graph is complete on n vertices.
+    2. There does not exist a blue p-clique. 
+    3. There does exist a red q-clique.
+    4. We also applied the cubic isomorphism blocking clauses
 
 Usage:
-    ./1-instance-generation.sh n
+    ./1-instance-generation.sh n p q
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
+    <p>: as in R(p,q)
+    <q>: as in R(p,q)
     
 " && exit
 
 n=$1 #order
+p=$2
+q=$3
 
-if [ -f constraints_$n ]
+if [ -f constraints_$n_$p_$q ]
 then
     echo "instance already generated"
 else
-    python3 gen_instance/generate.py $n #generate the instance of order n
+    python3 gen_instance/generate.py $n $p $q #generate the instance of order n for p,q
 fi
