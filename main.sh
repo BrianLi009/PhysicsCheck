@@ -14,6 +14,8 @@ Usage:
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
+    <p>:
+    <q>:
     <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
     <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
@@ -74,7 +76,7 @@ else
     ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp -no-pre -order=$n -minclause | tee solvelog/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log
 fi
 
-#step 6: checking if there exist embeddable solution
+#step 6: checking if there exist clique sizes>=p or independent set >=q
 echo "checking max clique size..."
 ./4-check-clique-size.sh $n $p $q
 
