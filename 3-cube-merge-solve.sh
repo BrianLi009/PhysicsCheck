@@ -10,7 +10,7 @@ Usage:
     ./3-cube-merge-solve.sh n r f c p
 
 Options:
-    <n>: the order of the instance/number of vertices in the graph
+    <n>: the order of the instance/number of vertices in the graph. Note that (p,q) are not needed (think). File seems incomplete also
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
     <c>: option to enable the -s option in cubing, 1 to enable and 0 to disable
@@ -67,7 +67,7 @@ for i in $(seq 0 $new_index)
 do 
     ./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50
     #join the cube to the instance, simplified until 50% of the variables are eliminated
-    ./maplesat-ks/simp/maplesat_static $cube_file$i.adj.simp -no-pre -exhaustive=$n.exhaust -order=$n
+    ./maplesat-ks/simp/maplesat_static $cube_file$i.adj.simp -no-pre -minclause -order=$n
 done
 
 
