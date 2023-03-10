@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH --account=def-vganesh
+#SBATCH --time=2-00:00
+#SBATCH --mem-per-cpu=8G
+
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
@@ -7,7 +11,7 @@ Description:
 
 Usage:
     ./generate-simp-instance.sh n p q o t s b
-    If only parameter (n p q) is provided, default run ./main.sh n p q c 100000 2 2
+    If only parameter (n p q) is provided, default run ./generate-simp-instance.sh n p q c 100000 2 2
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
@@ -48,7 +52,9 @@ fi
 #step 3: generate instances
 ./1-instance-generation.sh $n $p $q
 
-instance_tracking=constraints_$n_$p_$q
+instance_tracking=constraints_${n}_${p}_${q}
+
+echo $instance_tracking
 
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
@@ -77,6 +83,7 @@ fi
 #step 4: generate non canonical subgraph
 
 simp_non=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}.noncanonical
+echo $simp_non
 if [ "$b" -eq 2 ]
 then
     if [ -f $simp_non ]
@@ -84,7 +91,7 @@ then
         echo "$simp_non already exist, skip adding non canonical subgraph"
     else
         cp $instance_tracking $simp_non
-        ./2-add-blocking-clauses.sh $n 12 $simp_non
+        ./2-add-blocking-clauses.sh $n 18 $simp_non
     fi
     instance_tracking=$simp_non
 fi
