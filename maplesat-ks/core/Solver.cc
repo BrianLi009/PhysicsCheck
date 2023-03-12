@@ -26,6 +26,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "core/Dimacs.h"
 #include "utils/System.h"
 
+#define MAXORDER 39
+
 FILE* exhaustfile = NULL;
 FILE* canonicaloutfile = NULL;
 FILE* noncanonicaloutfile = NULL;
@@ -37,10 +39,12 @@ long gubcount = 0;
 long gubcounts[17] = {};
 double canontime = 0;
 double noncanontime = 0;
-long canonarr[39] = {};
-long noncanonarr[39] = {};
-double canontimearr[39] = {};
-double noncanontimearr[39] = {};
+long canon_np[MAXORDER] = {};
+long noncanon_np[MAXORDER] = {};
+long canonarr[MAXORDER] = {};
+long noncanonarr[MAXORDER] = {};
+double canontimearr[MAXORDER] = {};
+double noncanontimearr[MAXORDER] = {};
 double gubtime = 0;
 
 using namespace Minisat;
@@ -80,17 +84,14 @@ static StringOption  opt_exhaustive(_cat, "exhaustive", "Output for exhaustive s
 static IntOption     opt_keep_blocking     (_cat, "keep-blocking", "Never forget the blocking clauses that are learned during the exhaustive search (0=off, 1=keep clauses after minimization, 2=keep original clauses)", 1, IntRange(0, 2));
 static IntOption     opt_max_exhaustive_var (_cat, "max-exhaustive-var", "Only perform exhaustive search over the variables up to and including this variable index (0=use all edge variables in graph)", 0, IntRange(0, INT32_MAX));
 //static BoolOption    opt_fixed_card     (_cat, "fixed-card", "Assume a fixed number of true variables in solution and only use negative literals in exhaustive blocking clauses", false);
-static IntOption     opt_order          (_cat, "order", "Number of vertices in the KS system searching for", 0, IntRange(0, 39));
-//static IntOption     opt_start_col      (_cat, "start-col", "Starting column for which to test for canonicity", 2, IntRange(0, 39));
-static IntOption     opt_inc_col        (_cat, "inc-col", "Check for canonicity every inc_col columns", 1, IntRange(1, 39));
-static IntOption     opt_lookahead      (_cat, "lookahead", "Ensure that this many additional columns have been completed before performing canonicity checking", 0, IntRange(0, 39));
-static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the canonicity on the last skip_last columns", 0, IntRange(0, 39));
+static IntOption     opt_order          (_cat, "order", "Number of vertices in the KS system searching for", 0, IntRange(0, MAXORDER));
+//static IntOption     opt_start_col      (_cat, "start-col", "Starting column for which to test for canonicity", 2, IntRange(0, MAXORDER));
+static IntOption     opt_inc_col        (_cat, "inc-col", "Check for canonicity every inc_col columns", 1, IntRange(1, MAXORDER));
+static IntOption     opt_lookahead      (_cat, "lookahead", "Ensure that this many additional columns have been completed before performing canonicity checking", 0, IntRange(0, MAXORDER));
+static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the canonicity on the last skip_last columns", 0, IntRange(0, MAXORDER));
 static StringOption  opt_canonical_out  (_cat, "canonical-out", "File to output canonical subgraphs found during search");
 static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to output the noncanonical subgraph blocking clauses");
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
-#ifdef RANDPSEUDO
-static BoolOption    opt_randpseudo     (_cat, "randpseudo",  "Use a randomized pseudo-canonicity test", false);
-#endif
 static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", false);
 static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
@@ -338,7 +339,7 @@ bool Solver::satisfied(const Clause& c) const {
     return false; }
 
 
-bool colsuntouched[40] = {};
+bool colsuntouched[MAXORDER] = {};
 
 // Revert to the state at given level (keeping all assignment at 'level' but not beyond).
 //
@@ -438,20 +439,19 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
     int pn[k+1]; // pn[k] contains the initial list of possibilities for kth vertex (encoded bitwise)
     pl[0] = (1 << k) - 1;
     pn[0] = (1 << k) - 1;
-    // If pseudo-canonical testing is enabled then fix the first row (except on a complete solution)
-    if(opt_pseudo_test && k < n) {
-        pl[0] = 1;
-        #ifdef RANDPSEUDO
-        if(opt_randpseudo) {
-            pl[0] += 1 << (irand(random_seed, k-1) + 1);
-        }
-        #endif
-    }
     int i = 0;
     int last_x = 0;
     int last_y = 0;
 
-    while(1) {
+    int np = 1;
+    int limit = INT32_MAX;
+
+    // If pseudo-test enabled then stop test if it is taking over 10 times longer than average
+    if(opt_pseudo_test && noncanonarr[k] >= 5) {
+        limit = 10*noncanon_np[k]/noncanonarr[k];
+    }
+
+    while(np < limit) {
         // If no possibilities for ith vertex then backtrack
         if(pl[i]==0) {
             // Backtrack to vertex that has at least two possibilities
@@ -462,6 +462,7 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
                 }
                 i--;
                 if(i==-1) {
+                    canon_np[k] += np;
                     // No permutations produce a smaller matrix; M is canonical
                     return true;
                 }
@@ -472,6 +473,11 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
 
         p[i] = log2(pl[i] & -pl[i]); // Get index of rightmost high bit
         pn[i+1] = pn[i] & ~(1 << p[i]); // List of possibilities for (i+1)th vertex
+
+        // If pseudo-test enabled then stop shortly after the first row is no longer fixed
+        if(i == 0 && p[i] == 1 && opt_pseudo_test && k < n) {
+            limit = np + 100;
+        }
 
         // Check if the entry on which to begin lex-checking needs to be updated
         if(last_x > p[i]) {
@@ -501,6 +507,7 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
                 break;
             }
             if(assigns[j] == l_True && assigns[pj] == l_False) {
+                noncanon_np[k] += np;
                 // Permutation produces a smaller matrix; M is not canonical
                 return false;
             }
@@ -520,10 +527,15 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
             pl[i] = pn[i];
         }
         else {
+            np++;
             // Remove p[i] as a possibility from the ith vertex
             pl[i] = pl[i] & ~(1 << p[i]);
         }
     }
+
+    // Pseudo-test return: Assume matrix is canonical if a noncanonical permutation witness not yet found
+    canon_np[k] += np;
+    return true;
 }
 
 // The 17 minimal unembeddable subgraphs on 10, 11, and 12 vertices
@@ -617,7 +629,7 @@ bool Solver::has_gub_subgraph(int k, int* P, int g) {
 
 #include <set>
 
-std::set<unsigned long> canonical_hashes[39];
+std::set<unsigned long> canonical_hashes[MAXORDER];
 std::set<unsigned long> solution_hashes;
 
 #include "hash_values.h"
@@ -748,7 +760,7 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             // Run canonicity check
             int p[i+1]; // Permutation on i+1 vertices
             int x, y;   // These will be the indices of first adjacency matrix entry that demonstrates noncanonicity (when such indices exist)
-            bool ret = is_canonical(i+1, p, x, y);
+            bool ret = (hash == 0) ? true : is_canonical(i+1, p, x, y);
 #ifdef VERBOSE
             printf("x: %d y: %d, ", x, y);
             printf("p^(-1)(x): %d p^(-1)(y): %d, ", p[x], p[y]);
