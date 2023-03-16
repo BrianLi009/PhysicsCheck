@@ -4,7 +4,6 @@ while getopts "apsbm" opt
 do
 	case $opt in
         p) p="-p" ;;
-		s) s="-s" ;;
 	esac
 done
 shift $((OPTIND-1))
@@ -13,14 +12,14 @@ shift $((OPTIND-1))
 Description:
     Updated on 2023-01-11
     This script generate cubes for the instance using the incremental cubing technique, then adjoin the deepest cubing file with the instance
-    line by line, creating multiple separate instances with a cube embedded in it. Then maplesat-ks is being called to solve each instance (in parallel).
+    line by line, creating multiple separate instances with a cube embedded in it. Then maplesat-ks is being called to solve each instance.
+    Both cubing and solving can be done in parallel.
 
 Usage:
-    ./3-cube-merge-solve.sh [-p] [-s] n r f
+    ./3-cube-merge-solve.sh [-p] n r f
 
 Options:
-    [-p]: cubing in parallel
-    [-s]: solving in parallel
+    [-p]: cubing/solving in parallel
     <n>: the order of the instance/number of vertices in the graph
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
@@ -56,16 +55,18 @@ numline=$(< $cube_file wc -l)
 new_index=$((numline-1))
 for i in $(seq 0 $new_index)
 do 
-    command="./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50 >> $n-solve/$i-solve.log && ./maplesat-ks/simp/maplesat_static simplified-cube-instance/$cube_file$i.adj.simp -no-pre -exhaustive=$n.exhaust -order=$n >> $n-solve/$i-solve.log"
+    command="./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50 >> $n-solve/$i-solve.log && ./maplesat-ks/simp/maplesat_static simplified-cube-instance/$cube_file$i.adj.simp -no-pre -exhaustive=$n-solve/$i-solve.exhaust -order=$n >> $n-solve/$i-solve.log"
     echo $command >> $n-solve/solve.commands
-    if [ "$s" != "-s" ]
+    if [ "$p" != "-p" ]
     then
         eval $command
     fi
 done
 
-if [ "$s" == "-s" ]
+if [ "$p" == "-p" ]
 then
     echo "solving in parallel ..."
 	parallel --will-cite < $n-solve/solve.commands
 fi
+
+cat $n-solve/*-solve.exhaust >> $n.exhaust
