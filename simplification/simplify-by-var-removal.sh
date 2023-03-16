@@ -61,3 +61,6 @@ for j in $(seq 1 "$i")
 do
 	awk "sqrt(\$(NF-1)*\$(NF-1))<=$m" "simp/"$f".ext$j" | sed 's/ 0.*/ 0/' >> "$f".simp
 done
+
+#remove intermediate simp files
+rm simp/"$f"*

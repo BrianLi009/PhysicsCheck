@@ -24,15 +24,17 @@ then
     exit
 fi
 
+mkdir -p 'simplified-cube-instance'
+
 n=$1
 f=$2 #instance file name
 c=$3 #cubes file name
 i=$4 #index of cube
 s=$5 #percentage of variable elimination
-adj=$c$i.adj # Instance with adjoined cube
-cnf=$c$i.cnf # Simplified instance
-ext=$c$i.ext # Extension stack
-cnfext=$c$i.cnfext # Simplified instance with extension stack
+adj=simplified-cube-instance/$c$i.adj # Instance with adjoined cube
+cnf=simplified-cube-instance/$c$i.cnf # Simplified instance
+ext=simplified-cube-instance/$c$i.ext # Extension stack
+cnfext=simplified-cube-instance/$c$i.cnfext # Simplified instance with extension stack
 
 m=$((n*(n-1)/2)) # Number of edge variables in instance
 

@@ -2,6 +2,15 @@
 
 # Ensure parameters are specified on the command-line
 
+while getopts "apsbm" opt
+do
+	case $opt in
+        p) p="-p" ;;
+		s) s="-sp" ;;
+	esac
+done
+shift $((OPTIND-1))
+
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     Updated on 2023-01-25
@@ -9,10 +18,11 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh n p q o t s b r d
-    If only parameter n is provided, default run ./main.sh n p q c 100000 2 2 0 0
+    ./main.sh [-p] n o t s b r
+    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
 
 Options:
+    [-p]: cubing/solving in parallel
     <n>: the order of the instance/number of vertices in the graph
     <p>:
     <q>:
@@ -34,14 +44,12 @@ fi
 #set -x
 
 n=$1 #order
-p=$2
-q=$3
-o=${4:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
-t=${5:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
-s=${6:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
-b=${7:-2} #by default we generate noncanonical blocking clauses in real time
-r=${8:-0} #number of variables to eliminate until the cubing terminates
-d=${9:-0} #default turn off parallel cubing
+o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
+t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
+b=${5:-2} #by default we generate noncanonical blocking clauses in real time
+r=${6:-0} #number of variables to eliminate until the cubing terminates
+>>>>>>> upstream/master
 
 if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
@@ -56,24 +64,24 @@ fi
 
 ./generate-simp-instance.sh $n $p $q $o $t $s $b
 
-if [ -f $n.exhaust ]
+if [ -f "$n.exhaust" ]
 then
     rm $n.exhaust
 fi
 
-if [ -f embedability/$n.exhaust ]
+if [ -f "embedability/$n.exhaust" ]
 then
     rm embedability/$n.exhaust
 fi
 
-mkdir -p solvelog
+mkdir -p $n-solve
 
 #step 5: cube and conquer if necessary, then solve
-if [ "$r" != "0" ] 
-then 
-    ./3-cube-merge-solve.sh $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp 0 $p
+if [ "$r" != "0" ]
+then
+    ./3-cube-merge-solve.sh $p $n $r constraints_${n}_${o}_${t}_${s}_${b}_final.simp
 else
-    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp -no-pre -order=$n -minclause | tee solvelog/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log
+    ./maplesat-ks/simp/maplesat_static constraints_${n}_${o}_${t}_${s}_${b}_final.simp -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee $n-solve/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log
 fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q
@@ -84,5 +92,7 @@ echo "checking max clique size..."
 
 
 #output the number of KS system if there is any
-#echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
-#echo "$(wc -l < ks_solution_uniq_$n.exhaust) Kochen-Specker solutions were found."
+echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
+echo "$(wc -l < ks_solution_uniq_$n.exhaust) Kochen-Specker solutions were found."
+
+./summary.sh $n $o $t $s $b $r
