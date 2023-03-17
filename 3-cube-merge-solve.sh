@@ -5,19 +5,11 @@
 #SBATCH --time=30:00:00
 #SBATCH --mem-per-cpu=8G
 
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/master
 while getopts "apsbm" opt
 do
-	case $opt in
+        case $opt in
         p) p="-p" ;;
-<<<<<<< HEAD
-		s) s="-s" ;;
-=======
->>>>>>> upstream/master
-	esac
+        esac
 done
 shift $((OPTIND-1))
 
@@ -37,13 +29,14 @@ Options:
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
 " && exit
- 
+
 n=$1 #order
 r=$2 #number of variables to eliminate
 f=$3 #instance file name
 
 mkdir -p $n-solve
-
+start=`date +%s`
+echo $start
 if [ "$p" == "-p" ]
 then
     echo "cubing in parallel..."
@@ -55,8 +48,11 @@ then
     echo "cubing sequentially..."
     ./gen_cubes/cube.sh $n $f $r
 fi
+end=`date +%s`
+echo $end
 
 #find the deepest cube file
+
 files=$(ls ./$n-cubes/*.cubes)
 highest_num=$(echo "$files" | awk -F '[./]' '{print $4}' | sort -nr | head -n 1)
 cube_file=./$n-cubes/$highest_num.cubes
@@ -68,7 +64,7 @@ numline=$(< $cube_file wc -l)
 new_index=$((numline-1))
 for i in $(seq 0 $new_index)
 do 
-    command="./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50 >> $n-solve/$i-solve.log && ./maplesat-ks/simp/maplesat_static simplified-cube-instance/$cube_file$i.adj.simp -no-pre -exhaustive=$n-solve/$i-solve.exhaust -order=$n >> $n-solve/$i-solve.log"
+    command="./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50 >> $n-solve/$i-solve.log && ./maplesat-ks/simp/maplesat_static simplified-cube-instance/$cube_file$i.adj.simp -no-pre -minclause -order=$n >> $n-solve/$i-solve.log"
     echo $command >> $n-solve/solve.commands
     if [ "$p" != "-p" ]
     then
