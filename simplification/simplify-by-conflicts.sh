@@ -18,10 +18,13 @@ mkdir -p log
 # Directory for simplified output
 mkdir -p simp
 
+f_dir=$f
+f=$(basename "$f")
+
 # Simplify m seconds
 echo "simplifying for $m conflicts"
 i=1
-./cadical/build/cadical "$f" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c $m | tee log/"$f".simp1
+./cadical/build/cadical "$f_dir" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c $m | tee log/"$f".simp1
 str=$(less log/"$f".simp1 | grep "c conflicts:")
 conf_used=$(echo $str | awk -F ' ' '{print $3; exit;}')
 echo "$conf_used conflicts used for simplification"
@@ -52,4 +55,4 @@ done
 echo "Called CaDiCaL $i times"
 
 # Output final simplified instance
-./gen_cubes/concat-edge.sh $o simp/"$f".simp"$i" simp/"$f".ext"$i" > "$f".simp
+./gen_cubes/concat-edge.sh $o simp/"$f".simp"$i" simp/"$f".ext"$i" > "$f_dir".simp
