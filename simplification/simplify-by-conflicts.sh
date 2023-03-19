@@ -44,6 +44,11 @@ do
 	str=$(less log/"$f".simp$((i+1)) | grep "c conflicts:")
 	conf_used_2=$(echo $str | awk -F ' ' '{print $3; exit;}')
 	conf_used=$(echo $conf_used+$conf_used_2 | bc)
+	echo "log/"$f".simp$((i+1))"
+	echo "conf_used_2"
+	echo $conf_used_2
+	echo "conf_used"
+	echo $conf_used
 	echo "$conf_used conflicts used for simplification"
 	((i+=1))
 	if grep -q "UNSATISFIABLE" log/"$f".simp$i

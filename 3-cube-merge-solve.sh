@@ -31,7 +31,7 @@ n=$1 #order
 r=$2 #number of variables to eliminate
 f=$3 #instance file name
 o=${4:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
-t=${5:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+t=${5:-100000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 
 if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
