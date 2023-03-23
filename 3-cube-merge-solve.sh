@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #SBATCH --account=def-vganesh
 #SBATCH --nodes=1
@@ -40,19 +41,20 @@ echo $start
 if [ "$p" == "-p" ]
 then
     echo "cubing in parallel..."
-    ./gen_cubes/cube.sh -p $n $f $r
+    ./gen_cubes/cube.sh -p -m $n $f $r
 fi
 
 if [ "$p" != "-p" ]
 then
     echo "cubing sequentially..."
-    ./gen_cubes/cube.sh $n $f $r
+    ./gen_cubes/cube.sh -m $n $f $r
 fi
 end=`date +%s`
 echo $end
-
 #find the deepest cube file
 
+start=`date +%s`
+echo $start
 files=$(ls ./$n-cubes/*.cubes)
 highest_num=$(echo "$files" | awk -F '[./]' '{print $4}' | sort -nr | head -n 1)
 cube_file=./$n-cubes/$highest_num.cubes
@@ -63,8 +65,8 @@ cube_file=$(echo $cube_file | sed 's:.*/::')
 numline=$(< $cube_file wc -l)
 new_index=$((numline-1))
 for i in $(seq 0 $new_index)
-do 
-    command="./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50 >> $n-solve/$i-solve.log && ./maplesat-ks/simp/maplesat_static simplified-cube-instance/$cube_file$i.adj.simp -no-pre -minclause -order=$n >> $n-solve/$i-solve.log"
+do
+    command="./simplification/adjoin-cube-simplify.sh $n $f $cube_file $i 50 >> $n-solve/$i-solve.log && ./maplesat-ks/simp/maplesat_static simplified-cube-instance/$cube_file$i.adj.simp -no-pre -minclause -no-pseudo-test -order=$n >> $n-solve/$i-solve.log"
     echo $command >> $n-solve/solve.commands
     if [ "$p" != "-p" ]
     then
@@ -75,7 +77,9 @@ done
 if [ "$p" == "-p" ]
 then
     echo "solving in parallel ..."
-	parallel --will-cite < $n-solve/solve.commands
+        parallel --will-cite < $n-solve/solve.commands
 fi
+end=`date +%s`
+echo $end
+#cat $n-solve/*-solve.exhaust >> $n.exhaust
 
-cat $n-solve/*-solve.exhaust >> $n.exhaust
