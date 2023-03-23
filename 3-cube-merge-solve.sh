@@ -4,11 +4,12 @@ while getopts "apsbm" opt
 do
 	case $opt in
         p) p="-p" ;;
+        m) m="-m" ;;
 	esac
 done
 shift $((OPTIND-1))
 
-[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 3 ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -le 2 ] && echo "
 Description:
     Updated on 2023-01-11
     This script generate cubes for the instance using the incremental cubing technique, then adjoin the deepest cubing file with the instance
@@ -16,10 +17,11 @@ Description:
     Both cubing and solving can be done in parallel.
 
 Usage:
-    ./3-cube-merge-solve.sh [-p] n r f o t
+    ./3-cube-merge-solve.sh [-p] [-m] n r f o t
 
 Options:
     [-p]: cubing/solving in parallel
+    [-m]: cubing with -m parameter (run MapleSAT on each cube for small number of conflicts and stop cubing a cube if UNSAT)
     <n>: the order of the instance/number of vertices in the graph
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
@@ -44,13 +46,13 @@ mkdir -p $n-solve
 if [ "$p" == "-p" ]
 then
     echo "cubing in parallel..."
-    ./gen_cubes/cube.sh -p $n $f $r
+    ./gen_cubes/cube.sh -p $m $n $f $r
 fi
 
 if [ "$p" != "-p" ]
 then
     echo "cubing sequentially..."
-    ./gen_cubes/cube.sh $n $f $r
+    ./gen_cubes/cube.sh $m $n $f $r
 fi
 
 #find the deepest cube file
