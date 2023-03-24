@@ -8,7 +8,8 @@ b=${5:-2} #by default we generate noncanonical blocking clauses in real time
 r=${6:-0} #number of variables to eliminate until the cubing terminates
 
 function readtime() {
-	tmp=$(grep "CPU" $2 2>/dev/null | xargs | cut -d' ' -f4)
+	#tmp=$(grep "CPU" $2 2>/dev/null | xargs | cut -d' ' -f4)
+	tmp=$(grep "CPU" $2 2>/dev/null | awk '{sum+=$4} END {print sum}')
 	tmp=$(awk "BEGIN { print $tmp }" 2>/dev/null)
 	tmp=$(echo $tmp/60 | bc -l 2>/dev/null)
 	if [ ! -z "$tmp" ]
@@ -20,8 +21,9 @@ function readtime() {
 	fi
 }
 
-echo ${n}-solve
-if [ ! -d ${n}-solve ]
+dir="${n}_${o}_${t}_${s}_${b}_${r}"
+
+if [ ! -d $dir/${n}-solve ]
 then
 	echo "log files not found"
 	exit 0
@@ -29,12 +31,12 @@ fi
 
 printf " n    Solving   Simplifying\n"
 
-if [ ! -f ${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log ]
+if [ ! -f $dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
 then
-	cat ${n}-solve/*-solve.log >> ${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log
+	cat $dir/${n}-solve/*-solve.log >> $dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
 
-readtime "run" "${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log"
-	simptime=$(grep "total process time since initialization" log/constraints_${n}_${o}_${t}_${s}_${b}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
+readtime "run" "$dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log"
+	simptime=$(grep "total process time since initialization" $dir/log/constraints_${n}_${o}_${t}_${s}_${b}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 	simptime=$(echo "($simptime)/60" | bc -l)
 	printf "%2d %s m %11.2f m\n" $n "$run" "$simptime"

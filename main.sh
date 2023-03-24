@@ -39,8 +39,6 @@ then
     exit
 fi
 
-#set -x
-
 n=$1 #order
 o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
@@ -59,7 +57,35 @@ fi
 
 #step 3 and 4: generate pre-processed instance
 
+dir="${n}_${o}_${t}_${s}_${b}_${r}"
+
+if [ -d $dir ]
+then
+    echo "Instance with these parameters has already been solved."
+    exit 0
+else
+    mkdir $dir
+fi
+
 ./generate-simp-instance.sh $n $o $t $s $b
+
+if [ -f "constraints_${n}_${o}_${t}_${s}_${b}_final.simp" ]
+then
+    echo "moving simplified instance to $dir"
+    mv "constraints_${n}_${o}_${t}_${s}_${b}_final.simp" "${n}_${o}_${t}_${s}_${b}_${r}/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp"
+fi
+
+if [ -d "simp" ]
+then
+    echo "moving simp folder to $dir"
+    mv "simp" "${n}_${o}_${t}_${s}_${b}_${r}"
+fi
+
+if [ -d "log" ]
+then
+    echo "moving log folder to $dir"
+    mv "log" "${n}_${o}_${t}_${s}_${b}_${r}"
+fi
 
 if [ -f "$n.exhaust" ]
 then
@@ -71,14 +97,15 @@ then
     rm embedability/$n.exhaust
 fi
 
-mkdir -p $n-solve
+mkdir -p $dir/$n-solve
 
+#need to fix the cubing part for directory pointer
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then
-    ./3-cube-merge-solve.sh $p $n $r constraints_${n}_${o}_${t}_${s}_${b}_final.simp
+    ./3-cube-merge-solve.sh $p $n $r $dir/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp
 else
-    ./maplesat-ks/simp/maplesat_static constraints_${n}_${o}_${t}_${s}_${b}_final.simp -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee $n-solve/constraints_${n}_${o}_${t}_${s}_${b}_final.simp.log
+    ./maplesat-ks/simp/maplesat_static $dir/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee $dir/$n-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
 
 #step 5.5: verify all constraints are satisfied

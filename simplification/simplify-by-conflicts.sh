@@ -51,6 +51,7 @@ do
 	echo $conf_used
 	echo "$conf_used conflicts used for simplification"
 	((i+=1))
+	#if conflict dne, break
 	if grep -q "UNSATISFIABLE" log/"$f".simp$i
 	then
 		break
