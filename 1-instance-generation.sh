@@ -27,6 +27,6 @@ if [ -f constraints_${n}_${p}_${q} ]
 then
     echo "instance already generated"
 else
-    source ENV/bin/activate
+    #source ENV/bin/activate
     python3 gen_instance/generate.py $n $p $q #generate the instance of order n for p,q
 fi
