@@ -46,7 +46,10 @@ then
     exit
 fi
 
-mkdir -p $n-solve
+echo $f
+current_dir=$(echo "$f" | cut -d'/' -f1)
+echo $current_dir
+mkdir -p $current_dir/$n-solve
 
 if [ "$p" == "-p" ]
 then
@@ -60,10 +63,22 @@ then
     ./gen_cubes/cube.sh $m $n $f $r
 fi
 
+if [ -d "$n-cubes" ]
+then
+    echo "moving cube folder to $current_dir"
+    mv "$n-cubes" "$current_dir"
+fi
+
+if [ -d "$n-log" ]
+then
+    echo "moving log folder to $current_dir"
+    mv "$n-log" "$current_dir"
+fi
+
 #find the deepest cube file
-files=$(ls ./$n-cubes/*.cubes)
-highest_num=$(echo "$files" | awk -F '[./]' '{print $4}' | sort -nr | head -n 1)
-cube_file=./$n-cubes/$highest_num.cubes
+files=$(ls $current_dir/$n-cubes/*.cubes)
+highest_num=$(echo "$files" | awk -F '[./]' '{print $3}' | sort -nr | head -n 1)
+cube_file=$current_dir/$n-cubes/$highest_num.cubes
 cp $(echo $cube_file) .
 
 cube_file=$(echo $cube_file | sed 's:.*/::')
@@ -72,16 +87,16 @@ numline=$(< $cube_file wc -l)
 new_index=$((numline))
 for i in $(seq 1 $new_index) #1-based indexing for cubes
 do 
-    command1="./gen_cubes/apply.sh $f $cube_file $i > simp/$cube_file$i.adj"
+    command1="./gen_cubes/apply.sh $f $cube_file $i > $current_dir/simp/$cube_file$i.adj"
     if [ "$o" == "c" ]
         then
-            command2="./simplification/simplify-by-conflicts.sh simp/$cube_file$i.adj $n $t >> $n-solve/$i-solve.log"
+            command2="./simplification/simplify-by-conflicts.sh $current_dir/simp/$cube_file$i.adj $n $t >> $current_dir/$n-solve/$i-solve.log"
         else
-            command2="./simplification/simplify-by-var-removal.sh $n 'simp/$cube_file$i.adj' $t >> $n-solve/$i-solve.log"
+            command2="./simplification/simplify-by-var-removal.sh $n '$current_dir/simp/$cube_file$i.adj' $t >> $current_dir/$n-solve/$i-solve.log"
         fi
-    command3="./maplesat-ks/simp/maplesat_static simp/$cube_file$i.adj.simp -no-pre -no-pseudo-test -order=$n -minclause >> $n-solve/$i-solve.log"
+    command3="./maplesat-ks/simp/maplesat_static $current_dir/simp/$cube_file$i.adj.simp -no-pre -no-pseudo-test -order=$n -minclause >> $current_dir/$n-solve/$i-solve.log"
     command="$command1 && $command2 && $command3"
-    echo $command >> $n-solve/solve.commands
+    echo $command >> $current_dir/$n-solve/solve.commands
     if [ "$p" != "-p" ]
     then
         eval $command
@@ -91,7 +106,13 @@ done
 if [ "$p" == "-p" ]
 then
     echo "solving in parallel ..."
-	parallel --will-cite < $n-solve/solve.commands
+	parallel --will-cite < $current_dir/$n-solve/solve.commands
 fi
 
-#cat $n-solve/*-solve.exhaust >> $n.exhaust
+mv log/* $current_dir/log/
+mv simp/* $current_dir/log/
+rmdir log
+rmdir simp
+
+#cat $current_dir/$n-solve/*-solve.exhaust >> $n.exhaust
+
