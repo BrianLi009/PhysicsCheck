@@ -1,5 +1,15 @@
 #!/bin/bash
 
+while getopts "apsbm" opt
+do
+        case $opt in
+        p) p="-p" ;;
+        m) m="-m" ;;
+        esac
+done
+shift $((OPTIND-1))
+
+
 n=$1 #order
 o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
