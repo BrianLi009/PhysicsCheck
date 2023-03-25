@@ -29,7 +29,7 @@ then
 	exit 0
 fi
 
-printf " n    Solving   Simplifying\n"
+printf " n    Solving   Simplifying   Cubing (if enabled) \n"
 
 if [ ! -f $dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
 then
@@ -39,4 +39,13 @@ fi
 readtime "run" "$dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log"
 	simptime=$(grep "total process time since initialization" $dir/log/constraints_${n}_${o}_${t}_${s}_${b}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 	simptime=$(echo "($simptime)/60" | bc -l)
-	printf "%2d %s m %11.2f m\n" $n "$run" "$simptime"
+
+if [ "$r" != "0" ] 
+then
+    cubetime=$(grep -r 'time' $dir/${n}-log/*.log | cut -f4 -d ' ' | awk '{s+=$1} END {print s}' )
+	cubetime=$(echo "($cubetime)/60" | bc -l)
+else
+    cubetime=0
+fi
+
+	printf "%1d %s m %11.2f m %19.2f m\n" $n "$run" "$simptime" "$cubetime"
