@@ -1,5 +1,9 @@
 #!/bin/bash
-
+#SBATCH --account=def-vganesh
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --time=40:00:00
+#SBATCH --mem-per-cpu=4G
 # Ensure parameters are specified on the command-line
 
 while getopts "apsbm" opt
@@ -74,8 +78,6 @@ fi
 
 ./generate-simp-instance.sh $n $p $q $o $t $s $b
 
->>>>>>> upstream/master
-
 if [ -f "constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp" ]
 then
     echo "moving simplified instance to $dir"
@@ -94,15 +96,15 @@ then
     mv "log" "${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
 fi
 
-if [ -f "$n.exhaust" ]
-then
-    rm $n.exhaust
-fi
-
-if [ -f "embedability/$n.exhaust" ]
-then
-    rm embedability/$n.exhaust
-fi
+#if [ -f "$n.exhaust" ]
+#then
+#    rm $n.exhaust
+#fi
+#
+#if [ -f "embedability/$n.exhaust" ]
+#then
+#    rm embedability/$n.exhaust
+#fi
 
 mkdir -p $dir/$n-solve
 
@@ -116,14 +118,14 @@ else
 fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q
-echo "checking max clique size..."
-./4-check-clique-size.sh $n $p $q
+#echo "checking max clique size..."
+#./4-check-clique-size.sh $n $p $q
 
 # to add: this section returns any unsat orders or smthg
 
 
 #output the number of KS system if there is any
-echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
-echo "$(wc -l < ks_solution_uniq_$n.exhaust) Kochen-Specker solutions were found."
+#echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
+#echo "$(wc -l < ks_solution_uniq_$n.exhaust) Kochen-Specker solutions were found."
 
 ./summary.sh $n $p $q $o $t $s $b $r
