@@ -44,6 +44,7 @@ if [ "$r" != "0" ]
 then
     cubetime=$(grep -r 'time' $dir/${n}-log/*.log | cut -f4 -d ' ' | awk '{s+=$1} END {print s}' )
 	cubetime=$(echo "($cubetime)/60" | bc -l)
+	#add the simplification of the cubes here too
 else
     cubetime=0
 fi

@@ -6,9 +6,8 @@ def maple_to_edges(input, v):
     str_lst = input.split()[1:-1]
     edge_lst = []
     for j in range(0, v):
-        for i in range(0,v):
-            if i < j:
-                edge_lst.append((i,j))
+        for i in range(0, j):
+            edge_lst.append((i,j))
     actual_edges = []
     for i in str_lst:
         indicator = int(i)
