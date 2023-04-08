@@ -10,6 +10,7 @@ def verify(n,p,q):
     edge_counter=0
     edges =itertools.combinations(vertices,2)
     
+
     for j in range(1, n+1):             #regenerating the edge variables
         for i in range(1, n+1):
             if i < j:
@@ -44,6 +45,7 @@ def verify(n,p,q):
     else:
         with open(f"verification/verified_{p}_{q}.log", "a") as f:
             f.write(f"{n}:SAT \n")
-           # f.write([nx.graph_clique_number(G_blue),nx.graph_clique_number(G_red)])
+            f.write([nx.graph_clique_number(G_blue),nx.graph_clique_number(G_red)])
+
 if __name__ == "__main__":
     verify(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))

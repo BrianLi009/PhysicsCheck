@@ -21,6 +21,7 @@ Options:
     <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
+    <r>: cubing parameter, for naming only
 " && exit
 
 if [ -z "$1" ]
@@ -35,7 +36,9 @@ q=$3
 o=${4:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${5:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 s=${6:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
-b=${7:-2} #by default we generate noncanonical blocking clauses in real time
+b=${7:-2} #by default we generate noncanonical blocking clauses in real tim
+r=${8:-0} #cubing parameter, for naming only
+
 
 if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
@@ -43,7 +46,7 @@ then
     exit
 fi
 
-if [ -f constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp ]
+if [ -f constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp ]
 then
     echo "instance with the same parameter has already been generated"
     exit 0
@@ -58,20 +61,21 @@ echo $instance_tracking
 
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
-    simp1=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}.simp1
-    cp $instance_tracking constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}
+    simp1=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.simp1
+    cp $instance_tracking constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}
     if [ -f $simp1 ]
     then
         echo "$simp1 already exist, skip simplification"
     else
         if [ "$o" == "c" ]
         then
-            ./simplification/simplify-by-conflicts.sh constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b} $n $t
+            ./simplification/simplify-by-conflicts.sh constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r} $n $t
         else
-            ./simplification/simplify-by-var-removal.sh $n "constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}" $t
+            ./simplification/simplify-by-var-removal.sh $n "constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}" $t
         fi
-        mv constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}.simp $simp1
-        rm constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}
+        mv constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.simp $simp1
+        rm constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}
+
     instance_tracking=$simp1
     fi
 fi
@@ -82,7 +86,7 @@ fi
 
 #step 4: generate non canonical subgraph
 
-simp_non=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}.noncanonical
+simp_non=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.noncanonical
 echo $simp_non
 if [ "$b" -eq 2 ]
 then
@@ -117,7 +121,7 @@ then
 fi
 
 if [ "$s" -eq 2 ] || [ "$s" -eq 3 ]
-simp2=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}.simp2
+simp2=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.simp2
 then
     if [ -f $simp2 ]
     then
@@ -138,6 +142,6 @@ then
     echo "skipping the second simplification"
 fi
 
-echo "preprocessing complete. final instance is $instance_tracking. Renaming it as constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp"
+echo "preprocessing complete. final instance is $instance_tracking. Renaming it as constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp"
 
-mv $instance_tracking constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp
+mv $instance_tracking constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}

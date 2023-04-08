@@ -17,10 +17,11 @@ shift $((OPTIND-1))
 if [ -z $3 ]
 then
 	echo "Need order, filename, and number of variables to be removed in every cube (and optionally the depth to start and end at)"
-	echo "Usage: $0 [-a] [-p] [-s] [-b] [-m] n f r [d] [e]"
+	echo "Usage: $0 [-a] [-p] [-s] [-b] [-m] n f r t [d] [e]"
 	echo "  n is the instance order"
 	echo "  f is the instance filename"
 	echo "  r is the number of edge variables to remove from each cube before splitting stops"
+	echo "  t is the directory to store files in"
 	echo "  d is the starting depth (generate d.cubes assuming (d-1).cubes is already generated)"
 	echo "  e is the ending depth"
 	echo "Options:"
@@ -35,9 +36,10 @@ fi
 n=$1 # Order
 f=$2 # Instance filename
 r=$3 # Number of free edge variables to remove
+t=$4 #directory to work in
 m=$((n*(n-1)/2)) # Number of edge variables in instance
-dir=$n-cubes # Directory to store cubes
-logdir=$n-log # Directory to store logs
+dir=$t/$n-cubes # Directory to store cubes
+logdir=$t/$n-log # Directory to store logs
 mkdir -p $dir
 mkdir -p $logdir
 
@@ -49,12 +51,12 @@ then
 fi
 
 # Get starting depth
-if [ -z $4 ]
+if [ -z $5 ]
 then
 	# Start from depth 0 by default
 	d=0
 else
-	d=$4
+	d=$5
 fi
 
 # Get ending depth
@@ -63,7 +65,7 @@ then
 	# Default finish depth is maximum possible
 	e=$((n*(n-1)/2))
 else
-	e=$5
+	e=$6
 fi
 
 # Solve initial depth if d is 0 and the top-level cube file doesn't exist
@@ -108,7 +110,6 @@ do
 			head $dir/$((i-1)).cubes -n $c | tail -n 1 > $dir/$i-$c.cubes
 			continue
 		fi
-
 		# Skip processing this cube entirely if it was not split on the previous depth (can be turned off with -a; ignore option when i > d)
 		if ([ "$a" != "-a" ] || (( i > d ))) && grep -q "$cubeline" $dir/$((i-2)).cubes 2> /dev/null
 		then
@@ -125,7 +126,7 @@ do
 			continue
 		fi
 
-		command="./gen_cubes/cube-instance.sh $n $f $r $i $c $s"
+		command="./gen_cubes/cube-instance.sh $n $f $r $i $c $t $s"
 		echo $command >> $dir/$i.commands
 		if [ "$p" != "-p" ]
 		then

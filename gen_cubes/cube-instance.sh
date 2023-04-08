@@ -3,7 +3,7 @@
 # Ensure necessary parameters are provided on the command-line
 if [ -z $5 ]
 then
-	echo "Need order, instance filename, number of edge variables to remove, depth, cube index, and optionally a simplification mode parameter"
+	echo "Need order, instance filename, number of edge variables to remove, depth, cube index, folder to work in, and optionally a simplification mode parameter"
 	exit
 fi
 
@@ -12,11 +12,12 @@ f=$2 # Instance filename
 r=$3 # Number of free edge variables to remove
 i=$4 # Depth
 c=$5 # Cube index
-s=$6 # Simplification mode parameter
+t=$6 #folder to work in
+s=$7 # Simplification mode parameter
 
 m=$((n*(n-1)/2)) # Number of edge variables in instance
-dir=$n-cubes # Directory to store cubes
-logdir=$n-log # Directory to store logs
+dir=$t/$n-cubes # Directory to store cubes
+logdir=$t/$n-log # Directory to store logs
 
 # Get the c-th cube
 cubeline=`head $dir/$((i-1)).cubes -n $c | tail -n 1`

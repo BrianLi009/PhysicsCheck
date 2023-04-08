@@ -9,7 +9,7 @@
 while getopts "apsbm" opt
 do
 	case $opt in
-        p) a="-p" ;;
+        p) d="-p" ;;
 		s) s="-sp" ;;
 	esac
 done
@@ -22,11 +22,11 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh [-p] n o t s b r
+    ./main.sh [-d] n o t s b r
     If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
 
 Options:
-    [-p]: cubing/solving in parallel
+    [-d]: cubing/solving in parallel
     <n>: the order of the instance/number of vertices in the graph
     <p>:
     <q>:
@@ -35,7 +35,6 @@ Options:
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
-    <d>: cubing in parallel, 1 (on), 0 (off), default turn off parallel cubing
 " && exit
 
 #step 1: input parameters
@@ -62,39 +61,19 @@ then
 fi
 
 #step 2: setp up dependencies
-#./dependency-setup.sh
-
+#dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
+./dependency-setup.sh
+ 
 #step 3 and 4: generate pre-processed instance
+dir="."
 
-dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-
-#if [ -d $dir ]
-#then
-#    echo "Instance with these parameters has already been solved."
-#    exit 0
-#else
-#    mkdir $dir
-#fi
-
-./generate-simp-instance.sh $n $p $q $o $t $s $b
-
-if [ -f "constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp" ]
+if [ -f constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
 then
-    echo "moving simplified instance to $dir"
-    mv "constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_final.simp" "${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp"
+    echo "Instance with these parameters has already been solved."
+    exit 0
 fi
 
-if [ -d "simp" ]
-then
-    echo "moving simp folder to $dir"
-    mv "simp" "${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-fi
-
-if [ -d "log" ]
-then
-    echo "moving log folder to $dir"
-    mv "log" "${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-fi
+./generate-simp-instance.sh $n $p $q $o $t $s $b $r
 
 #if [ -f "$n.exhaust" ]
 #then
@@ -106,15 +85,14 @@ fi
 #    rm embedability/$n.exhaust
 #fi
 
-mkdir -p $dir/$n-solve
-
 #need to fix the cubing part for directory pointer
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ]
 then
-    ./3-cube-merge-solve.sh -p -m $a $n $r $dir/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
+    dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
+    ./3-cube-merge-solve.sh $d -m $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-ks/simp/maplesat_static $dir/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause | tee $dir/$n-solve/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log
+    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q

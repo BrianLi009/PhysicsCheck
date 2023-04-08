@@ -30,6 +30,7 @@ Options:
     <n>: the order of the instance/number of vertices in the graph
     <r>: number of variables to eliminate before cubing is terminated
     <f>: file name of the current SAT instance
+    <d>: directory to store files into
     <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
     <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
 " && exit
@@ -37,8 +38,9 @@ Options:
 n=$1 #order
 r=$2 #number of variables to eliminate
 f=$3 #instance file name
-o=${4:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
-t=${5:-100000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+d=${4:-.} #directory to store into
+o=${5:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
+t=${6:-100000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 
 if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
@@ -46,38 +48,30 @@ then
     exit
 fi
 
-echo $f
-current_dir=$(echo "$f" | cut -d'/' -f1)
-echo $current_dir
+current_dir=$d
 mkdir -p $current_dir/$n-solve
+
+mkdir -p $current_dir/simp
+mkdir -p $current_dir/log
 
 if [ "$p" == "-p" ]
 then
     echo "cubing in parallel..."
-    ./gen_cubes/cube.sh -p $m $n $f $r
+    ./gen_cubes/cube.sh -p $m $n $f $r $current_dir
 fi
 
 if [ "$p" != "-p" ]
 then
     echo "cubing sequentially..."
-    ./gen_cubes/cube.sh $m $n $f $r
-fi
-
-if [ -d "$n-cubes" ]
-then
-    echo "moving cube folder to $current_dir"
-    mv "$n-cubes" "$current_dir"
-fi
-
-if [ -d "$n-log" ]
-then
-    echo "moving log folder to $current_dir"
-    mv "$n-log" "$current_dir"
+    ./gen_cubes/cube.sh $m $n $f $r $current_dir
+    echo "cubing complete"
 fi
 
 #find the deepest cube file
 files=$(ls $current_dir/$n-cubes/*.cubes)
-highest_num=$(echo "$files" | awk -F '[./]' '{print $3}' | sort -nr | head -n 1)
+echo $files
+highest_num=$(echo "$files" | awk -F '[./]' '{print $(NF-1)}' | sort -nr | head -n 1)
+echo $highest_num
 cube_file=$current_dir/$n-cubes/$highest_num.cubes
 cp $(echo $cube_file) .
 
@@ -108,11 +102,3 @@ then
     echo "solving in parallel ..."
 	parallel --will-cite < $current_dir/$n-solve/solve.commands
 fi
-
-mv log/* $current_dir/log/
-mv simp/* $current_dir/log/
-rmdir log
-rmdir simp
-
-#cat $current_dir/$n-solve/*-solve.exhaust >> $n.exhaust
-
