@@ -62,19 +62,19 @@ then
 fi
 
 #step 2: setp up dependencies
-./dependency-setup.sh
+#./dependency-setup.sh
 
 #step 3 and 4: generate pre-processed instance
 
 dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
 
-if [ -d $dir ]
-then
-    echo "Instance with these parameters has already been solved."
-    exit 0
-else
-    mkdir $dir
-fi
+#if [ -d $dir ]
+#then
+#    echo "Instance with these parameters has already been solved."
+#    exit 0
+#else
+#    mkdir $dir
+#fi
 
 ./generate-simp-instance.sh $n $p $q $o $t $s $b
 
@@ -112,7 +112,7 @@ mkdir -p $dir/$n-solve
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ]
 then
-    ./3-cube-merge-solve.sh $a $n $r $dir/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
+    ./3-cube-merge-solve.sh -p -m $a $n $r $dir/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
 else
     ./maplesat-ks/simp/maplesat_static $dir/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause | tee $dir/$n-solve/constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=def-vganesh
-#SBATCH --time=1-00:00
+#SBATCH --time=10:00:00
 #SBATCH --mem-per-cpu=8G
 
 
@@ -91,7 +91,7 @@ then
         echo "$simp_non already exist, skip adding non canonical subgraph"
     else
         cp $instance_tracking $simp_non
-        ./2-add-blocking-clauses.sh $n 11 $simp_non
+        ./2-add-blocking-clauses.sh $n 9 $simp_non
     fi
     instance_tracking=$simp_non
 fi

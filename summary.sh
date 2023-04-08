@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH --account=def-vganesh
+#SBATCH --time=01:00:00
+#SBATCH --mem-per-cpu=4G
+
 
 while getopts "apsbm" opt
 do
