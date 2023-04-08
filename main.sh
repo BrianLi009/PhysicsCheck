@@ -29,7 +29,6 @@ Options:
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
-    <p>: cubing in parallel, 1 (on), 0 (off), default turn off parallel cubing
 " && exit
 
 #step 1: input parameters
@@ -54,38 +53,18 @@ fi
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
-
+ 
 #step 3 and 4: generate pre-processed instance
 
-dir="${n}_${o}_${t}_${s}_${b}_${r}"
+dir="."
 
-if [ -d $dir ]
+if [ -f constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
 then
     echo "Instance with these parameters has already been solved."
     exit 0
-else
-    mkdir $dir
 fi
 
-./generate-simp-instance.sh $n $o $t $s $b
-
-if [ -f "constraints_${n}_${o}_${t}_${s}_${b}_final.simp" ]
-then
-    echo "moving simplified instance to $dir"
-    mv "constraints_${n}_${o}_${t}_${s}_${b}_final.simp" "${n}_${o}_${t}_${s}_${b}_${r}/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp"
-fi
-
-if [ -d "simp" ]
-then
-    echo "moving simp folder to $dir"
-    mv "simp" "${n}_${o}_${t}_${s}_${b}_${r}"
-fi
-
-if [ -d "log" ]
-then
-    echo "moving log folder to $dir"
-    mv "log" "${n}_${o}_${t}_${s}_${b}_${r}"
-fi
+./generate-simp-instance.sh $n $o $t $s $b $r
 
 if [ -f "$n.exhaust" ]
 then
@@ -97,15 +76,14 @@ then
     rm embedability/$n.exhaust
 fi
 
-mkdir -p $dir/$n-solve
-
 #need to fix the cubing part for directory pointer
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then
-    ./3-cube-merge-solve.sh $p $n $r $dir/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp
+    dir="${n}_${o}_${t}_${s}_${b}_${r}"
+    ./3-cube-merge-solve.sh $p -m $n $r constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-ks/simp/maplesat_static $dir/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee $dir/$n-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
+    ./maplesat-ks/simp/maplesat_static constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
 
 #step 5.5: verify all constraints are satisfied

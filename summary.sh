@@ -21,32 +21,46 @@ function readtime() {
 	fi
 }
 
-dir="${n}_${o}_${t}_${s}_${b}_${r}"
-
-if [ ! -d $dir/${n}-solve ]
-then
-	echo "log files not found"
-	exit 0
-fi
-
-printf " n    Solving   Simplifying   Cubing (if enabled) \n"
-
-if [ ! -f $dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
-then
-	cat $dir/${n}-solve/*-solve.log >> $dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
-fi
-
-readtime "run" "$dir/${n}-solve/constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log"
-	simptime=$(grep "total process time since initialization" $dir/log/constraints_${n}_${o}_${t}_${s}_${b}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
-	simptime=$(echo "($simptime)/60" | bc -l)
-
 if [ "$r" != "0" ] 
 then
-    cubetime=$(grep -r 'time' $dir/${n}-log/*.log | cut -f4 -d ' ' | awk '{s+=$1} END {print s}' )
+    dir="${n}_${o}_${t}_${s}_${b}_${r}"
+	echo "expecting log files in '$dir/${n}-solve/'"
+	if [ ! -d $dir/${n}-solve ]
+	then
+		echo "log files not found"
+		exit 0
+	fi  
+	simptime=0
+	for logfile in $dir/${n}-solve/*-solve.log; do
+		# Extract simptime from current logfile and add it to the total
+		time=$(grep "total process time since initialization" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
+		simptime=$(echo "$simptime + $time" | bc)
+	done
+
+	run=0
+	for logfile in $dir/${n}-solve/*-solve.log; do
+		# Extract simptime from current logfile and add it to the total
+		#time=$(grep "CPU time" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
+		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d{3}')
+		run=$(echo "$simptime + $time" | bc)
+	done
+	
+	simptime=$(echo "($simptime)/60" | bc -l)
+	cubetime=$(grep -r 'time' $dir/${n}-log/*.log | cut -f4 -d ' ' | awk '{s+=$1} END {print s}' )
 	cubetime=$(echo "($cubetime)/60" | bc -l)
-	#add the simplification of the cubes here too
 else
-    cubetime=0
+    echo "expecting log files in the main directory"
+	cubetime=0
+	if [ ! -f constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
+	then
+		echo "log file 'constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log' not found"
+		exit 0
+	fi
+	readtime "run" "constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log"
+	simptime=$(grep "total process time since initialization" log/constraints_${n}_${o}_${t}_${s}_${b}_${r}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
+	simptime=$(echo "($simptime)/60" | bc -l)
 fi
 
-	printf "%1d %s m %11.2f m %19.2f m\n" $n "$run" "$simptime" "$cubetime"
+printf " n    Solving   Simplifying   Cubing \n"
+
+printf "%1d %s m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"

@@ -16,6 +16,9 @@ while read line; do
     fi
 done < $file
 
+echo "checking solutions are unique up to isomorphism..."
+python3 non_iso_verify.py $file $n
+
 sort -u not_verified_$n -o not_verified_$n
 num=$(wc -l not_verified_$n)
 num=$(echo $num | cut -d' ' -f1)

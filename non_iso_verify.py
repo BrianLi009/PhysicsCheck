@@ -1,6 +1,7 @@
 import networkx as nx
 import itertools
 from networkx.algorithms import isomorphism
+import sys
 
 def maple_to_edges(input, v):
     str_lst = input.split()[1:-1]
@@ -40,8 +41,6 @@ def verify(f, n):
             hash_table[hash] = [G]
         
 
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     #input filename, order
-    verify(sys.argv[1], sys.argv[2])"""
-
-verify("22.exhaust", 22)
+    verify(sys.argv[1], sys.argv[2])
