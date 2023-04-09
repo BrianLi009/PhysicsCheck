@@ -31,6 +31,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 FILE* exhaustfile = NULL;
 FILE* canonicaloutfile = NULL;
 FILE* noncanonicaloutfile = NULL;
+FILE* permoutfile = NULL;
 FILE* guboutfile = NULL;
 long numsols = 0;
 long canon = 0;
@@ -81,9 +82,10 @@ static DoubleOption  opt_garbage_frac      (_cat, "gc-frac",     "The fraction o
 static DoubleOption  opt_reward_multiplier (_cat, "reward-multiplier", "Reward multiplier", 0.9, DoubleRange(0, true, 1, true));
 #endif
 static StringOption  opt_exhaustive(_cat, "exhaustive", "Output for exhaustive search");
-static IntOption     opt_keep_blocking     (_cat, "keep-blocking", "Never forget the blocking clauses that are learned during the exhaustive search (0=off, 1=keep clauses after minimization, 2=keep original clauses)", 1, IntRange(0, 2));
+static IntOption     opt_keep_blocking     (_cat, "keep-blocking", "Never forget the blocking clauses that are learned during the exhaustive search (0=off, 1=keep clauses after minimization, 2=keep original clauses)", 2, IntRange(0, 2));
 static IntOption     opt_max_exhaustive_var (_cat, "max-exhaustive-var", "Only perform exhaustive search over the variables up to and including this variable index (0=use all edge variables in graph)", 0, IntRange(0, INT32_MAX));
 //static BoolOption    opt_fixed_card     (_cat, "fixed-card", "Assume a fixed number of true variables in solution and only use negative literals in exhaustive blocking clauses", false);
+//static BoolOption    opt_trust_blocking (_cat, "trust-blocking", "Write proof with trusted blocking clauses", false);
 static IntOption     opt_order          (_cat, "order", "Number of vertices in the KS system searching for", 0, IntRange(0, MAXORDER));
 //static IntOption     opt_start_col      (_cat, "start-col", "Starting column for which to test for canonicity", 2, IntRange(0, MAXORDER));
 static IntOption     opt_inc_col        (_cat, "inc-col", "Check for canonicity every inc_col columns", 1, IntRange(1, MAXORDER));
@@ -91,8 +93,9 @@ static IntOption     opt_lookahead      (_cat, "lookahead", "Ensure that this ma
 static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the canonicity on the last skip_last columns", 0, IntRange(0, MAXORDER));
 static StringOption  opt_canonical_out  (_cat, "canonical-out", "File to output canonical subgraphs found during search");
 static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to output the noncanonical subgraph blocking clauses");
+static StringOption  opt_perm_out       (_cat, "perm-out", "File to output the permutations that witness the noncanonicity of the noncanonical blocking clauses");
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
-static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", false);
+static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", true);
 static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
 #ifdef OPT_START_GUB
@@ -153,6 +156,7 @@ Solver::Solver() :
 
   , canonicaloutstring (opt_canonical_out)
   , noncanonicaloutstring (opt_noncanonical_out)
+  , permoutstring (opt_perm_out)
   , guboutstring (opt_gub_out)
   , exhauststring (opt_exhaustive)
   , ok                 (true)
@@ -179,7 +183,7 @@ Solver::Solver() :
     if(exhauststring != NULL)
     {   //if(opt_order == 0)
         //    printf("Need to provide order when using exhaustive search\n"), exit(1);
-        exhaustfile = fopen(exhauststring, "a");
+        exhaustfile = fopen(exhauststring, "w");
         opt_exhaustive = NULL;
         use_callback = true;
     }
@@ -194,13 +198,16 @@ Solver::Solver() :
         opt_order = 0;
         use_callback = true;
         if(canonicaloutstring != NULL) {
-            canonicaloutfile = fopen(canonicaloutstring, "a");
+            canonicaloutfile = fopen(canonicaloutstring, "w");
         }
         if(noncanonicaloutstring != NULL) {
-            noncanonicaloutfile = fopen(noncanonicaloutstring, "a");
+            noncanonicaloutfile = fopen(noncanonicaloutstring, "w");
+        }
+        if(permoutstring != NULL) {
+            permoutfile = fopen(permoutstring, "w");
         }
         if(guboutstring != NULL) {
-            guboutfile = fopen(guboutstring, "a");
+            guboutfile = fopen(guboutstring, "w");
         }
     }
 }
@@ -219,6 +226,10 @@ Solver::~Solver()
     if(noncanonicaloutfile != NULL)
     {   fclose(noncanonicaloutfile);
         noncanonicaloutfile = NULL;
+    }
+    if(permoutfile != NULL)
+    {   fclose(permoutfile);
+        permoutfile = NULL;
     }
     if(guboutfile != NULL)
     {   fclose(guboutfile);
@@ -273,13 +284,34 @@ bool Solver::addClause_(vec<Lit>& ps)
 
     // Check if clause is satisfied and remove false/duplicate literals:
     sort(ps);
-    Lit p; int i, j;
+
+    vec<Lit>    oc;
+    oc.clear();
+
+    Lit p; int i, j, flag = 0;
+    for (i = j = 0, p = lit_Undef; i < ps.size(); i++) {
+        oc.push(ps[i]);
+        if (value(ps[i]) == l_True || ps[i] == ~p || value(ps[i]) == l_False)
+          flag = 1;
+    }
+
     for (i = j = 0, p = lit_Undef; i < ps.size(); i++)
         if (value(ps[i]) == l_True || ps[i] == ~p)
             return true;
         else if (value(ps[i]) != l_False && ps[i] != p)
             ps[j++] = p = ps[i];
     ps.shrink(i - j);
+
+    if (flag && (output != NULL)) {
+      for (i = j = 0, p = lit_Undef; i < ps.size(); i++)
+        fprintf(output, "%i ", (var(ps[i]) + 1) * (-2 * sign(ps[i]) + 1));
+      fprintf(output, "0\n");
+
+      fprintf(output, "d ");
+      for (i = j = 0, p = lit_Undef; i < oc.size(); i++)
+        fprintf(output, "%i ", (var(oc[i]) + 1) * (-2 * sign(oc[i]) + 1));
+      fprintf(output, "0\n");
+    }
 
     if (ps.size() == 0)
         return ok = false;
@@ -324,6 +356,14 @@ void Solver::detachClause(CRef cr, bool strict) {
 
 void Solver::removeClause(CRef cr) {
     Clause& c = ca[cr];
+
+    if (output != NULL) {
+      fprintf(output, "d ");
+      for (int i = 0; i < c.size(); i++)
+        fprintf(output, "%i ", (var(c[i]) + 1) * (-2 * sign(c[i]) + 1));
+      fprintf(output, "0\n");
+    }
+
     detachClause(cr);
     // Don't leave pointers to free'd memory!
     if (locked(c)) vardata[var(c[0])].reason = CRef_Undef;
@@ -434,12 +474,13 @@ Lit Solver::pickBranchLit()
 // If M is noncanonical, then p, x, and y will be updated so that
 // * p will be a permutation of the rows of M so that row[i] -> row[p[i]] generates a matrix smaller than M (and therefore demonstrates the noncanonicity of M)
 // * (x,y) will be the indices of the first entry in the permutation of M demonstrating that the matrix is indeed lex-smaller than M
-bool Solver::is_canonical(int k, int p[], int& x, int& y) {
+// * i will be the maximum defined index defined in p
+bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
     int pl[k]; // pl[k] contains the current list of possibilities for kth vertex (encoded bitwise)
     int pn[k+1]; // pn[k] contains the initial list of possibilities for kth vertex (encoded bitwise)
     pl[0] = (1 << k) - 1;
     pn[0] = (1 << k) - 1;
-    int i = 0;
+    i = 0;
     int last_x = 0;
     int last_y = 0;
 
@@ -760,16 +801,19 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             // Run canonicity check
             int p[i+1]; // Permutation on i+1 vertices
             int x, y;   // These will be the indices of first adjacency matrix entry that demonstrates noncanonicity (when such indices exist)
-            bool ret = (hash == 0) ? true : is_canonical(i+1, p, x, y);
+            int mi;     // This will be the index of the maximum defined entry of p
+            bool ret = (hash == 0) ? true : is_canonical(i+1, p, x, y, mi);
 #ifdef VERBOSE
-            printf("x: %d y: %d, ", x, y);
-            printf("p^(-1)(x): %d p^(-1)(y): %d, ", p[x], p[y]);
-            for(int j=0; j<i+1; j++) {
-                if(j != p[j]) {
-                    printf("%d ", p[j]);
-                } else printf("* ");
+            if(!ret) {
+                printf("x: %d y: %d, mi: %d, ", x, y, mi);
+                printf("p^(-1)(x): %d, p^(-1)(y): %d | ", p[x], p[y]);
+                for(int j=0; j<i+1; j++) {
+                    if(j != p[j]) {
+                        printf("%d ", p[j]);
+                    } else printf("* ");
+                }
+                printf("\n");
             }
-            printf("\n");
 #endif
             const double after = cpuTime();
 
@@ -854,6 +898,12 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
                     fflush(noncanonicaloutfile);
                 }
 
+                if(permoutfile != NULL) {
+                    for(int j = 0; j <= mi; j++)
+                        fprintf(permoutfile, "%s%d", j == 0 ? "" : " ", p[j]);
+                    fprintf(permoutfile, "\n");
+                }
+
                 // Add the learned clause to the vector of original clauses if the 'keep blocking' option enabled
                 if(opt_keep_blocking==2)
                 {
@@ -922,6 +972,10 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             //if(opt_fixed_card && assigns[i]!=l_True)
             //    continue;
             out_learnts[0].push(mkLit(i, assigns[i]==l_True));
+        }
+
+        if(permoutfile != NULL) {
+            fprintf(permoutfile, "Complete solution\n");
         }
 
         // If this solution has not been seen before then output it
@@ -1644,6 +1698,12 @@ lbool Solver::search(int nof_conflicts)
 #endif
                 uncheckedEnqueue(learnt_clause[0], cr);
             }
+            if (output != NULL) {
+              for (int i = 0; i < learnt_clause.size(); i++)
+                fprintf(output, "%i " , (var(learnt_clause[i]) + 1) *
+                                  (-2 * sign(learnt_clause[i]) + 1) );
+              fprintf(output, "0\n");
+            }
 
 #if BRANCHING_HEURISTIC == VSIDS
             varDecayActivity();
@@ -1714,6 +1774,12 @@ lbool Solver::search(int nof_conflicts)
                     analyzeFinal(~p, conflict);
                     cancelUntil(0);
                     addClause_(conflict);
+                    if (output != NULL) {
+                      for (int i = 0; i < conflict.size(); i++)
+                        fprintf(output, "%i " , (var(conflict[i]) + 1) *
+                                          (-2 * sign(conflict[i]) + 1) );
+                      fprintf(output, "0\n");
+                    }
 #if DATABASE_REDUCTION_EVERY_CUBE
                     reduceDB();
                     reductions++;
@@ -1744,7 +1810,27 @@ lbool Solver::search(int nof_conflicts)
                     for (int i = 0; i < callbackLearntClauses.size(); i++) {
                         int curlevel;
                         learnt_clause.clear();
+                        if (output != NULL /*&& opt_trust_blocking*/) {
+                          fprintf(output, "t ");
+                          for (int j = 0; j < callbackLearntClauses[i].size(); j++)
+                            fprintf(output, "%i " , (var(callbackLearntClauses[i][j]) + 1) *
+                                              (-2 * sign(callbackLearntClauses[i][j]) + 1) );
+                          fprintf(output, "0\n");
+                        }
                         analyze(callbackLearntClauses[i], learnt_clause, curlevel);
+                        if (output != NULL) {
+                          for (int j = 0; j < learnt_clause.size(); j++)
+                            fprintf(output, "%i " , (var(learnt_clause[j]) + 1) *
+                                              (-2 * sign(learnt_clause[j]) + 1) );
+                          fprintf(output, "0\n");
+                        }
+                        if (output != NULL && opt_keep_blocking < 2) {
+                          fprintf(output, "d ");
+                          for (int j = 0; j < callbackLearntClauses[i].size(); j++)
+                            fprintf(output, "%i " , (var(callbackLearntClauses[i][j]) + 1) *
+                                              (-2 * sign(callbackLearntClauses[i][j]) + 1) );
+                          fprintf(output, "0\n");
+                        }
                         if (curlevel == -1) {
                             return l_False;
                         } else if (curlevel < backtrack_level) {
