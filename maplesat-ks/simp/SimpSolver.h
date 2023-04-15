@@ -80,6 +80,7 @@ class SimpSolver : public Solver {
 
     // Mode of operation:
     //
+    int     parsing;
     int     grow;              // Allow a variable elimination step to grow by a number of clauses (default to zero).
     int     clause_lim;        // Variables are not eliminated if it produces a resolvent with a length above this limit.
                                // -1 means no limit.
@@ -95,6 +96,7 @@ class SimpSolver : public Solver {
     int     merges;
     int     asymm_lits;
     int     eliminated_vars;
+    vec<char>           eliminated;
 
  protected:
 
@@ -133,7 +135,6 @@ class SimpSolver : public Solver {
     Heap<ElimLt>        elim_heap;
     Queue<CRef>         subsumption_queue;
     vec<char>           frozen;
-    vec<char>           eliminated;
     int                 bwdsub_assigns;
     int                 n_touched;
 
