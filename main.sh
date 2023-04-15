@@ -2,12 +2,14 @@
 
 # Ensure parameters are specified on the command-line
 
-while getopts "apsbm" opt
+while getopts "pm" opt
 do
-	case $opt in
+    case $opt in
         p) p="-p" ;;
-		s) s="-sp" ;;
-	esac
+        m) m="-m" ;;
+        *) echo "Invalid option: -$OPTARG. Only -p and -m are supported. Use -h or --help for help" >&2
+           exit 1 ;;
+    esac
 done
 shift $((OPTIND-1))
 
@@ -81,7 +83,7 @@ fi
 if [ "$r" != "0" ] 
 then
     dir="${n}_${o}_${t}_${s}_${b}_${r}"
-    ./3-cube-merge-solve.sh $p -m $n $r constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
+    ./3-cube-merge-solve.sh $p $m $n $r constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
     ./maplesat-ks/simp/maplesat_static constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -exhaustive=$n.exhaust -order=$n -minclause | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
