@@ -2,6 +2,27 @@
 
 # Ensure parameters are specified on the command-line
 
+[ "$1" = "-h" -o "$1" = "--help" ] && echo "
+Description:
+    Updated on 2023-01-25
+    This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
+    simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
+
+Usage:
+    ./main.sh [-p] [-m] n o t s b r
+    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
+
+Options:
+    [-p]: cubing/solving in parallel
+    [-m]: using -m parameter for cubing, calling solver on each cube for a small amount of time
+    <n>: the order of the instance/number of vertices in the graph
+    <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
+    <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
+    <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
+    <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
+    <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
+" && exit
+
 while getopts "pm" opt
 do
     case $opt in
@@ -12,26 +33,6 @@ do
     esac
 done
 shift $((OPTIND-1))
-
-[ "$1" = "-h" -o "$1" = "--help" ] && echo "
-Description:
-    Updated on 2023-01-25
-    This is a driver script that handles generating the SAT encoding, generating non-canonical subgraph blocking clauses,
-    simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
-
-Usage:
-    ./main.sh [-p] n o t s b r
-    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
-
-Options:
-    [-p]: cubing/solving in parallel
-    <n>: the order of the instance/number of vertices in the graph
-    <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
-    <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
-    <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
-    <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
-    <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
-" && exit
 
 #step 1: input parameters
 if [ -z "$1" ]
