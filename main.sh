@@ -2,7 +2,7 @@
 #SBATCH --account=def-vganesh
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
-#SBATCH --time=40:00:00
+#SBATCH --time=50:00:00
 #SBATCH --mem-per-cpu=4G
 # Ensure parameters are specified on the command-line
 
@@ -62,7 +62,7 @@ fi
 
 #step 2: setp up dependencies
 #dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-./dependency-setup.sh
+#./dependency-setup.sh
  
 #step 3 and 4: generate pre-processed instance
 dir="."
@@ -73,7 +73,7 @@ then
     exit 0
 fi
 
-./generate-simp-instance.sh $n $p $q $o $t $s $b $r
+#./generate-simp-instance.sh $n $p $q $o $t $s $b $r
 
 #if [ -f "$n.exhaust" ]
 #then
