@@ -50,6 +50,9 @@ then
 	simptime=$(echo "($simptime)/60" | bc -l)
 	cubetime=$(grep -r 'time' $dir/${n}-log/*.log | cut -f4 -d ' ' | awk '{s+=$1} END {print s}' )
 	cubetime=$(echo "($cubetime)/60" | bc -l)
+
+	max_time=$(echo "($max_time)/60" | bc -l)
+	printf "maximum solvetime for a cube: %10.2f m \n" $max_time
 else
     echo "expecting log files in the main directory"
 	cubetime=0
@@ -61,6 +64,7 @@ else
 	readtime "run" "constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log"
 	simptime=$(grep "total process time since initialization" log/constraints_${n}_${o}_${t}_${s}_${b}_${r}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 	simptime=$(echo "($simptime)/60" | bc -l)
+	#run=$(grep "CPU time" log/constraints_${n}_${o}_${t}_${s}_${b}_${r}.noncanonical.simp* | grep -oP '\d+\.\d{3}')
 fi
 
 run=$(echo "($run)/60" | bc -l)
@@ -68,6 +72,3 @@ run=$(echo "($run)/60" | bc -l)
 printf " n    Solving   Simplifying   Cubing \n"
 
 printf "%1d %10.2f m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"
-
-max_time=$(echo "($max_time)/60" | bc -l)
-printf "maximum solvetime for a cube: %10.2f m \n" $max_time
