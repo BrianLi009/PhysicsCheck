@@ -311,7 +311,7 @@ def main(g, order, index, using_subgraph):
     else:
         if using_subgraph:
             print ("Checking minimum nonembeddable subgraph")
-            my_file = open("min_nonembed_graph_10-11.txt", "r")
+            my_file = open("min_nonembed_graph_10-12-c.txt", "r")
             content = my_file.read()
             min_non_subgraphs = content.split("\n")
             my_file.close()
