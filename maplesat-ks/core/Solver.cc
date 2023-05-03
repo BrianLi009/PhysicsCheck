@@ -40,8 +40,10 @@ long gubcount = 0;
 long gubcounts[17] = {};
 double canontime = 0;
 double noncanontime = 0;
+#ifdef PERM_STATS
 long canon_np[MAXORDER] = {};
 long noncanon_np[MAXORDER] = {};
+#endif
 long canonarr[MAXORDER] = {};
 long noncanonarr[MAXORDER] = {};
 double canontimearr[MAXORDER] = {};
@@ -88,8 +90,10 @@ static IntOption     opt_max_exhaustive_var (_cat, "max-exhaustive-var", "Only p
 //static BoolOption    opt_trust_blocking (_cat, "trust-blocking", "Write proof with trusted blocking clauses", false);
 static IntOption     opt_order          (_cat, "order", "Number of vertices in the KS system searching for", 0, IntRange(0, MAXORDER));
 //static IntOption     opt_start_col      (_cat, "start-col", "Starting column for which to test for canonicity", 2, IntRange(0, MAXORDER));
+#ifdef CANON_CHECK_OPTIONS
 static IntOption     opt_inc_col        (_cat, "inc-col", "Check for canonicity every inc_col columns", 1, IntRange(1, MAXORDER));
 static IntOption     opt_lookahead      (_cat, "lookahead", "Ensure that this many additional columns have been completed before performing canonicity checking", 0, IntRange(0, MAXORDER));
+#endif
 static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the canonicity on the last skip_last columns", 0, IntRange(0, MAXORDER));
 static StringOption  opt_canonical_out  (_cat, "canonical-out", "File to output canonical subgraphs found during search");
 static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to output the noncanonical subgraph blocking clauses");
@@ -97,7 +101,11 @@ static StringOption  opt_perm_out       (_cat, "perm-out", "File to output the p
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
 static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", true);
 static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
+#ifdef UNEMBED_SUBGRAPH_CHECK
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
+#else
+#define opt_check_gub 0
+#endif
 #ifdef OPT_START_GUB
 static IntOption     opt_start_gub      (_cat, "unembeddable-check-start", "Starting unembeddable subgraphs to check for", 0, IntRange(0, 17));
 #endif
@@ -469,6 +477,9 @@ Lit Solver::pickBranchLit()
 #define MAX(X,Y) ((X) > (Y)) ? (X) : (Y)
 #define MIN(X,Y) ((X) > (Y)) ? (Y) : (X)
 
+// The kth entry estimates the number of permuations needed to show canonicity in order (k+1)
+long perm_cutoff[MAXORDER] = {0, 0, 0, 0, 0, 0, 20, 50, 125, 313, 783, 1958, 4895, 12238, 30595, 76488, 191220, 478050, 1195125, 2987813, 7469533, 18673833, 46684583};
+
 // Returns true when the k-vertex subgraph (with adjacency matrix M) is canonical
 // M is determined by the current assignment to the first k*(k-1)/2 variables
 // If M is noncanonical, then p, x, and y will be updated so that
@@ -488,8 +499,8 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
     int limit = INT32_MAX;
 
     // If pseudo-test enabled then stop test if it is taking over 10 times longer than average
-    if(opt_pseudo_test && noncanonarr[k] >= 5) {
-        limit = 10*noncanon_np[k]/noncanonarr[k];
+    if(opt_pseudo_test && k >= 7) {
+        limit = 10*perm_cutoff[k-1];
     }
 
     while(np < limit) {
@@ -503,7 +514,9 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
                 }
                 i--;
                 if(i==-1) {
-                    canon_np[k] += np;
+#ifdef PERM_STATS
+                    canon_np[k-1] += np;
+#endif
                     // No permutations produce a smaller matrix; M is canonical
                     return true;
                 }
@@ -548,7 +561,9 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
                 break;
             }
             if(assigns[j] == l_True && assigns[pj] == l_False) {
-                noncanon_np[k] += np;
+#ifdef PERM_STATS
+                noncanon_np[k-1] += np;
+#endif
                 // Permutation produces a smaller matrix; M is not canonical
                 return false;
             }
@@ -575,7 +590,9 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
     }
 
     // Pseudo-test return: Assume matrix is canonical if a noncanonical permutation witness not yet found
-    canon_np[k] += np;
+#ifdef PERM_STATS
+    canon_np[k-1] += np;
+#endif
     return true;
 }
 
@@ -719,6 +736,7 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
         }
         colsuntouched[i] = true;
 
+#ifdef CANON_CHECK_OPTIONS
         // Ensure variables are defined for an additional opt_lookahead columns
         for(int j = i*(i+1)/2; j < (i+opt_lookahead)*(i+opt_lookahead+1)/2 && j < N; j++) {
             if(assigns[j]==l_Undef) {
@@ -729,10 +747,12 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
         // Only check canonicity every inc_col columns
         if ((n-1)%opt_inc_col != i%opt_inc_col)
             continue;
+#endif
 
         // Check if current graph hash has been seen
         if(canonical_hashes[i].find(hash)==canonical_hashes[i].end())
         {
+#ifdef UNEMBED_SUBGRAPH_CHECK
             // Run gub subgraph check
             if (i >= 9)
             {
@@ -795,6 +815,7 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
                     }
                 }
             }
+#endif
 
             // Found a new subgraph of order i+1 to test for canonicity
             const double before = cpuTime();
@@ -2023,11 +2044,19 @@ lbool Solver::solve_()
         printf("Number of solutions   : %ld\n", numsols);
         printf("Canonical subgraphs   : %-12"PRIu64"   (%.0f /sec)\n", canon, canon/canontime);
         for(int i=2; i<n; i++) {
+#ifdef PERM_STATS
+            printf("          order %2d    : %-12"PRIu64"   (%.0f /sec) %.0f avg. perms\n", i+1, canonarr[i], canonarr[i]/canontimearr[i], canon_np[i]/(float)(canonarr[i] > 0 ? canonarr[i] : 1));
+#else
             printf("          order %2d    : %-12"PRIu64"   (%.0f /sec)\n", i+1, canonarr[i], canonarr[i]/canontimearr[i]);
+#endif
         }
         printf("Noncanonical subgraphs: %-12"PRIu64"   (%.0f /sec)\n", noncanon, noncanon/noncanontime);
         for(int i=2; i<n; i++) {
+#ifdef PERM_STATS
+            printf("          order %2d    : %-12"PRIu64"   (%.0f /sec) %.0f avg. perms\n", i+1, noncanonarr[i], noncanonarr[i]/noncanontimearr[i], noncanon_np[i]/(float)(noncanonarr[i] > 0 ? noncanonarr[i] : 1));
+#else
             printf("          order %2d    : %-12"PRIu64"   (%.0f /sec)\n", i+1, noncanonarr[i], noncanonarr[i]/noncanontimearr[i]);
+#endif
         }
         printf("Canonicity checking   : %g s\n", canontime);
         printf("Noncanonicity checking: %g s\n", noncanontime);
