@@ -38,15 +38,15 @@ then
 	done
 
 	run=0
+	max_time=0
 	for logfile in $dir/${n}-solve/*-solve.log; do
 		# Extract simptime from current logfile and add it to the total
 		#time=$(grep "CPU time" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d{3}')
-		echo $logfile
-		echo $time
 		run=$(echo "$run + $time" | bc)
+		max_time=$(awk -v t=$time -v max=$max_time 'BEGIN{print (t>max)?t:max}')
 	done
-	
+
 	simptime=$(echo "($simptime)/60" | bc -l)
 	cubetime=$(grep -r 'time' $dir/${n}-log/*.log | cut -f4 -d ' ' | awk '{s+=$1} END {print s}' )
 	cubetime=$(echo "($cubetime)/60" | bc -l)
@@ -68,3 +68,6 @@ run=$(echo "($run)/60" | bc -l)
 printf " n    Solving   Simplifying   Cubing \n"
 
 printf "%1d %10.2f m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"
+
+max_time=$(echo "($max_time)/60" | bc -l)
+printf "maximum solvetime for a cube: %10.2f m \n" $max_time
