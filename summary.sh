@@ -42,7 +42,9 @@ then
 		# Extract simptime from current logfile and add it to the total
 		#time=$(grep "CPU time" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d{3}')
-		run=$(echo "$simptime + $time" | bc)
+		echo $logfile
+		echo $time
+		run=$(echo "$run + $time" | bc)
 	done
 	
 	simptime=$(echo "($simptime)/60" | bc -l)
@@ -61,6 +63,8 @@ else
 	simptime=$(echo "($simptime)/60" | bc -l)
 fi
 
+run=$(echo "($run)/60" | bc -l)
+
 printf " n    Solving   Simplifying   Cubing \n"
 
-printf "%1d %s m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"
+printf "%1d %10.2f m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"

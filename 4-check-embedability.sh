@@ -16,12 +16,7 @@ Options:
 
 n=$1 #order
 
-touch $n.exhaust
-
-cp $n.exhaust embedability
-
-cd embedability
-if [ -f min_nonembed_graph_10-12.txt ]
+if [ -f ./embedability/min_nonembed_graph_10-12.txt ]
 then
     echo "using precomputed minimum nonembedable subgraph"
 else
@@ -33,6 +28,4 @@ else
     #need to append all output file together as min_nonembed_graph_10-12.txt
     #this part to be finished, currently it does not affect the main pipeline as min_nonembed_graph_10-12.txt has already been generated
 fi 
-./check_embedability.sh -s $n
-
-cd ..
+./embedability/check_embedability.sh -s $n $n.exhaust

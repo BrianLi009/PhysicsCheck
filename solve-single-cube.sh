@@ -24,9 +24,20 @@ d=${5:-.} #directory to store into
 o=${6:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${7:-10000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 
-echo $d
+if [ ! -d "$d/simp" ]; then
+  echo "creating directory $d/simp"
+  mkdir -p "$d/simp"
+fi
 
-./gen_cubes/apply.sh $f $c $i >> $d/simp/$c$i.adj
+if [ ! -d "$d/$n-solve" ]; then
+  echo "creating directory $d/$n-solve"
+  mkdir -p "$d/$n-solve"
+fi
+
+if [ ! -f $d/simp/$c$i.adj ]
+then
+    ./gen_cubes/apply.sh $f $c $i >> $d/simp/$c$i.adj
+fi
 
 if [ "$o" == "c" ]
     then
@@ -35,4 +46,14 @@ if [ "$o" == "c" ]
         ./simplification/simplify-by-var-removal.sh $n '$d/simp/$c$i.adj' $t
     fi
 
-./maplesat-ks/simp/maplesat_static $d/simp/$c$i.adj.simp -no-pre -exhaustive=$d/$n-solve/$i-solve.exhaust -order=$n -minclause
+command="./maplesat-ks/simp/maplesat_static $d/simp/$c$i.adj.simp -no-pre -exhaustive=$d/$n-solve/$i-solve.exhaust -order=$n -minclause"
+echo $command
+eval $command
+
+#verify colorability
+./verify.sh $d/$n-solve/$i-solve.exhaust $n
+
+#verify embeddability
+
+./embedability/check_embedability.sh -s -v $n $d/$n-solve/$i-solve.exhaust
+

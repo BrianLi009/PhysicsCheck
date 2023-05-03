@@ -10,7 +10,7 @@ Description:
 
 Usage:
     ./main.sh [-p] [-m] n o t s b r
-    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
+    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0
 
 Options:
     [-p]: cubing/solving in parallel
@@ -98,6 +98,8 @@ echo "checking embeddability of KS candidates using Z3..."
 
 #output the number of KS system if there is any
 echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
-echo "$(wc -l < ks_solution_uniq_$n.exhaust) Kochen-Specker solutions were found."
+echo "$(wc -l < $n.exhaust-embeddable.txt) Kochen-Specker solutions were found."
 
-./summary.sh $n $o $t $s $b $r
+command="./summary.sh $n $o $t $s $b $r"
+echo $command
+eval $command

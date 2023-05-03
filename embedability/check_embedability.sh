@@ -7,13 +7,14 @@ Description:
     Specker graph. We require the existance of n.exhaust in the directory.
 
 Usage:
-    ./check_embedability.sh [-s] [-p] [-v] n
+    ./check_embedability.sh [-s] [-p] [-v] n f
 
 Options:
     [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
     [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
     [-v]: verify satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
+    <f>: file to check embedability on
 " && exit
 
 while getopts "spv" opt
@@ -48,18 +49,20 @@ if [ "$v" == "-v" ]
     fi
 
 n=$1
+f=$2
 
 index=0
 
-touch embeddable_$n.txt
+touch $f-embeddable.txt
 
 while read line; do
-    python3 main.py "$line" "$n" "$index" $using_subgraph False nonembeddable_$n.txt embeddable_$n.txt $prop1 $verify
-done < $n.exhaust
+    python3 embedability/main.py "$line" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $prop1 $verify
+done < $f
 
-cd ..
+noncount=`wc -l "$f-nonembeddable.txt" | awk '{print $1}'`
+count=`wc -l "$f-embeddable.txt" | awk '{print $1}'`
 
-cp embedability/embeddable_$n.txt .
-sort -u embeddable_$n.txt -o ks_solution_uniq_$n.exhaust
-rm embeddable_$n.txt
+echo $noncount nonembeddable candidates
+echo $count embeddable candidates
+
 
