@@ -21,6 +21,13 @@ find_assignments take in a graph and find all possible interpretations of its or
 determine_embed takes in one of the interpretation and convert it into a system of nonlinear equations that's readable by SMT solver Z3
 """
 
+import os
+
+# get the current working directory
+current_dir = os.getcwd()
+
+
+
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
     graph_dict = {}
@@ -333,7 +340,8 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
             return
     if using_subgraph == "True":
         #print ("Checking minimum nonembeddable subgraph")
-        my_file = open("min_nonembed_graph_10-12.txt", "r")
+        file_path = os.path.join(current_dir, "embedability/min_nonembed_graph_10-12.txt")
+        my_file = open(file_path, "r")
         content = my_file.read()
         min_non_subgraphs = content.split("\n")
         my_file.close()
