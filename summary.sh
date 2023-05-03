@@ -67,8 +67,6 @@ else
 	#run=$(grep "CPU time" log/constraints_${n}_${o}_${t}_${s}_${b}_${r}.noncanonical.simp* | grep -oP '\d+\.\d{3}')
 fi
 
-run=$(echo "($run)/60" | bc -l)
-
 printf " n    Solving   Simplifying   Cubing \n"
 
 printf "%1d %10.2f m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"
