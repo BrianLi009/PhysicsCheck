@@ -18,7 +18,7 @@ n=$1 #order
 
 if [ -f ./embedability/min_nonembed_graph_10-12.txt ]
 then
-    echo "using precomputed minimum nonembedable subgraph"
+    echo "found precomputed minimum nonembedable subgraph"
 else
     echo "need to compute minimum nonembedable subgraph"
     touch min_nonembed_graph_10-12.txt
