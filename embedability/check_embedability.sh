@@ -54,6 +54,7 @@ f=$2
 index=0
 
 touch $f-embeddable.txt
+touch $f-nonembeddable.txt
 
 while read line; do
     python3 embedability/main.py "$line" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $prop1 $verify
