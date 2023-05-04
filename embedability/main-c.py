@@ -8,7 +8,7 @@ import csv
 import networkx as nx
 import collections
 import itertools
-from collections import Counter
+from collections import defaultdict
 
 from networkx.algorithms.isomorphism.isomorph import is_isomorphic
 from networkx.generators.classic import cycle_graph
@@ -41,7 +41,6 @@ def find_assignments(g):
                                  'to_visit',
                                  'nvar',
                                  'ortho',
-                                 'eqs',
                                  'var',
                                  'assign',
                                  'easily_embeddable',
@@ -56,7 +55,6 @@ def find_assignments(g):
                 to_visit=set(first_edge),
                 nvar=0,
                 ortho=[],
-                eqs=[],
                 var=[first_edge[0], first_edge[1]],
                 assign={first_edge[0]: 0,
                         first_edge[1]: 1},
@@ -100,7 +98,7 @@ def find_assignments(g):
                         f.ortho.append((f.assign[v], f.assign[w]))
                         continue
                     # The node has been touched before.  We now can derive a
-                    # crossc-product expression for this node.  Two cases:
+                    # cross-product expression for this node.  Two cases:
                     #  (i) the node has already been assigned a value: we can
                     #      derive a new equation; or (ii) the node has not been
                     #      assigned a value: we will assign one.  In both cases:
@@ -112,13 +110,11 @@ def find_assignments(g):
                     if w in f.assign:
                         f = f._replace(easily_embeddable=False)
                         f.ortho.append((f.assign[w], f.assign[v]))
-                        """f.eqs.append(((f.assign[v], f.assign[v2]),
-                                       f.assign[w]))"""
                         continue
                     # (ii) the node has not been assigned a value --- assign it
                     f.edges_used.add((v2, w))
                     f.edges_used.add((w, v2))
-                    f.assign[w] = (f.assign[v], f.assign[v2])
+                    f.assign[w] = (v, v2)
                     f.to_visit.add(w)
             # Check whether finished
             if len(f.assign) == len(g):
@@ -144,7 +140,6 @@ def find_assignments(g):
                         to_visit=set([v]),
                         nvar=f.nvar+3,
                         ortho=list(f.ortho),
-                        eqs=list(f.eqs),
                         var=f.var + [v],
                         assign=dict(f.assign),
                         easily_embeddable=f.easily_embeddable,
@@ -170,76 +165,36 @@ def find_assignments(g):
                 new_batch.append(f2)
         batch = new_batch
     # Find best assignment: we want the least number of variables;
-    # then the least number of crossc-product equations and finally
+    # then the least number of cross-product equations and finally
     # the least number of orthogonallity requirements.
-    completed.sort(key=lambda f: (f.nvar, len(f.eqs), len(f.ortho)))
+    completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
     return completed
 
+# Return the constraint that c = ±(a × b) for complex numbers
+def cross_constraint(a, b, c):
+    return Or(And(c[0]==crossc(a,b)[0], c[1]==crossc(a,b)[1], c[2]==crossc(a,b)[2]), And(c[0]==crossc(b,a)[0], c[1]==crossc(b,a)[1], c[2]==crossc(b,a)[2]))
+
 def determine_embed(g, assignment, g_sat, order, index, using_subgraph):
-    io = StringIO()
-    #print (g)
-    print (assignment)
-    io.write('from helper import cross \n')
-    io.write('from z3 import * \n')
-    io.write("s = Solver()\n")
-    v_dict = {}
-    for i in range(order):
-        io.write( 'v'+str(i)+'c1 = Complex("v'+ str(i) + 'c1")\n')
-        io.write( 'v'+str(i)+'c2 = Complex("v'+ str(i) + 'c2")\n')
-        io.write( 'v'+str(i)+'c3 = Complex("v'+ str(i) + 'c3")\n')
-        io.write( 'v' + str(i) + '= (' + 'v' + str(i) + 'c1, v' + str(i) + 'c2, v' + str(i) + 'c3)\n')
+    s = Solver()
+    v = {}
+    ver = {}
     for i in range(len(assignment.var)):
-        v_dict[i] = ('v'+str(i)+'c1', 'v'+str(i)+'c2', 'v'+str(i)+'c3') #{0: (v0c1, v0c2, v0c3)}
+        v[i] = (Complex("v{0}c1".format(i)), Complex("v{0}c2".format(i)), Complex("v{0}c3".format(i)))
     for i in assignment.assign:
-        if isinstance(assignment.assign[i], tuple):
-            io.write('ver'+str(i)+'='+nested_crossc((assignment.assign[i][0],assignment.assign[i][1])) + '\n')
+        #now define every vertex
+        ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
+    for i in assignment.assign:
+        #s.add() its corresponding vector as a condition
+        if isinstance(assignment.assign[i], int):
+            s.add(ver[i][0]==v[assignment.assign[i]][0])
+            s.add(ver[i][1]==v[assignment.assign[i]][1])
+            s.add(ver[i][2]==v[assignment.assign[i]][2])
         else:
-            io.write('ver'+str(i)+'=v'+str(assignment.assign[i])+'\n')
-    io.write('s.add(('+v_dict[0][0] +').r == 1) \n')
-    io.write('s.add(('+v_dict[0][0] +').i == 0) \n')
-    io.write('s.add(('+v_dict[0][1] +').r == 0) \n')
-    io.write('s.add(('+v_dict[0][1] +').i == 0) \n')
-    io.write('s.add(('+v_dict[0][2] +').r == 0) \n')
-    io.write('s.add(('+v_dict[0][2] +').i == 0) \n')
-    io.write('s.add(('+v_dict[1][0] +').r == 0) \n')
-    io.write('s.add(('+v_dict[1][0] +').i == 0) \n')
-    io.write('s.add(('+v_dict[1][1] +').r == 1) \n')
-    io.write('s.add(('+v_dict[1][1] +').i == 0) \n')
-    io.write('s.add(('+v_dict[1][2] +').r == 0) \n')
-    io.write('s.add(('+v_dict[1][2] +').i == 0) \n')
-    x = assignment.var[0]
-    y = assignment.var[1]
-    fvars = set()
-    try:
-        z = next(iter(assignment.base - set([x, y])))
-    except StopIteration:
-        z = None
-    for i in range(2, len(assignment.var)):
-        fvars.add(v_dict[i][0])
-        fvars.add(v_dict[i][1])
-        fvars.add(v_dict[i][2])
-        if x in g[assignment.var[i]]:
-            io.write('s.add(('+v_dict[i][0]+').r == 0)\n')
-            io.write('s.add(('+v_dict[i][0]+').i == 0)\n')
-            fvars.remove(v_dict[i][0])
-        elif y in g[assignment.var[i]]:
-            io.write('s.add(('+v_dict[i][1]+').r == 0)\n')
-            io.write('s.add(('+v_dict[i][1]+').i == 0)\n')
-            fvars.remove(v_dict[i][1])
-        elif z in g[assignment.var[i]]:
-            io.write('s.add(('+v_dict[i][2]+').r == 0)\n')
-            io.write('s.add(('+v_dict[i][2]+').i == 0)\n')
-            fvars.remove(v_dict[i][2])
-    try:
-        crossc_product = nested_crossc(assignment.eqs[0])
-        io.write('s.add((' + crossc_product + '[0]).r == 0) \n')
-        io.write('s.add((' + crossc_product + '[1]).r == 0) \n')
-        io.write('s.add((' + crossc_product + '[2]).r == 0) \n')
-        io.write('s.add((' + crossc_product + '[0]).i == 0) \n')
-        io.write('s.add((' + crossc_product + '[1]).i == 0) \n')
-        io.write('s.add((' + crossc_product + '[2]).i == 0) \n')
-    except:
-        pass
+            if i in assignment.base:
+                s.add(cross_constraint(v[assignment.assign[i][0]], v[assignment.assign[i][1]], ver[i]))
+            else:
+                s.add(cross_constraint(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]], ver[i]))
+    s.add(dotc(ver[i], ver[i]) == 1) #live on unit complex sphere
     edges = set()
     for v in g:
         for w in g[v]:
@@ -254,34 +209,31 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph):
             if (v2, v1) in had:
                 continue
             had.add((v1, v2))
-            crossc_product = "crossc(" + "ver" + str(v1) + "," + "ver" + str(v2) + ")"
-            io.write('s.add(Or(Not((' + crossc_product + '[0]).r == 0), Not((' + crossc_product + '[1]).r == 0), Not((' + crossc_product + '[2]).i == 0), Not((' + crossc_product + '[0]).r == 0), Not((' + crossc_product + '[0]).i == 0), Not((' + crossc_product + '[0]).i == 0)))\n')
-            #cannot be colinear
-    for dotc_relation in assignment.ortho:
-        v = nested_crossc(dotc_relation[0])
-        w = nested_crossc(dotc_relation[1])
-        io.write('s.add((' + dotc(v,w) + ').r == 0) \n')
-        io.write('s.add((' + dotc(v,w) + ').i == 0) \n')
-    io.write('s.set("timeout", 10000) \n')
-    io.write('if s.check() == unknown: \n')
-    io.write('    index = int(index) + 1 \n')
-    io.write('    main(g_sat, order, index, using_subgraph) \n')
-    io.write('if s.check() == sat: \n')
-    io.write('    m = s.model() \n')
-    for i in range(len(assignment.assign)):
-        io.write("    print ( " + " '" + "vertex " + str(i) + ":' )" + "\n")
-        io.write('    print (m.evaluate(ver' + str(i) + '[0].r))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[0].i))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[1].r))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[1].i))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[2].r))' + '\n')
-        io.write('    print (m.evaluate(ver' + str(i) + '[2].i))' + '\n')
-    io.write('else: \n')
-    io.write('  print (s.check())')
-    #io.write('print (s.model())')
-    with open('file.py', mode='w') as f:
-        print(io.getvalue(), file=f)
-    exec (io.getvalue())
+            s.add(Not(And(ver[v1][0]==ver[v2][0], ver[v1][1]==ver[v2][1], ver[v1][2]==ver[v2][2])))#cannot be equal
+            s.add(Not(And(ver[v1][0].r==-ver[v2][0].r, ver[v1][1].r==-1*ver[v2][1].r, ver[v1][2].r==-1*ver[v2][2].r)))#cannot be opposite
+            s.add(Not(And(ver[v1][0].i==-ver[v2][0].i, ver[v1][1].i==-1*ver[v2][1].i, ver[v1][2].i==-1*ver[v2][2].i)))
+    #revert assign dict
+    assign_inv = defaultdict(list)
+    for k, v in assignment.assign.items():
+        assign_inv[v].append(k)
+    for dot_relation in assignment.ortho:
+        if len(assign_inv[dot_relation[0]]) > 1:
+            for v_base in assign_inv[dot_relation[0]]:
+                if v_base in assignment.base:
+                    v = v_base
+        else:
+            v = assign_inv[dot_relation[0]][0]
+        if len(assign_inv[dot_relation[1]]) > 1:
+            for w_base in assign_inv[dot_relation[1]]:
+                if w_base in assignment.base:
+                    w = w_base
+        else:
+            w = assign_inv[dot_relation[1]][0]
+        s.add(dotc(ver[v],ver[w]) == 0)
+    #s.set("timeout", 10000)
+    result = s.check()
+    if result == sat:
+        print (s.model())
 
 #graph in sat labeling format
 
