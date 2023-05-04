@@ -56,6 +56,12 @@ index=0
 touch $f-embeddable.txt
 touch $f-nonembeddable.txt
 
+#if $f is empty, nothing to check and exit
+if [ ! -s "$f" ]; then
+    echo "File $f is empty. No candidate to check. Exiting embedability check..."
+    exit 1
+fi
+
 python3 embedability/main.py "$f" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $prop1 $verify
 
 noncount=`wc -l "$f-nonembeddable.txt" | awk '{print $1}'`
