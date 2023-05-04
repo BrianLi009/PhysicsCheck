@@ -290,47 +290,7 @@ def main(g, order, index, using_subgraph):
             assignment = assignments[int(index)]
             determine_embed(graph_dict, assignment, g, order, index, using_subgraph) #write the file
 
-"""if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])"""
-
-"""file1 = open('min_nonembed_graph_sat_12.txt', 'r')
-Lines = file1.readlines()
-  
-count = 1
-# Strips the newline character
-for line in Lines:
-    print (count)
-    main(line, 12, 0, False)
-    count += 1"""
+"""
+testing function call
 main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 14 15 -16 -17 18 -19 20 -21 -22 -23 24 25 -26 -27 -28 -29 30 -31 -32 33 -34 -35 36 37 -38 -39 40 -41 -42 43 -44 -45 46 47 48 -49 -50 51 -52 -53 -54 -55 0', 11, 0, False)
-
-"""
-a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 14 15 -16 -17 18 -19 20 -21 -22 -23 24 25 -26 -27 -28 -29 30 -31 -32 33 -34 -35 36 37 -38 -39 40 -41 -42 43 -44 -45 46 47 48 -49 -50 51 -52 -53 -54 -55 0
-"""
-
-"""
-v2c2.r = -1,
- v3c3.r = 1,
- v3c3.i = -1,
- v2c1.r = 1,
- v3c1.r = -1/2,
- v3c1.i = -1/2,
- v2c1.i = 4,
- v2c3.i = 1/2,
- v2c3.r = 1/8,
- v2c2.i = 3,
- v3c2.i = 0,
- v3c2.r = 0,
- v1c3.i = 0,
- v1c3.r = 0,
- v1c2.i = 0,
- v1c2.r = 1,
- v1c1.i = 0,
- v1c1.r = 0,
- v0c3.i = 0,
- v0c3.r = 0,
- v0c2.i = 0,
- v0c2.r = 0,
- v0c1.i = 0,
- v0c1.r = 1
 """
