@@ -56,9 +56,7 @@ index=0
 touch $f-embeddable.txt
 touch $f-nonembeddable.txt
 
-while read line; do
-    python3 embedability/main.py "$line" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $prop1 $verify
-done < $f
+python3 embedability/main.py "$f" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $prop1 $verify
 
 noncount=`wc -l "$f-nonembeddable.txt" | awk '{print $1}'`
 count=`wc -l "$f-embeddable.txt" | awk '{print $1}'`

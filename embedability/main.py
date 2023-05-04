@@ -20,8 +20,6 @@ import os
 # get the current working directory
 current_dir = os.getcwd()
 
-
-
 def g6_to_dict(g6):
     """ Input a g6 string, output a dictionary representing a graph that can be inputted in find_assignments"""
     graph_dict = {}
@@ -266,7 +264,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     s.set("timeout", 10000)
     result = s.check()
     if result == unknown:
-        # print("Timeout reached: Embeddability unknown")
+        print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
         main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
     if result == unsat:
@@ -303,7 +301,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
+def main_single_graph(g, order, index, using_subgraph, normalize="False", output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1="False", verify="False"):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     """print ("original graph: " + str(g))
@@ -353,6 +351,12 @@ def main(g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
         determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
+
+
+def main(file_to_solve, order, index, using_subgraph, normalize="False", output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1="False", verify="False"):
+    with open(file_to_solve, 'r') as f:
+        line = next(f)
+        main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1="False", verify="False")
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
