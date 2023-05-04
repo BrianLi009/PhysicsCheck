@@ -354,9 +354,11 @@ def main_single_graph(g, order, index, using_subgraph, normalize="False", output
 
 
 def main(file_to_solve, order, index, using_subgraph, normalize="False", output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1="False", verify="False"):
-    with open(file_to_solve, 'r') as f:
-        line = next(f)
-        main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1="False", verify="False")
+    with open(file_to_solve) as f:
+        for line in f:
+            line = line.rstrip()
+            print (line)
+            main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1="False", verify="False")
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
