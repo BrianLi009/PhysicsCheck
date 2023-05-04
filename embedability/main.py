@@ -357,7 +357,6 @@ def main(file_to_solve, order, index, using_subgraph, normalize="False", output_
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
-            print (line)
             main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1="False", verify="False")
 
 if __name__ == "__main__":
