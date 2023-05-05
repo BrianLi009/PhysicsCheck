@@ -43,6 +43,7 @@ then
 		# Extract simptime from current logfile and add it to the total
 		#time=$(grep "CPU time" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d{3}')
+		time=$(echo "($time)/60" | bc -l)
 		run=$(echo "$run + $time" | bc)
 		max_time=$(awk -v t=$time -v max=$max_time 'BEGIN{print (t>max)?t:max}')
 	done
