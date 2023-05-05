@@ -266,7 +266,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     if result == unknown:
         print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
-        main(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
+        main_single_graph(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
     if result == unsat:
         # print("Not embeddable")
         with open(output_unsat_f, "a+") as f:
