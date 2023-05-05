@@ -7,7 +7,8 @@ Description:
     Specker graph. We require the existance of n.exhaust in the directory.
 
 Usage:
-    ./check_embedability.sh [-s] [-p] [-v] n f
+    Must be called from the root directory
+    ./embedability/check_embedability.sh [-s] [-p] [-v] n f
 
 Options:
     [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
@@ -26,6 +27,12 @@ do
     esac
 done
 shift $((OPTIND-1))
+
+if [ -z "$1" ]
+then
+    echo "Need the order of the instance and file to check embedability on, use -h or --help for further instruction"
+    exit
+fi
 
 using_subgraph=False
 if [ "$s" == "-s" ]
