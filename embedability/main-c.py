@@ -174,7 +174,7 @@ def find_assignments(g):
 def cross_constraint(a, b, c):
     return Or(And(c[0]==crossc(a,b)[0], c[1]==crossc(a,b)[1], c[2]==crossc(a,b)[2]), And(c[0]==crossc(b,a)[0], c[1]==crossc(b,a)[1], c[2]==crossc(b,a)[2]))
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph):
+def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f):
     s = Solver()
     v = {}
     ver = {}
@@ -230,10 +230,17 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph):
         else:
             w = assign_inv[dot_relation[1]][0]
         s.add(dotc(ver[v],ver[w]) == 0)
-    #s.set("timeout", 10000)
+    s.set("timeout", 10000)
     result = s.check()
+    if result == unknown:
+        index = int(index) + 1
+        main_single_graph(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f)
+    if result == unsat:
+        with open(output_unsat_f, "a+") as f:
+            f.write(g_sat + "\n")
     if result == sat:
-        print (s.model())
+        with open(output_sat_f, "a+") as f:
+            f.write(g_sat + "\n")
 
 #graph in sat labeling format
 
@@ -250,7 +257,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main(g, order, index, using_subgraph):
+def main_single_graph(g, order, index, output_unsat_f, output_sat_f):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     order = int(order)
@@ -261,36 +268,19 @@ def main(g, order, index, using_subgraph):
     if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
         print ("sat")
     else:
-        if using_subgraph:
-            print ("Checking minimum nonembeddable subgraph")
-            my_file = open("min_nonembed_graph_10-12-c.txt", "r")
-            content = my_file.read()
-            min_non_subgraphs = content.split("\n")
-            my_file.close()
-            for string in min_non_subgraphs:
-                min_g = nx.Graph()
-                min_g.add_edges_from(maple_to_edges(string, 11))
-                gm = isomorphism.GraphMatcher(G, min_g)
-                if gm.subgraph_is_monomorphic():
-                    print ("unsat")
-                    return
-            #check if G contains a minimum nonembedabble subgraph
-            print ("this graph does not contain known minimal nonembeddable subgraph")
-            graph_dict = {}
-            for v in list(G.nodes()):
-                graph_dict[v] = (list(G.neighbors(v)))
-            assignments = find_assignments(graph_dict)
-            assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph) #write the file
-        else:
-            graph_dict = {}
-            for v in list(G.nodes()):
-                graph_dict[v] = (list(G.neighbors(v)))
-            assignments = find_assignments(graph_dict)
-            assignment = assignments[int(index)]
-            determine_embed(graph_dict, assignment, g, order, index, using_subgraph) #write the file
+        graph_dict = {}
+        for v in list(G.nodes()):
+            graph_dict[v] = (list(G.neighbors(v)))
+        assignments = find_assignments(graph_dict)
+        assignment = assignments[int(index)]
+        determine_embed(graph_dict, assignment, g, order, index, output_unsat_f, output_sat_f) #write the file
 
-"""
-testing function call
-main('a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 14 15 -16 -17 18 -19 20 -21 -22 -23 24 25 -26 -27 -28 -29 30 -31 -32 33 -34 -35 36 37 -38 -39 40 -41 -42 43 -44 -45 46 47 48 -49 -50 51 -52 -53 -54 -55 0', 11, 0, False)
-"""
+def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f"):
+    with open(file_to_solve) as f:
+        for line in f:
+            line = line.rstrip()
+            main_single_graph(line, order, index, output_unsat_f, output_sat_f)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
