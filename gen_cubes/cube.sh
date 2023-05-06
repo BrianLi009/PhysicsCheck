@@ -60,7 +60,7 @@ else
 fi
 
 # Get ending depth
-if [ -z $5 ]
+if [ -z $6 ]
 then
 	# Default finish depth is maximum possible
 	e=$((n*(n-1)/2))
