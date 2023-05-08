@@ -37,7 +37,7 @@ n=$1 # Order
 f=$2 # Instance filename
 r=$3 # Number of free edge variables to remove
 t=$4 #directory to work in
-edges=$((n*(n-1)/2)) # Number of edge variables in instance
+m=$((n*(n-1)/2)) # Number of edge variables in instance
 dir=$t/$n-cubes # Directory to store cubes
 logdir=$t/$n-log # Directory to store logs
 mkdir -p $dir
@@ -73,7 +73,7 @@ if [ "$d" == "0" ]
 then
 	if [ ! -s $dir/0.cubes ]
 	then
-		command="./gen_cubes/march_cu/march_cu $f -o $dir/0.cubes -d 1 $m $edges | tee $logdir/0.log"
+		command="./gen_cubes/march_cu/march_cu $f -o $dir/0.cubes -d 1 -m $m | tee $logdir/0.log"
 		echo $command
 		eval $command
 	fi
