@@ -67,7 +67,7 @@ def find_assignments(g):
         for z in (frozenset(g[first_edge[0]]) &
                   frozenset(g[first_edge[1]])):
             f.base.add(z)
-            f.assign[z] = (0, 1)
+            f.assign[z] = (first_edge[0], first_edge[1])
             f.edges_used.add((first_edge[0], z))
             f.edges_used.add((first_edge[1], z))
             f.edges_used.add((z, first_edge[0]))
@@ -121,13 +121,6 @@ def find_assignments(g):
                 for v1, v2 in edges_without_duplicates - f.edges_used:
                     f.ortho.append((f.assign[v1], f.assign[v2]))
                     f = f._replace(easily_embeddable=False)
-                """if f.easily_embeddable:
-                    print ("easily embeddable")
-                    num_vertices = len(g)
-                    num_edges = int(len(edges)/2)
-                    file = open("embed_result.txt", "a")
-                    file.write('  ' + str(label) + ', ' + 'sat' + ' ' + str(num_vertices) + ' ' + str(num_edges) )
-                    break"""
                 completed.append(f)
                 continue
             # If not: consider every possible node for the new variable
@@ -174,48 +167,42 @@ def find_assignments(g):
 def cross_constraint(a, b, c):
     return Or(And(c[0]==crossc(a,b)[0], c[1]==crossc(a,b)[1], c[2]==crossc(a,b)[2]), And(c[0]==crossc(b,a)[0], c[1]==crossc(b,a)[1], c[2]==crossc(b,a)[2]))
 
+def not_zero_c(a):
+    return Or(a[0].r!=0, a[1].r!=0, a[2].r!=0, a[0].i!=0, a[1].i!=0, a[2].i!=0)
+
 def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f):
     s = Solver()
-    v = {}
     ver = {}
-    for i in range(len(assignment.var)):
-        v[i] = (Complex("v{0}c1".format(i)), Complex("v{0}c2".format(i)), Complex("v{0}c3".format(i)))
-    for i in assignment.assign:
-        #now define every vertex
-        ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
-    for i in assignment.assign:
-        #s.add() its corresponding vector as a condition
-        if isinstance(assignment.assign[i], int):
-            s.add(ver[i][0]==v[assignment.assign[i]][0])
-            s.add(ver[i][1]==v[assignment.assign[i]][1])
-            s.add(ver[i][2]==v[assignment.assign[i]][2])
-        else:
-            if i in assignment.base:
-                s.add(cross_constraint(v[assignment.assign[i][0]], v[assignment.assign[i][1]], ver[i]))
-            else:
-                s.add(cross_constraint(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]], ver[i]))
-    s.add(dotc(ver[i], ver[i]) == 1) #live on unit complex sphere
-    edges = set()
-    for v in g:
-        for w in g[v]:
-            edges.add((v,w))
-    had = set()
-    for v1 in g:
-        for v2 in g:
-            if v1 == v2:
-                continue
-            if (v1, v2) in edges:
-                continue
-            if (v2, v1) in had:
-                continue
-            had.add((v1, v2))
-            s.add(Not(And(ver[v1][0]==ver[v2][0], ver[v1][1]==ver[v2][1], ver[v1][2]==ver[v2][2])))#cannot be equal
-            s.add(Not(And(ver[v1][0].r==-ver[v2][0].r, ver[v1][1].r==-1*ver[v2][1].r, ver[v1][2].r==-1*ver[v2][2].r)))#cannot be opposite
-            s.add(Not(And(ver[v1][0].i==-ver[v2][0].i, ver[v1][1].i==-1*ver[v2][1].i, ver[v1][2].i==-1*ver[v2][2].i)))
-    #revert assign dict
     assign_inv = defaultdict(list)
     for k, v in assignment.assign.items():
         assign_inv[v].append(k)
+    for i in range(order):
+        ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
+        s.add(ver[i][2].r >= 0)
+        #s.add(dotc(ver[i], ver[i]) == 1)
+    for i in range(order):
+        for j in range(order):
+            if i != j:
+                s.add(not_zero_c(crossc(ver[j], ver[i])))
+    base = list(assignment.base)
+    base_1 = base[0]
+    base_2 = base[1]
+    s.add(ver[base_1][0].r == 1)
+    s.add(ver[base_1][1].r == 0)
+    s.add(ver[base_1][2].r == 0)
+    s.add(ver[base_2][0].r == 0)
+    s.add(ver[base_2][1].r == 1)
+    s.add(ver[base_2][2].r == 0)
+    s.add(ver[base_1][0].i == 0)
+    s.add(ver[base_1][1].i == 0)
+    s.add(ver[base_1][2].i == 0)
+    s.add(ver[base_2][0].i == 0)
+    s.add(ver[base_2][1].i == 0)
+    s.add(ver[base_2][2].i == 0)
+    for i in assignment.assign:
+        #s.add() its corresponding vector as a condition
+        if not isinstance(assignment.assign[i], int):
+            s.add(cross_constraint(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]], ver[i]))
     for dot_relation in assignment.ortho:
         if len(assign_inv[dot_relation[0]]) > 1:
             for v_base in assign_inv[dot_relation[0]]:
