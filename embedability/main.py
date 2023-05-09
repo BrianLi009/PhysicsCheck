@@ -69,7 +69,7 @@ def find_assignments(g):
         for z in (frozenset(g[first_edge[0]]) &
                   frozenset(g[first_edge[1]])):
             f.base.add(z)
-            f.assign[z] = (0, 1)
+            f.assign[z] = (first_edge[0], first_edge[1])
             f.edges_used.add((first_edge[0], z))
             f.edges_used.add((first_edge[1], z))
             f.edges_used.add((z, first_edge[0]))
@@ -123,13 +123,6 @@ def find_assignments(g):
                 for v1, v2 in edges_without_duplicates - f.edges_used:
                     f.ortho.append((f.assign[v1], f.assign[v2]))
                     f = f._replace(easily_embeddable=False)
-                """if f.easily_embeddable:
-                    print ("easily embeddable")
-                    num_vertices = len(g)
-                    num_edges = int(len(edges)/2)
-                    file = open("embed_result.txt", "a")
-                    file.write('  ' + str(label) + ', ' + 'sat' + ' ' + str(num_vertices) + ' ' + str(num_edges) )
-                    break"""
                 completed.append(f)
                 continue
             # If not: consider every possible node for the new variable
@@ -194,59 +187,36 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     prop1: option to use proposition 1 in the paper that excludes graph with a vertex of degree less than 2
     verify: option to verify embeddable graph's vector solutions, will log vector solutions and verification results to output_sat_f
     """
-    #print (assignment)
-    #print (g)
-
     s = Solver()
-    v = {}
     ver = {}
-    for i in range(len(assignment.var)):
-        v[i] = (Real("v{0}c1".format(i)), Real("v{0}c2".format(i)), Real("v{0}c3".format(i))) #{0: (v0c1, v0c2, v0c3)}
-    for i in range(len(assignment.var)):
-        s.add(v[i][2] >= 0)
-    #no need to define the rest of the vectors
-    for i in assignment.assign:
-        #now define every vertex
-        ver[i] = (Real("ver{0}c1".format(i)), Real("ver{0}c2".format(i)), Real("ver{0}c3".format(i)))
-        s.add(ver[i][2] >= 0)
-    for i in assignment.assign:
-        #s.add() its corresponding vector as a condition
-        if isinstance(assignment.assign[i], int):
-            s.add(ver[i][0]==v[assignment.assign[i]][0])
-            s.add(ver[i][1]==v[assignment.assign[i]][1])
-            s.add(ver[i][2]==v[assignment.assign[i]][2])
-            if normalize == "True":
-                s.add(dot(ver[i], ver[i]) == 1)
-        else:
-            if i in assignment.base:
-                s.add(cross_constraint(v[assignment.assign[i][0]], v[assignment.assign[i][1]], ver[i]))
-            else:
-                s.add(cross_constraint(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]], ver[i]))
-    s.add(v[0][0] == 1)
-    s.add(v[0][1] == 0)
-    s.add(v[0][2] == 0)
-    s.add(v[1][0] == 0)
-    s.add(v[1][1] == 1)
-    s.add(v[1][2] == 0)
-    edges = set()
-    for v in g:
-        for w in g[v]:
-            edges.add((v,w))
-    had = set()
-    for v1 in g:
-        for v2 in g:
-            if v1 == v2:
-                continue
-            if (v1, v2) in edges:
-                continue
-            if (v2, v1) in had:
-                continue
-            had.add((v1, v2))
-            s.add(not_zero(cross(ver[v1],ver[v2])))
     #revert assign dict
     assign_inv = defaultdict(list)
     for k, v in assignment.assign.items():
         assign_inv[v].append(k)
+    for i in range(order):
+        #now define every vertex
+        ver[i] = (Real("ver{0}c1".format(i)), Real("ver{0}c2".format(i)), Real("ver{0}c3".format(i)))
+        s.add(ver[i][2] >= 0)
+        if normalize == "True":
+            s.add(dot(ver[i], ver[i]) == 1)
+    for i in range(order):
+        for j in range(order):
+            if i != j:
+                s.add(not_zero(cross(ver[j],ver[i])))
+    #set standard basis
+    base = list(assignment.base)
+    base_1 = base[0]
+    base_2 = base[1]
+    s.add(ver[base_1][0] == 1)
+    s.add(ver[base_1][1] == 0)
+    s.add(ver[base_1][2] == 0)
+    s.add(ver[base_2][0] == 0)
+    s.add(ver[base_2][1] == 1)
+    s.add(ver[base_2][2] == 0)
+    #encode cross product
+    for i in assignment.assign:
+        if not isinstance(assignment.assign[i], int):
+            s.add(cross_constraint(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]], ver[i]))
     for dot_relation in assignment.ortho:
         if len(assign_inv[dot_relation[0]]) > 1:
             for v_base in assign_inv[dot_relation[0]]:
@@ -357,7 +327,7 @@ def main(file_to_solve, order, index, using_subgraph, normalize="False", output_
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
-            main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1="False", verify="False")
+            main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
