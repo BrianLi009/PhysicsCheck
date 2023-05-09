@@ -197,7 +197,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         #now define every vertex
         ver[i] = (Real("ver{0}c1".format(i)), Real("ver{0}c2".format(i)), Real("ver{0}c3".format(i)))
         s.add(ver[i][2] >= 0)
-        if normalize == "True":
+        if normalize:
             s.add(dot(ver[i], ver[i]) == 1)
     for i in range(order):
         for j in range(order):
@@ -231,6 +231,10 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         else:
             w = assign_inv[dot_relation[1]][0]
         s.add(dot(ver[v],ver[w]) == 0)
+    for edge in assignment.edges_used:
+        v = edge[0]
+        w = edge[1]
+        s.add(dot(ver[v],ver[w]) == 0)
     s.set("timeout", 10000)
     result = s.check()
     if result == unknown:
@@ -245,7 +249,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         # print("Embeddable")
         with open(output_sat_f, "a+") as f:
             f.write(g_sat + "\n")
-        if verify == "True":
+        if verify:
             m = s.model()
             with open("solution.log", "w+") as f2:
                 for i in g:
@@ -271,7 +275,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main_single_graph(g, order, index, using_subgraph, normalize="False", output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1="False", verify="False"):
+def main_single_graph(g, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1=False, verify=False):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     """print ("original graph: " + str(g))
@@ -285,14 +289,14 @@ def main_single_graph(g, order, index, using_subgraph, normalize="False", output
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     degree_sequence = [d for n, d in G.degree()]
-    if prop1 == "True":
+    if prop1:
         #graph is either empty, or has a vertex of degree 1 or 0. 
         if (1 in degree_sequence) or (0 in degree_sequence):
             return
     else:
         if nx.is_empty(G):
             return
-    if using_subgraph == "True":
+    if using_subgraph:
         #print ("Checking minimum nonembeddable subgraph")
         file_path = os.path.join(current_dir, "embedability/min_nonembed_graph_10-12.txt")
         my_file = open(file_path, "r")
@@ -323,11 +327,11 @@ def main_single_graph(g, order, index, using_subgraph, normalize="False", output
         determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
 
 
-def main(file_to_solve, order, index, using_subgraph, normalize="False", output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1="False", verify="False"):
+def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1=False, verify=False):
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
             main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5]=="True", sys.argv[6], sys.argv[7], sys.argv[8]=="True", sys.argv[9]=="True")
