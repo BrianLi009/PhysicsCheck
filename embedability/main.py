@@ -327,4 +327,4 @@ def main(file_to_solve, order, index, using_subgraph, normalize=False, output_un
             main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify)
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5]=="True", sys.argv[6], sys.argv[7], sys.argv[8]=="True", sys.argv[9]=="True")
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5]=="True", sys.argv[6], sys.argv[7], sys.argv[8]=="True")
