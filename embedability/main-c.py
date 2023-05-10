@@ -200,6 +200,22 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
     s.add(ver[base_2][0].i == 0)
     s.add(ver[base_2][1].i == 0)
     s.add(ver[base_2][2].i == 0)
+    try:
+        z = next(iter(assignment.base - set([base_1, base_2])))
+    except StopIteration:
+        z = None
+    for i in range(len(g)):
+        if base_1 in g[i]:
+            #a vector orthogonal to base vector 1
+            s.add(ver[i][0].r == 0)
+            s.add(ver[i][0].i == 0)
+        if base_2 in g[i]:
+            #a vector orthogonal to base vector 2
+            s.add(ver[i][1].r == 0)
+            s.add(ver[i][1].i == 0)
+        if z in g[i]:
+            s.add(ver[i][2].r == 0)
+            s.add(ver[i][2].i == 0)
     for i in assignment.assign:
         #s.add() its corresponding vector as a condition
         if not isinstance(assignment.assign[i], int):
@@ -218,16 +234,18 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
         else:
             w = assign_inv[dot_relation[1]][0]
         s.add(dotc(ver[v],ver[w]) == 0)
-    s.set("timeout", 100000)
+    s.set("timeout", 10000)
     result = s.check()
     if result == unknown:
         print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
         main_single_graph(g_sat, order, index, output_unsat_f, output_sat_f, verify)
     if result == unsat:
+        print ("unsat")
         with open(output_unsat_f, "a+") as f:
             f.write(g_sat + "\n")
     if result == sat:
+        print ("sat")
         with open(output_sat_f, "a+") as f:
             f.write(g_sat + "\n")
         if verify:
