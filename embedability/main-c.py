@@ -171,7 +171,7 @@ def cross_constraint(a, b, c):
 def not_zero_c(a):
     return Or(a[0].r!=0, a[1].r!=0, a[2].r!=0, a[0].i!=0, a[1].i!=0, a[2].i!=0)
 
-def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f):
+def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f, verify):
     #print (assignment)
     s = Solver()
     ver = {}
@@ -230,18 +230,19 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
     if result == sat:
         with open(output_sat_f, "a+") as f:
             f.write(g_sat + "\n")
-        m = s.model()
-        with open("solution.log", "w+") as f2:
-            for i in g:
-                f2.write(str(i)+"\n")
-                f2.write(str(m.evaluate(ver[i][0].r).as_decimal(100)).replace("?","")+"\n")
-                f2.write(str(m.evaluate(ver[i][0].i).as_decimal(100)).replace("?","")+"\n")
-                f2.write(str(m.evaluate(ver[i][1].r).as_decimal(100)).replace("?","")+"\n")
-                f2.write(str(m.evaluate(ver[i][1].i).as_decimal(100)).replace("?","")+"\n")
-                f2.write(str(m.evaluate(ver[i][2].r).as_decimal(100)).replace("?","")+"\n")
-                f2.write(str(m.evaluate(ver[i][2].i).as_decimal(100)).replace("?","")+"\n")
-        if not verify_sat_c(g, "solution.log"):
-                print ("verification failed")
+        if verify:
+            m = s.model()
+            with open("solution.log", "w+") as f2:
+                for i in g:
+                    f2.write(str(i)+"\n")
+                    f2.write(str(m.evaluate(ver[i][0].r).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][0].i).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][1].r).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][1].i).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][2].r).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][2].i).as_decimal(100)).replace("?","")+"\n")
+            if not verify_sat_c(g, "solution.log"):
+                    print ("verification failed")
 #graph in sat labeling format
 
 def maple_to_edges(input, v):
@@ -257,7 +258,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main_single_graph(g, order, index, output_unsat_f, output_sat_f):
+def main_single_graph(g, order, index, output_unsat_f, output_sat_f, verify):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     order = int(order)
@@ -269,13 +270,13 @@ def main_single_graph(g, order, index, output_unsat_f, output_sat_f):
         graph_dict[v] = (list(G.neighbors(v)))
     assignments = find_assignments(graph_dict)
     assignment = assignments[int(index)]
-    determine_embed(graph_dict, assignment, g, order, index, output_unsat_f, output_sat_f) #write the file
+    determine_embed(graph_dict, assignment, g, order, index, output_unsat_f, output_sat_f, verify) #write the file
 
-def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f"):
+def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=False):
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
-            main_single_graph(line, order, index, output_unsat_f, output_sat_f)
+            main_single_graph(line, order, index, output_unsat_f, output_sat_f, verify)
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]=="True")
