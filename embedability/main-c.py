@@ -171,6 +171,7 @@ def not_zero_c(a):
     return Or(a[0].r!=0, a[1].r!=0, a[2].r!=0, a[0].i!=0, a[1].i!=0, a[2].i!=0)
 
 def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f):
+    #print (assignment)
     s = Solver()
     ver = {}
     assign_inv = defaultdict(list)
@@ -179,7 +180,7 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
     for i in range(order):
         ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
         s.add(ver[i][2].r >= 0)
-        #s.add(dotc(ver[i], ver[i]) == 1)
+        s.add(dotc(ver[i], ver[i]) == 1)
     for i in range(order):
         for j in range(order):
             if i != j:
@@ -217,17 +218,25 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
         else:
             w = assign_inv[dot_relation[1]][0]
         s.add(dotc(ver[v],ver[w]) == 0)
-    s.set("timeout", 10000)
+    s.set("timeout", 100000)
     result = s.check()
     if result == unknown:
+        print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
-        main_single_graph(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f)
+        main_single_graph(g_sat, order, index, output_unsat_f, output_sat_f)
     if result == unsat:
         with open(output_unsat_f, "a+") as f:
             f.write(g_sat + "\n")
     if result == sat:
         with open(output_sat_f, "a+") as f:
             f.write(g_sat + "\n")
+        m = s.model()
+        with open("solution.log", "w+") as f2:
+                for i in g:
+                    f2.write(str(i)+"\n")
+                    f2.write(str(m.evaluate(ver[i][0]).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][1]).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][2]).as_decimal(100)).replace("?","")+"\n")
 
 #graph in sat labeling format
 
@@ -251,16 +260,12 @@ def main_single_graph(g, order, index, output_unsat_f, output_sat_f):
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    degree_sequence = [d for n, d in G.degree()]
-    if nx.is_empty(G) or (not nx.is_connected(G)) or (1 in degree_sequence) or (nx.is_isomorphic(G, cycle_graph(order))):
-        print ("sat")
-    else:
-        graph_dict = {}
-        for v in list(G.nodes()):
-            graph_dict[v] = (list(G.neighbors(v)))
-        assignments = find_assignments(graph_dict)
-        assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, output_unsat_f, output_sat_f) #write the file
+    graph_dict = {}
+    for v in list(G.nodes()):
+        graph_dict[v] = (list(G.neighbors(v)))
+    assignments = find_assignments(graph_dict)
+    assignment = assignments[int(index)]
+    determine_embed(graph_dict, assignment, g, order, index, output_unsat_f, output_sat_f) #write the file
 
 def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f"):
     with open(file_to_solve) as f:
@@ -268,6 +273,9 @@ def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sa
             line = line.rstrip()
             main_single_graph(line, order, index, output_unsat_f, output_sat_f)
 
-
+"""
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+"""
+
+main_single_graph("a -1 -2 -3 -4 -5 -6 -7 -8 9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 -43 -44 45 0", 10, 0, "unsat_test", "sat_test")
