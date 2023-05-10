@@ -15,4 +15,4 @@ def solve_range(n, start, end, file_to_solve, using_subgraph, normalize, output_
         num_lines = end-start
         for line in islice(f, num_lines):
             print (line)
-            main(line, n, 0, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1="False", verify="False")
+            main(line, n, 0, using_subgraph, normalize, output_unsat_f, output_sat_f, verify="False")

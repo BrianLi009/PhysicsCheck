@@ -173,7 +173,7 @@ def cross_constraint(a, b, c):
 def not_zero(a):
     return Or(a[0]!=0, a[1]!=0, a[2]!=0)
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify):
+def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify):
     """
     g: dictonary of vertices and their adjacent vertices
     assignment: an assignment generated from find_assignments
@@ -184,7 +184,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     normalize: option to restrict every vector on the unit sphere
     output_unsat_f: file name to log nonembeddable graphs
     output_sat_f: file name to log embeddable graphs
-    prop1: option to use proposition 1 in the paper that excludes graph with a vertex of degree less than 2
     verify: option to verify embeddable graph's vector solutions, will log vector solutions and verification results to output_sat_f
     """
     s = Solver()
@@ -231,16 +230,19 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
         else:
             w = assign_inv[dot_relation[1]][0]
         s.add(dot(ver[v],ver[w]) == 0)
+    """
+    #adding dot product for all edges, this cause the check to be slower
     for edge in assignment.edges_used:
         v = edge[0]
         w = edge[1]
         s.add(dot(ver[v],ver[w]) == 0)
+    """
     s.set("timeout", 10000)
     result = s.check()
     if result == unknown:
         print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
-        main_single_graph(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
+        main_single_graph(g_sat, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify)
     if result == unsat:
         # print("Not embeddable")
         with open(output_unsat_f, "a+") as f:
@@ -275,27 +277,18 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main_single_graph(g, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1=False, verify=False):
+def main_single_graph(g, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=False):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     """print ("original graph: " + str(g))
     print ("order of the graph: " + str(order))
     print ("using_subgraph: " + str(using_subgraph))
     print ("normalize: " + str(normalize))
-    print ("using proposition 1: " + str(prop1))
     print ("verifying result: " + str(verify))"""
     order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    degree_sequence = [d for n, d in G.degree()]
-    if prop1:
-        #graph is either empty, or has a vertex of degree 1 or 0. 
-        if (1 in degree_sequence) or (0 in degree_sequence):
-            return
-    else:
-        if nx.is_empty(G):
-            return
     if using_subgraph:
         #print ("Checking minimum nonembeddable subgraph")
         file_path = os.path.join(current_dir, "embedability/min_nonembed_graph_10-12.txt")
@@ -317,21 +310,21 @@ def main_single_graph(g, order, index, using_subgraph, normalize=False, output_u
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) #write the file
     else:
         graph_dict = {}
         for v in list(G.nodes()):
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify) #write the file
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) #write the file
 
 
-def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", prop1=False, verify=False):
+def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=False):
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
-            main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, prop1, verify)
+            main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify)
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5]=="True", sys.argv[6], sys.argv[7], sys.argv[8]=="True", sys.argv[9]=="True")

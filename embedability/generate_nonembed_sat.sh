@@ -36,13 +36,6 @@ if [ "$s" == "-s" ]
 		using_subgraph=True
 	fi
 
-prop1=False
-if [ "$p" == "-p" ]
-	then
-        echo "enable applying proposition 1"
-		prop1=True
-	fi
-
 verify=False
 if [ "$v" == "-v" ]
 	then
@@ -121,7 +114,7 @@ start=`date +%s.%N`
 index=0
 echo "running embeddability check on all graphs"
 
-python3 main.py squarefree_$n.exhaust "$n" "$index" $using_subgraph False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt $prop1 $verify
+python3 main.py squarefree_$n.exhaust "$n" "$index" $using_subgraph False nonembed_graph_sat_$n.txt embed_graph_sat_$n.txt $verify
 
 end=`date +%s.%N`
 runtime=$( echo "$end - $start" | bc -l )

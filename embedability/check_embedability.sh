@@ -41,13 +41,6 @@ if [ "$s" == "-s" ]
         using_subgraph=True
     fi
 
-prop1=False
-if [ "$p" == "-p" ]
-    then
-        echo "enable applying proposition 1"
-        prop1=True
-    fi
-
 verify=False
 if [ "$v" == "-v" ]
     then
@@ -69,7 +62,7 @@ if [ ! -s "$f" ]; then
     exit 1
 fi
 
-python3 embedability/main.py "$f" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $prop1 $verify
+python3 embedability/main.py "$f" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $verify
 
 noncount=`wc -l "$f-nonembeddable.txt" | awk '{print $1}'`
 count=`wc -l "$f-embeddable.txt" | awk '{print $1}'`
