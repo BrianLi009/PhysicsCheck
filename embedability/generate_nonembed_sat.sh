@@ -9,12 +9,14 @@ Description:
     
     Note: this script is currently outputting graphs in edge-variable format, but graphs6 format
     is being used to store all minimum nonembedable subgraph (see min_nonembed_graph_10-12.txt).
+
+    Note: the script automatically filter out nonembeddable graph with a vertex of degree 1/0, since
+    user can always obtain a smaller nonembeddable graph by removing this vertex.
 Usage:
-    ./generate_nonembed_sat.sh [-s] [-p] [-v] n
+    ./generate_nonembed_sat.sh [-s] [-v] n
 
 Options:
     [-s]: check if a graph contains a minimal unembeddable subgraph, if it does, it's not embeddable
-    [-p]: applying proposition 1 and skip graph with vertex of degree less than 2
     [-v]: very satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
 " && exit
