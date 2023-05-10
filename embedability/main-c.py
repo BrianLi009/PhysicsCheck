@@ -12,6 +12,7 @@ from collections import defaultdict
 
 from networkx.algorithms.isomorphism.isomorph import is_isomorphic
 from networkx.generators.classic import cycle_graph
+from verify_sat_c import verify_sat_c
 from helper import *
 
 import sys, getopt
@@ -180,7 +181,6 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
     for i in range(order):
         ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
         s.add(ver[i][2].r >= 0)
-        s.add(dotc(ver[i], ver[i]) == 1)
     for i in range(order):
         for j in range(order):
             if i != j:
@@ -232,12 +232,16 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
             f.write(g_sat + "\n")
         m = s.model()
         with open("solution.log", "w+") as f2:
-                for i in g:
-                    f2.write(str(i)+"\n")
-                    f2.write(str(m.evaluate(ver[i][0]).as_decimal(100)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1]).as_decimal(100)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2]).as_decimal(100)).replace("?","")+"\n")
-
+            for i in g:
+                f2.write(str(i)+"\n")
+                f2.write(str(m.evaluate(ver[i][0].r).as_decimal(100)).replace("?","")+"\n")
+                f2.write(str(m.evaluate(ver[i][0].i).as_decimal(100)).replace("?","")+"\n")
+                f2.write(str(m.evaluate(ver[i][1].r).as_decimal(100)).replace("?","")+"\n")
+                f2.write(str(m.evaluate(ver[i][1].i).as_decimal(100)).replace("?","")+"\n")
+                f2.write(str(m.evaluate(ver[i][2].r).as_decimal(100)).replace("?","")+"\n")
+                f2.write(str(m.evaluate(ver[i][2].i).as_decimal(100)).replace("?","")+"\n")
+        if not verify_sat_c(g, "solution.log"):
+                print ("verification failed")
 #graph in sat labeling format
 
 def maple_to_edges(input, v):
@@ -273,9 +277,5 @@ def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sa
             line = line.rstrip()
             main_single_graph(line, order, index, output_unsat_f, output_sat_f)
 
-"""
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-"""
-
-main_single_graph("a -1 -2 -3 -4 -5 -6 -7 -8 9 10 -11 12 -13 14 -15 -16 17 18 -19 -20 21 22 -23 -24 25 -26 27 -28 29 -30 31 -32 33 -34 -35 -36 37 38 -39 -40 -41 -42 -43 -44 45 0", 10, 0, "unsat_test", "sat_test")
