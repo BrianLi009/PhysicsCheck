@@ -164,27 +164,19 @@ def find_assignments(g):
     completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
     return completed
 
-# Return the constraint that c = ±(a × b) for complex numbers
-def cross_constraint(a, b, c):
-    return Or(And(c[0]==crossc(a,b)[0], c[1]==crossc(a,b)[1], c[2]==crossc(a,b)[2]), And(c[0]==crossc(b,a)[0], c[1]==crossc(b,a)[1], c[2]==crossc(b,a)[2]))
-
 def not_zero_c(a):
-    return Or(a[0].r!=0, a[1].r!=0, a[2].r!=0, a[0].i!=0, a[1].i!=0, a[2].i!=0)
+    return Or(Not(a[0].r==0), Not(a[1].r==0), Not(a[2].r==0), Not(a[0].i==0), Not(a[1].i==0), Not(a[2].i==0))
 
 def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f, verify):
-    #print (assignment)
     s = Solver()
+    s.reset()
     ver = {}
     assign_inv = defaultdict(list)
     for k, v in assignment.assign.items():
         assign_inv[v].append(k)
     for i in range(order):
         ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
-        s.add(ver[i][2].r >= 0)
-    for i in range(order):
-        for j in range(order):
-            if i != j:
-                s.add(not_zero_c(crossc(ver[j], ver[i])))
+
     base = list(assignment.base)
     base_1 = base[0]
     base_2 = base[1]
@@ -200,26 +192,30 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
     s.add(ver[base_2][0].i == 0)
     s.add(ver[base_2][1].i == 0)
     s.add(ver[base_2][2].i == 0)
-    try:
-        z = next(iter(assignment.base - set([base_1, base_2])))
-    except StopIteration:
-        z = None
-    for i in range(len(g)):
-        if base_1 in g[i]:
-            #a vector orthogonal to base vector 1
-            s.add(ver[i][0].r == 0)
-            s.add(ver[i][0].i == 0)
-        if base_2 in g[i]:
-            #a vector orthogonal to base vector 2
-            s.add(ver[i][1].r == 0)
-            s.add(ver[i][1].i == 0)
-        if z in g[i]:
-            s.add(ver[i][2].r == 0)
-            s.add(ver[i][2].i == 0)
+    
     for i in assignment.assign:
-        #s.add() its corresponding vector as a condition
         if not isinstance(assignment.assign[i], int):
-            s.add(cross_constraint(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]], ver[i]))
+            ver[i] = crossc(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]])
+
+    edges = set()
+    for v in g:
+        for w in g[v]:
+            edges.add((v,w))
+    had = set()
+    for v1 in g:
+        for v2 in g:
+            if v1 == v2:
+                continue
+            if (v1, v2) in edges:
+                continue
+            if (v2, v1) in had:
+                continue
+            had.add((v1, v2))
+            s.add(not_zero_c(crossc(ver[v1], ver[v2])))
+    
+    #normalize
+    #s.add(dotc(ver[i], ver[i]) == 1)
+
     for dot_relation in assignment.ortho:
         if len(assign_inv[dot_relation[0]]) > 1:
             for v_base in assign_inv[dot_relation[0]]:
@@ -233,19 +229,20 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
                     w = w_base
         else:
             w = assign_inv[dot_relation[1]][0]
-        s.add(dotc(ver[v],ver[w]) == 0)
-    s.set("timeout", 10000)
+        #add dot product constraints
+        s.add(dotc(ver[v],ver[w]).r == 0)
+        s.add(dotc(ver[v],ver[w]).i == 0)
+    s.set("timeout", 30000)
     result = s.check()
     if result == unknown:
         print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
+        s.reset()
         main_single_graph(g_sat, order, index, output_unsat_f, output_sat_f, verify)
     if result == unsat:
-        print ("unsat")
         with open(output_unsat_f, "a+") as f:
             f.write(g_sat + "\n")
     if result == sat:
-        print ("sat")
         with open(output_sat_f, "a+") as f:
             f.write(g_sat + "\n")
         if verify:

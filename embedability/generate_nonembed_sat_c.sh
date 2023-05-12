@@ -13,6 +13,14 @@ Options:
     <n>: the order of the instance/number of vertices in the graph
 " && exit
 
+while getopts "spv" opt
+do
+	case $opt in
+        v) v="-v" ;;
+	esac
+done
+shift $((OPTIND-1))
+
 verify=False
 if [ "$v" == "-v" ]
 	then
@@ -28,29 +36,32 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-if dpkg --verify python3 2>/dev/null; then echo "python3 installed"; else echo "need to update to python3"; exit 1; fi
+if ! command -v python3.10 &> /dev/null; then
+    echo "python3 version >= 3.10 is required. Aborting."
+    exit 1
+fi
 
-if pip3 list | grep networkx
+if python3 -m pip list | grep networkx
 then
     echo "networkx package installed"
 else 
-    pip3 install networkx
+    python3 -m pip install networkx
 fi
 
-if pip3 list | grep z3-solver
+if python3 -m pip list | grep z3-solver
 then
     echo "z3-solver package installed"
 else 
-    pip3 install z3-solver
+    python3 -m pip install z3-solver
 fi
 
 #if txt or log already exist, notify user
-if test -f "${f}_nonembed_c.txt"
+if test -f "${n}_nonembed_c.txt"
 then
-    echo "${f}_nonembed_c.txt exists"
+    echo "${n}_nonembed_c.txt exists"
     exit 0
 else
-    touch ${f}_nonembed_c.txt
+    touch ${n}_nonembed_c.txt
 fi
 
 echo "Embedability check using Z3 started"
@@ -60,7 +71,7 @@ start=`date +%s.%N`
 index=0
 echo "running embeddability check on all graphs"
 
-python3 main-c.py $f "$n" "$index" ${f}_nonembed_c.txt ${f}_embed_c.txt $verify
+python3 main-c.py $f "$n" "$index" ${n}_nonembed_c.txt ${n}_embed_c.txt $verify
 
 end=`date +%s.%N`
 runtime=$( echo "$end - $start" | bc -l )

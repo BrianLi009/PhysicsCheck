@@ -58,7 +58,10 @@ fi
 
 cd ..
 
-if dpkg --verify python3 2>/dev/null; then echo "python3 installed"; else echo "need to update to python3"; exit 1; fi
+if ! command -v python3.10 &> /dev/null; then
+    echo "python3 version >= 3.10 is required. Aborting."
+    exit 1
+fi
 
 #install maplesat-ks
 if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
