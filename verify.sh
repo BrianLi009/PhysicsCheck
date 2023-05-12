@@ -1,3 +1,13 @@
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 2 ] && echo "
+Description:
+    Verify the output of the pipeline by checking the following:
+    1. solutions are not 010-colorable
+    2. solutions are unique up to isomorphism
+
+Usage:
+    ./verify.sh <file with KS candidates> <order of the graph>
+" && exit
+
 file=$1
 n=$2
 
