@@ -1,3 +1,8 @@
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 2 ] && echo "
+Description:
+        Need file name and order.
+" && exit
+
 file=$1
 n=$2
 m=$((n*(n-1)/2)) # Number of edge variables in instance
