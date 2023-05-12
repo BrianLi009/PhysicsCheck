@@ -3,7 +3,7 @@
 from pysat.formula import CNF 
 from squarefree import squarefree
 from triangle import triangle
-from mindegree2 import mindegree2
+from mindegree import mindegree
 from noncolorable import noncolorable
 from cubic import cubic
 import subprocess
@@ -39,7 +39,7 @@ def generate(n):
                 tri_dict[(a,b,c)] = count
     clause_count += squarefree(n, edge_dict, cnf_file)
     print ("graph is squarefree")
-    clause_count += mindegree2(n, edge_dict, cnf_file)
+    clause_count += mindegree(n, 2, edge_dict, cnf_file)
     print ("each vertex has minimium degree 2")
     var_count, c_count = cubic(n, count, cnf_file) #total number of variables
     clause_count += c_count

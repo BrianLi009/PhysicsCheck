@@ -38,7 +38,7 @@ def generate(n):
     print ("all vertices are part of a triangle")
     clause_count += noncolorable(n,  edge_dict, tri_dict, cnf_file)
     print ("graph is noncolorable")
-    clause_count += mindegree(n, edge_dict, cnf_file)
+    clause_count += mindegree(n, 3, edge_dict, cnf_file)
     print ("minimum degree of each vertex is 3")
     """
     conway(n, edge_dict, tri_dict, 1, 3)
