@@ -1,5 +1,21 @@
 #!/bin/bash
 
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" = 0 ] && echo "
+Description:
+    Print out runtime summary given logs
+
+Usage:
+	<n>: #order
+	<o>: default c, simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
+	<t>: default 100000, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+	<s>: default 2, by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
+	<b>: default 2, by default we generate noncanonical blocking clauses in real time
+	<r>: default 0, number of variables to eliminate until the cubing terminates
+
+Note:
+	These variables are only used to identify the folder name of the logs
+" && exit
+
 n=$1 #order
 o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
