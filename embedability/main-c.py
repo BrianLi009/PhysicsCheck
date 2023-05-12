@@ -169,7 +169,6 @@ def not_zero_c(a):
 
 def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f, verify):
     s = Solver()
-    s.reset()
     ver = {}
     assign_inv = defaultdict(list)
     for k, v in assignment.assign.items():
