@@ -16,6 +16,7 @@ from verify_sat_c import verify_sat_c
 from helper import *
 
 import sys, getopt
+current_dir = os.getcwd()
 
 from z3 import * 
 
@@ -167,7 +168,7 @@ def find_assignments(g):
 def not_zero_c(a):
     return Or(Not(a[0].r==0), Not(a[1].r==0), Not(a[2].r==0), Not(a[0].i==0), Not(a[1].i==0), Not(a[2].i==0))
 
-def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_sat_f, verify):
+def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f, verify):
     s = Solver()
     ver = {}
     assign_inv = defaultdict(list)
@@ -237,7 +238,7 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
         print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
         s.reset()
-        main_single_graph(g_sat, order, index, output_unsat_f, output_sat_f, verify)
+        main_single_graph(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f, verify)
     if result == unsat:
         with open(output_unsat_f, "a+") as f:
             f.write(g_sat + "\n")
@@ -272,25 +273,41 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def main_single_graph(g, order, index, output_unsat_f, output_sat_f, verify):
+def main_single_graph(g, order, index, using_subgraph, output_unsat_f, output_sat_f, verify):
     """takes in graph in maplesat output format, order of the graph, count corresponds to the line
        number of the candidates, and index indicates which vector assignment we will be using. """
     order = int(order)
     edge_lst = maple_to_edges(g, int(order))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
-    graph_dict = {}
-    for v in list(G.nodes()):
-        graph_dict[v] = (list(G.neighbors(v)))
-    assignments = find_assignments(graph_dict)
-    assignment = assignments[int(index)]
-    determine_embed(graph_dict, assignment, g, order, index, output_unsat_f, output_sat_f, verify) #write the file
+    if using_subgraph:
+        #print ("Checking minimum nonembeddable subgraph")
+        file_path = os.path.join(current_dir, "embedability/min_nonembed_graph_10-12-c.txt")
+        my_file = open(file_path, "r")
+        content = my_file.read()
+        min_non_subgraphs = content.split("\n")
+        my_file.close()
+        for string in min_non_subgraphs:
+            min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
+            gm = isomorphism.GraphMatcher(G, min_g)
+            if gm.subgraph_is_monomorphic():
+                with open(output_unsat_f, "a+") as f:
+                    f.write(g + "\n")
+                    return
+        #check if G contains a minimum nonembedabble subgraph
+        print ("this graph does not contain known minimal nonembeddable subgraph")
+        graph_dict = {}
+        for v in list(G.nodes()):
+            graph_dict[v] = (list(G.neighbors(v)))
+        assignments = find_assignments(graph_dict)
+        assignment = assignments[int(index)]
+        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f, verify) #write the file
 
-def main(file_to_solve, order, index, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=False):
+def main(file_to_solve, order, index, using_subgraph, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=False):
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
-            main_single_graph(line, order, index, output_unsat_f, output_sat_f, verify)
+            main_single_graph(line, order, index, using_subgraph, output_unsat_f, output_sat_f, verify)
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]=="True")
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7]=="True")
