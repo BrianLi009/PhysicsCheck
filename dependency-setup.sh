@@ -11,11 +11,6 @@ Usage:
 
 echo "prerequisite: pip and make installed"
 
-if ! command -v python3.10 &> /dev/null; then
-    echo "Python version >= 3.10 is required. Aborting."
-    exit 1
-fi
-
 #install maplesat-ks
 if [ -d maplesat-ks ] && [ -f maplesat-ks/simp/maplesat_static ]
 then
