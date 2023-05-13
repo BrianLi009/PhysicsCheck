@@ -36,7 +36,7 @@ def verify_sat_c(g, filename):
                 cross_product_1 = (v[1]*w[2]-v[2]*w[1]).conjugate()
                 cross_product_2 = (v[2]*w[0]-v[0]*w[2]).conjugate()
                 cross_product_3 = (v[0]*w[1]-v[1]*w[0]).conjugate()
-                if math.isclose(0, cross_product_1.real, abs_tol=0.00001) and math.isclose(0, cross_product_2.real, abs_tol=0.00001) and math.isclose(0, cross_product_3.real, abs_tol=0.00001) and math.isclose(0, cross_product_1.imag, abs_tol=0.00001) and math.isclose(0, cross_product_2.imag, abs_tol=0.00001) and math.isclose(0, cross_product_3.imag, abs_tol=0.00001):
+                if math.isclose(0, cross_product_1.real, abs_tol=1e-99) and math.isclose(0, cross_product_2.real, abs_tol=1e-99) and math.isclose(0, cross_product_3.real, abs_tol=1e-99) and math.isclose(0, cross_product_1.imag, abs_tol=1e-99) and math.isclose(0, cross_product_2.imag, abs_tol=1e-99) and math.isclose(0, cross_product_3.imag, abs_tol=1e-99):
                     colinear_verify = False
     if colinear_verify:
         print ("every pair of non-adjacent vertices has corresponding noncolinear vectors")

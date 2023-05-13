@@ -249,12 +249,12 @@ def determine_embed(g, assignment, g_sat, order, index, output_unsat_f, output_s
             with open("solution.log", "w+") as f2:
                 for i in g:
                     f2.write(str(i)+"\n")
-                    f2.write(str(m.evaluate(ver[i][0].r)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][0].i)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1].r)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1].i)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2].r)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2].i)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][0].r).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][0].i).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][1].r).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][1].i).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][2].r).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][2].i).as_decimal(100)).replace("?","")+"\n")
             if not verify_sat_c(g, "solution.log"):
                     print ("verification failed")
 #graph in sat labeling format
