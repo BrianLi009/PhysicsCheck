@@ -23,7 +23,7 @@ def verify_sat_c(g, filename):
             v = (complex(vec_dict[vec][0],vec_dict[vec][1]), complex(vec_dict[vec][2],vec_dict[vec][3]), complex(vec_dict[vec][4],vec_dict[vec][5]))
             w = (complex(vec_dict[adj_vec][0],vec_dict[adj_vec][1]), complex(vec_dict[adj_vec][2],vec_dict[adj_vec][3]), complex(vec_dict[adj_vec][4],vec_dict[adj_vec][5]))
             dot_prod = v[0]*w[0].conjugate() + v[1]*w[1].conjugate() + v[2]*w[2].conjugate()
-            if not (math.isclose(dot_prod.real, 0, abs_tol=0.00001) and math.isclose(dot_prod.imag, 0, abs_tol=0.00001)):
+            if not (math.isclose(dot_prod.real, 0, abs_tol=1e-99) and math.isclose(dot_prod.imag, 0, abs_tol=1e-99)):
                 dot_product_verify = False
     if dot_product_verify:
         print ("all adjacent vertices has corresponding orthogonal vectors")

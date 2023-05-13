@@ -29,6 +29,7 @@ def g6_to_dict(g6):
     return graph_dict
 
 def find_assignments(g):
+    print (g)
     # Create list of edges
     edges_without_duplicates = set()
     edges = set()
@@ -162,7 +163,12 @@ def find_assignments(g):
     # Find best assignment: we want the least number of variables;
     # then the least number of cross-product equations and finally
     # the least number of orthogonallity requirements.
+    #print (completed)
     completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
+    print (completed[0])
+    """for assignment in completed:
+        if assignment.ortho==[(3, 1)] and assignment.nvar==5 and assignment.var==[0, 10, 3, 2]:
+            print (assignment)"""
     return completed
 
 # Return the constraint that c = ±(a × b)
@@ -256,9 +262,9 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             with open("solution.log", "w+") as f2:
                 for i in g:
                     f2.write(str(i)+"\n")
-                    f2.write(str(m.evaluate(ver[i][0]).as_decimal(100)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1]).as_decimal(100)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2]).as_decimal(100)).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][0])).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][1])).replace("?","")+"\n")
+                    f2.write(str(m.evaluate(ver[i][2])).replace("?","")+"\n")
             if not verify_sat(g, "solution.log"):
                 print ("verification failed")
 
