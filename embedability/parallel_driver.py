@@ -1,4 +1,4 @@
-from main import main
+from main import main_single_graph
 from itertools import islice
 
 def solve_range(n, start, end, file_to_solve, using_subgraph, normalize, output_unsat_f, output_sat_f):
@@ -15,4 +15,4 @@ def solve_range(n, start, end, file_to_solve, using_subgraph, normalize, output_
         num_lines = end-start
         for line in islice(f, num_lines):
             print (line)
-            main(line, n, 0, using_subgraph, normalize, output_unsat_f, output_sat_f, verify="False")
+            main_single_graph(line, n, 0, using_subgraph, normalize, output_unsat_f, output_sat_f, verify="False")
