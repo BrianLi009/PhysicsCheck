@@ -72,8 +72,8 @@ then
     echo "Instance with these parameters has already been solved."
     exit 0
 fi
-
-#./generate-simp-instance.sh $n $p $q $o $t $s $b $r
+module load python/3.10
+./generate-simp-instance.sh $n $p $q $o $t $s $b $r
 
 #if [ -f "$n.exhaust" ]
 #then
@@ -90,14 +90,14 @@ fi
 if [ "$r" != "0" ]
 then
     dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-    ./3-cube-merge-solve.sh $d -m $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
+    ./3-cube-merge-solve.sh -m $d $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
+    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause > constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log certificate_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q
-#echo "checking max clique size..."
-#./4-check-clique-size.sh $n $p $q
+echo "checking max clique size..."
+./4-check-clique-size.sh $n $p $q
 
 # to add: this section returns any unsat orders or smthg
 

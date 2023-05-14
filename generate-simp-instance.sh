@@ -1,7 +1,4 @@
 #!/bin/bash
-#SBATCH --account=def-vganesh
-#SBATCH --time=10:00:00
-#SBATCH --mem-per-cpu=8G
 
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
@@ -144,4 +141,4 @@ fi
 
 echo "preprocessing complete. final instance is $instance_tracking. Renaming it as constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp"
 
-mv $instance_tracking constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}
+mv $instance_tracking constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp

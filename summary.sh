@@ -3,7 +3,6 @@
 #SBATCH --time=01:00:00
 #SBATCH --mem-per-cpu=4G
 
-
 while getopts "apsbm" opt
 do
         case $opt in
@@ -40,7 +39,7 @@ function readtime() {
 
 if [ "$r" != "0" ] 
 then
-    dir="${n}_${p}_{q}_${o}_${t}_${s}_${b}_${r}"
+    dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
 	echo "expecting log files in '$dir/${n}-solve/'"
 	if [ ! -d $dir/${n}-solve ]
 	then
@@ -79,3 +78,7 @@ else
 	simptime=$(echo "($simptime)/60" | bc -l)
 fi
 
+
+printf " n    Solving   Simplifying   Cubing \n"
+
+printf "%1d %s m %10.2f m %10.2f m\n" $n "$run" "$simptime" "$cubetime"

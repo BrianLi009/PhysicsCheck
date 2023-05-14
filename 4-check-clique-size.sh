@@ -19,13 +19,13 @@ n=$1 #order
 p=$2
 q=$3
 
-source ENV/bin/activate
+#source ENV/bin/activate
 
-while [ $n -le 22 ] #less than order of R(n;p,q)
-do
-	python3 verify.py $n $p $q
-	n=$((n+1))
-done
+#while [ $n -le 22 ] #less than order of R(n;p,q)
+#do
+python3 verify.py $n $p $q
+#n=$((n+1))
+#done
 
 
 
@@ -35,7 +35,7 @@ done
 
 #cp $n.exhaust embedability
 
-cd embedability
+#cd embedability
 #if [ -f min_nonembed_graph_10-12.txt ]
 #then
 #    echo "using precomputed minimum nonembedable subgraph"
