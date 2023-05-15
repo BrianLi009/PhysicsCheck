@@ -195,7 +195,9 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     
     for i in assignment.assign:
         if not isinstance(assignment.assign[i], int):
-            ver[i] = crossc(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]])
+            s.add(ver[i][0] == crossc(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]])[0])
+            s.add(ver[i][1] == crossc(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]])[1])
+            s.add(ver[i][2] == crossc(ver[assignment.assign[i][0]], ver[assignment.assign[i][1]])[2])
 
     edges = set()
     for v in g:
