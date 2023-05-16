@@ -1,9 +1,13 @@
+#!/usr/bin/python
+
 import sys
+import os
 import networkx as nx
 from networkx.algorithms import isomorphism
 import itertools
 sys.path.insert(0, './gen_instance')
 from pysat.formula import CNF 
+import subprocess
 
 def check_squarefree(G):
     square_graph = nx.Graph()
@@ -41,6 +45,7 @@ def check_non_colorable(edge_lst, n):
     for c in clause:
         cnf.append(c)
     cnf.to_file("non_colorable_check"+"_"+str(n))
+
     
 
 def check_triangle(G):
@@ -75,7 +80,7 @@ def maple_to_edges(input, v):
             actual_edges.append(edge_lst[int(i)-1])
     return actual_edges
 
-def verify(g, n):
+def verify_single(g, n):
     edge_lst = maple_to_edges(g, int(n))
     G = nx.Graph()
     G.add_edges_from(edge_lst)
@@ -84,11 +89,19 @@ def verify(g, n):
         f.write(g + "\n")
         f.close()
     check_non_colorable(edge_lst, n)
+    cnf_file = "non_colorable_check_" + str(n)
+    #file_path = os.path.join(current_dir, "non_colorable_check_" + str(n))
+    result = subprocess.call(["cadical/build/cadical", cnf_file])
+    
+    if result != 20:
+        with open(f"not_verified_{n}", "a") as file:
+            file.write(g)
 
-
+def verify(file_to_verify, n):
+    with open(file_to_verify) as f:
+        for line in f:
+            line = line.rstrip()
+            verify_single(line, n)
+            
 if __name__ == "__main__":
     verify(sys.argv[1], sys.argv[2])
-
-
-"""g = "a -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20 21 -22 -23 -24 -25 -26 27 28 -29 -30 -31 -32 33 -34 -35 -36 -37 -38 -39 40 -41 -42 -43 44 -45 -46 -47 48 -49 -50 -51 -52 53 54 55 -56 -57 58 59 -60 -61 62 -63 -64 -65 -66 -67 68 -69 -70 71 -72 73 -74 -75 -76 -77 78 -79 80 -81 82 -83 84 -85 -86 -87 -88 -89 -90 -91 -92 93 94 -95 -96 -97 -98 -99 -100 -101 102 -103 -104 105 106 -107 -108 -109 110 111 -112 -113 114 -115 -116 -117 -118 119 -120 121 -122 -123 124 -125 -126 -127 -128 -129 130 -131 -132 -133 -134 -135 -136 137 -138 139 -140 -141 -142 -143 -144 -145 -146 -147 148 -149 -150 -151 152 -153 154 155 -156 -157 -158 -159 -160 -161 -162 -163 -164 -165 166 -167 -168 -169 170 -171 0"
-verify(g, 19)"""
