@@ -95,7 +95,7 @@ def verify_single(g, n):
     
     if result != 20:
         with open(f"not_verified_{n}", "a") as file:
-            file.write(g)
+            file.write(g + " \n")
 
 def verify(file_to_verify, n):
     with open(file_to_verify) as f:
