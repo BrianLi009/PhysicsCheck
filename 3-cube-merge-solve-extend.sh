@@ -104,7 +104,11 @@ while [ $# -gt 5 ]; do
         parallel --will-cite < $current_dir/$n-solve/solve.commands
     fi
 
-    ./extended-cube.sh 1 $new_index $current_dir/$n-solve/$v $current_dir/$n-cubes
+    output=$(./extended-cube.sh 1 $new_index $current_dir/$n-solve/$v $current_dir/$n-cubes)
+    if echo "$output" | grep -q "Instance full solved, terminating..."; then
+        echo "Instance full solved, terminating..."
+        exit 0
+    fi
     shift
 done
 
