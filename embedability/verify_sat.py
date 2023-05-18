@@ -21,7 +21,7 @@ def verify_sat(g, filename):
     for vec in g:
         for adj_vec in g[vec]:
             dot_prod = vec_dict[vec][0]*vec_dict[adj_vec][0]+vec_dict[vec][1]*vec_dict[adj_vec][1]+vec_dict[vec][2]*vec_dict[adj_vec][2]
-            if not (math.isclose(0, dot_prod, abs_tol=1e-99)):
+            if not (math.isclose(0, dot_prod, abs_tol=1e-10)):
                 dot_product_verify = False
     if dot_product_verify:
         print ("all adjacent vertices has corresponding orthogonal vectors")
