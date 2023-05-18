@@ -178,8 +178,11 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
         ver[i] = (Complex("ver{0}c1".format(i)), Complex("ver{0}c2".format(i)), Complex("ver{0}c3".format(i)))
 
     base = list(assignment.base)
-    base_1 = base[0]
-    base_2 = base[1]
+    for i in base:
+        if assignment.assign[i] == 0:
+            base_1 = i
+        if assignment.assign[i] == 1:
+            base_2 = i
     s.add(ver[base_1][0].r == 1)
     s.add(ver[base_1][1].r == 0)
     s.add(ver[base_1][2].r == 0)
@@ -290,7 +293,8 @@ def main_single_graph(g, order, index, using_subgraph, output_unsat_f, output_sa
         min_non_subgraphs = content.split("\n")
         my_file.close()
         for string in min_non_subgraphs:
-            min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
+            print (string)
+            min_g = nx.from_graph6_bytes(string)
             gm = isomorphism.GraphMatcher(G, min_g)
             if gm.subgraph_is_monomorphic():
                 with open(output_unsat_f, "a+") as f:
@@ -319,4 +323,4 @@ def main(file_to_solve, order, index, using_subgraph, output_unsat_f="output_uns
             main_single_graph(line, order, index, using_subgraph, output_unsat_f, output_sat_f, verify)
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7]=="True")
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5], sys.argv[6], sys.argv[7]=="True")

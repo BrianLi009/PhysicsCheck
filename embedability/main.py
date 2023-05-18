@@ -210,8 +210,11 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
                 s.add(not_zero(cross(ver[j],ver[i])))
     #set standard basis
     base = list(assignment.base)
-    base_1 = base[0]
-    base_2 = base[1]
+    for i in base:
+        if assignment.assign[i] == 0:
+            base_1 = i
+        if assignment.assign[i] == 1:
+            base_2 = i
     s.add(ver[base_1][0] == 1)
     s.add(ver[base_1][1] == 0)
     s.add(ver[base_1][2] == 0)
@@ -296,7 +299,7 @@ def main_single_graph(g, order, index, using_subgraph, normalize=False, output_u
     G = nx.Graph()
     G.add_edges_from(edge_lst)
     if using_subgraph:
-        #print ("Checking minimum nonembeddable subgraph")
+        print ("Checking minimum nonembeddable subgraph")
         file_path = os.path.join(current_dir, "embedability/min_nonembed_graph_10-12.txt")
         my_file = open(file_path, "r")
         content = my_file.read()
