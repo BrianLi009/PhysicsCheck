@@ -329,7 +329,7 @@ def main_single_graph(g, order, index, using_subgraph, normalize=False, output_u
         determine_embed(graph_dict, assignment, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) #write the file
 
 
-def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=False):
+def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=True):
     with open(file_to_solve) as f:
         for line in f:
             line = line.rstrip()
