@@ -293,8 +293,7 @@ def main_single_graph(g, order, index, using_subgraph, output_unsat_f, output_sa
         min_non_subgraphs = content.split("\n")
         my_file.close()
         for string in min_non_subgraphs:
-            print (string)
-            min_g = nx.from_graph6_bytes(string)
+            min_g = nx.from_graph6_bytes(bytes(string, encoding='utf-8'))
             gm = isomorphism.GraphMatcher(G, min_g)
             if gm.subgraph_is_monomorphic():
                 with open(output_unsat_f, "a+") as f:
