@@ -29,7 +29,6 @@ def g6_to_dict(g6):
     return graph_dict
 
 def find_assignments(g):
-    print (g)
     # Create list of edges
     edges_without_duplicates = set()
     edges = set()
@@ -165,10 +164,6 @@ def find_assignments(g):
     # the least number of orthogonallity requirements.
     #print (completed)
     completed.sort(key=lambda f: (f.nvar, len(f.ortho)))
-    print (completed[0])
-    """for assignment in completed:
-        if assignment.ortho==[(3, 1)] and assignment.nvar==5 and assignment.var==[0, 10, 3, 2]:
-            print (assignment)"""
     return completed
 
 # Return the constraint that c = ±(a × b)
@@ -262,14 +257,31 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             f.write(g_sat + "\n")
         if verify:
             m = s.model()
-            with open("solution.log", "w+") as f2:
-                for i in g:
-                    f2.write(str(i)+"\n")
-                    f2.write(str(m.evaluate(ver[i][0]).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1]).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2]).as_decimal(10000)).replace("?","")+"\n")
-            if not verify_sat(g, "solution.log"):
-                print ("verification failed")
+            dot_product_verify = True
+            for vec in g:
+                for adj_vec in g[vec]:
+                    real_dot = (m.evaluate(dot(ver[vec], ver[adj_vec]) == 0))
+            if not real_dot:
+                dot_product_verify = False
+            else:
+                print ("all adjacent vertices has corresponding orthogonal vectors")
+            colinear_verify = True
+            for vec_1 in g:
+                for vec_2 in g:
+                    if vec_1 != vec_2:
+                        cross_product_1 = m.evaluate(cross(ver[vec_1], ver[vec_2])[0] == 0)
+                        cross_product_2 = m.evaluate(cross(ver[vec_1], ver[vec_2])[1] == 0)
+                        cross_product_3 = m.evaluate(cross(ver[vec_1], ver[vec_2])[2] == 0)
+                        if cross_product_1 and cross_product_2 and cross_product_3:
+                            colinear_verify = False
+            if colinear_verify:
+                print ("every pair of non-adjacent vertices has corresponding noncolinear vectors")
+            if dot_product_verify and colinear_verify:
+                print ("verified")
+            else:
+                print ("NOT VERIFIED, LOGGING CANDIDATE TO FILE")
+                with open("not_embed_verified.log", "w+") as f2:
+                    f2.write(g + "\n")
 
 #graph in sat labeling format
 

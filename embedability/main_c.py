@@ -252,17 +252,36 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             f.write(g_sat + "\n")
         if verify:
             m = s.model()
-            with open("solution.log", "w+") as f2:
-                for i in g:
-                    f2.write(str(i)+"\n")
-                    f2.write(str(m.evaluate(ver[i][0].r).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][0].i).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1].r).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][1].i).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2].r).as_decimal(10000)).replace("?","")+"\n")
-                    f2.write(str(m.evaluate(ver[i][2].i).as_decimal(10000)).replace("?","")+"\n")
-            if not verify_sat_c(g, "solution.log"):
-                    print ("verification failed")
+            dot_product_verify = True
+            for vec in g:
+                for adj_vec in g[vec]:
+                    real_dot = (m.evaluate(dotc(ver[vec], ver[adj_vec]).r == 0))
+                    img_dot = (m.evaluate(dotc(ver[vec], ver[adj_vec]).i == 0))
+            if not real_dot or not img_dot:
+                dot_product_verify = False
+            else:
+                print ("all adjacent vertices has corresponding orthogonal vectors")
+            colinear_verify = True
+            for vec_1 in g:
+                for vec_2 in g:
+                    if vec_1 != vec_2:
+                        cross_product_1_r = m.evaluate(crossc(ver[vec_1], ver[vec_2])[0].r == 0)
+                        cross_product_1_i = m.evaluate(crossc(ver[vec_1], ver[vec_2])[0].i == 0)
+                        cross_product_2_r = m.evaluate(crossc(ver[vec_1], ver[vec_2])[1].r == 0)
+                        cross_product_2_i = m.evaluate(crossc(ver[vec_1], ver[vec_2])[1].i == 0)
+                        cross_product_3_r = m.evaluate(crossc(ver[vec_1], ver[vec_2])[2].r == 0)
+                        cross_product_3_i = m.evaluate(crossc(ver[vec_1], ver[vec_2])[2].i == 0)
+                        if cross_product_1_r and cross_product_1_i and cross_product_2_r and cross_product_2_i and cross_product_3_r and cross_product_3_i:
+                            colinear_verify = False
+            if colinear_verify:
+                print ("every pair of non-adjacent vertices has corresponding noncolinear vectors")
+            if dot_product_verify and colinear_verify:
+                print ("verified")
+            else:
+                print ("NOT VERIFIED, LOGGING CANDIDATE TO FILE")
+                with open("not_embed_verified.log", "w+") as f2:
+                    f2.write(g + "\n")
+                        
 #graph in sat labeling format
 
 def maple_to_edges(input, v):
