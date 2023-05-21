@@ -32,7 +32,9 @@ FILE* exhaustfile = NULL;
 FILE* canonicaloutfile = NULL;
 FILE* noncanonicaloutfile = NULL;
 FILE* permoutfile = NULL;
+#ifdef UNEMBED_SUBGRAPH_CHECK
 FILE* guboutfile = NULL;
+#endif
 long numsols = 0;
 long canon = 0;
 long noncanon = 0;
@@ -100,8 +102,8 @@ static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to o
 static StringOption  opt_perm_out       (_cat, "perm-out", "File to output the permutations that witness the noncanonicity of the noncanonical blocking clauses");
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
 static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", true);
-static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 #ifdef UNEMBED_SUBGRAPH_CHECK
+static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
 #else
 #define opt_check_gub 0
@@ -165,7 +167,9 @@ Solver::Solver() :
   , canonicaloutstring (opt_canonical_out)
   , noncanonicaloutstring (opt_noncanonical_out)
   , permoutstring (opt_perm_out)
+#ifdef UNEMBED_SUBGRAPH_CHECK
   , guboutstring (opt_gub_out)
+#endif
   , exhauststring (opt_exhaustive)
   , ok                 (true)
 #if ! LBD_BASED_CLAUSE_DELETION
@@ -214,9 +218,11 @@ Solver::Solver() :
         if(permoutstring != NULL) {
             permoutfile = fopen(permoutstring, "w");
         }
+#ifdef UNEMBED_SUBGRAPH_CHECK
         if(guboutstring != NULL) {
             guboutfile = fopen(guboutstring, "w");
         }
+#endif
     }
 }
 
@@ -239,10 +245,12 @@ Solver::~Solver()
     {   fclose(permoutfile);
         permoutfile = NULL;
     }
+#ifdef UNEMBED_SUBGRAPH_CHECK
     if(guboutfile != NULL)
     {   fclose(guboutfile);
         guboutfile = NULL;
     }
+#endif
 }
 
 
@@ -596,6 +604,7 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
     return true;
 }
 
+#ifdef UNEMBED_SUBGRAPH_CHECK
 // The 17 minimal unembeddable subgraphs on 10, 11, and 12 vertices
 const int gub[17][66] = {
     {1,1,1,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,1,1}, // I{O_ogI@W (10 vertices, 15 edges) originally ICOedPKL? or It?IQGiDO
@@ -684,6 +693,7 @@ bool Solver::has_gub_subgraph(int k, int* P, int g) {
         }
     }
 }
+#endif
 
 #include <set>
 
@@ -752,70 +762,6 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
         // Check if current graph hash has been seen
         if(canonical_hashes[i].find(hash)==canonical_hashes[i].end())
         {
-#ifdef UNEMBED_SUBGRAPH_CHECK
-            // Run gub subgraph check
-            if (i >= 9)
-            {
-#ifdef OPT_START_GUB
-                for(int g=opt_start_gub; g<opt_check_gub; g++)
-#else
-                for(int g=0; g<opt_check_gub; g++)
-#endif
-                {
-                    if(i == 9 && g >= 2)
-                        break;
-                    if(i == 10 && g >= 7)
-                        break;
-
-                    int P[i+1];
-                    for(int j=0; j<i+1; j++) P[j] = -1;
-
-                    const double before = cpuTime();
-                    bool ret = has_gub_subgraph(i+1, P, g);
-                    const double after = cpuTime();
-                    gubtime += (after-before);
-
-                    // If graph has gub subgraph
-                    if (ret) {
-                        gubcount++;
-                        gubcounts[g]++;
-                        out_learnts.push();
-                        int c = 0;
-                        for(int jj=0; jj<i+1; jj++) {
-                            for(int ii=0; ii<jj; ii++) {
-                                if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
-                                    if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
-                                        out_learnts[0].push(mkLit(c, true));
-                                c++;
-                            }
-                        }
-                        /*for(int j = 0; j < i*(i+1)/2; j++) {
-                            if(assigns[j]==l_True)
-                                out_learnts[0].push(mkLit(j, true));
-                        }*/
-                        if(guboutfile != NULL) {
-                            //fprintf(guboutfile, "a ");
-                            int c = 0;
-                            for(int jj=0; jj<i+1; jj++) {
-                                for(int ii=0; ii<jj; ii++) {
-                                    if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
-                                        if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
-                                            fprintf(guboutfile, "-%d ", c+1);
-                                    c++;
-                                }
-                            }
-                            /*for(int j = 0; j < i*(i+1)/2; j++)
-                                if(assigns[j]==l_True)
-                                    fprintf(guboutfile, "%d ", j+1);
-                            */
-                            fprintf(guboutfile, "0\n");
-                            fflush(guboutfile);
-                        }
-                        return;
-                    }
-                }
-            }
-#endif
 
             // Found a new subgraph of order i+1 to test for canonicity
             const double before = cpuTime();
@@ -968,6 +914,65 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             }
         }
     }
+
+#ifdef UNEMBED_SUBGRAPH_CHECK
+#ifdef OPT_START_GUB
+    for(int g=opt_start_gub; g<opt_check_gub; g++)
+#else
+    for(int g=0; g<opt_check_gub; g++)
+#endif
+    {
+        int P[n];
+        for(int j=0; j<n; j++) P[j] = -1;
+
+        const double before = cpuTime();
+        bool ret = has_gub_subgraph(n, P, g);
+        const double after = cpuTime();
+        gubtime += (after-before);
+
+        // If graph has gub subgraph
+        if (ret) {
+            gubcount++;
+            gubcounts[g]++;
+            out_learnts.push();
+            int c = 0;
+            for(int jj=0; jj<n; jj++) {
+                for(int ii=0; ii<jj; ii++) {
+                    if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
+                        if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
+                            out_learnts[0].push(mkLit(c, true));
+                    c++;
+                }
+            }
+            /*for(int j = 0; j < n*(n-1)/2; j++) {
+                if(assigns[j]==l_True)
+                    out_learnts[0].push(mkLit(j, true));
+            }*/
+            if(guboutfile != NULL) {
+                //fprintf(guboutfile, "a ");
+                int c = 0;
+                for(int jj=0; jj<n; jj++) {
+                    for(int ii=0; ii<jj; ii++) {
+                        if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
+                            if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
+                                fprintf(guboutfile, "-%d ", c+1);
+                        c++;
+                    }
+                }
+                /*for(int j = 0; j < n*(n-1)/2; j++)
+                    if(assigns[j]==l_True)
+                        fprintf(guboutfile, "%d ", j+1);
+                */
+                fprintf(guboutfile, "0\n");
+                fflush(guboutfile);
+            }
+            if(permoutfile != NULL) {
+                fprintf(permoutfile, "Minimal unembeddable subgraph %d\n", g);
+            }
+            return;
+        }
+    }
+#endif
 
     // Verify that a complete solution has been found (and compute its hash)
     if(opt_skip_last > 0 || n == 0)

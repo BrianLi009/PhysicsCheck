@@ -17,6 +17,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
+#define UNEMBED_SUBGRAPH_CHECK
 
 #ifndef Minisat_Solver_h
 #define Minisat_Solver_h
@@ -160,7 +161,9 @@ public:
     const char* canonicaloutstring;
     const char* noncanonicaloutstring;
     const char* permoutstring;
+#ifdef UNEMBED_SUBGRAPH_CHECK
     const char* guboutstring;
+#endif
     vec<uint64_t> lbd_seen;
     vec<uint64_t> picked;
     vec<uint64_t> conflicted;
@@ -187,7 +190,9 @@ public:
     int reductions = 0;
     int nbclausesbeforereduce = firstReduceDB;
     bool is_canonical(int k, int p[], int& x, int& y, int& i);
+#ifdef UNEMBED_SUBGRAPH_CHECK
     bool has_gub_subgraph(int k, int* P, int g);
+#endif
 
 protected:
 
