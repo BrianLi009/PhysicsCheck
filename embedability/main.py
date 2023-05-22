@@ -4,7 +4,11 @@ import networkx as nx
 import collections
 from collections import defaultdict
 
+<<<<<<< HEAD
+from helper import *
+=======
 from helper import cross, dot
+>>>>>>> d3efe6649de26f134b818cd5545dba2913f5e079
 from z3 import *
 
 import sys
@@ -256,31 +260,35 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
             f.write(g_sat + "\n")
         if verify:
             m = s.model()
-            dot_product_verify = True
             for vec in g:
-                for adj_vec in g[vec]:
-                    real_dot = (m.evaluate(dot(ver[vec], ver[adj_vec]) == 0))
-            if not real_dot:
-                dot_product_verify = False
-            else:
-                print ("all adjacent vertices has corresponding orthogonal vectors")
-            colinear_verify = True
+                if m.evaluate(ver[vec][0] == 0) and m.evaluate(ver[vec][1] == 0) and m.evaluate(ver[vec][2] == 0):
+                    print ("vector is the zero vector")
+                    return
+            #check non-colinear between all vertices
             for vec_1 in g:
                 for vec_2 in g:
                     if vec_1 != vec_2:
-                        cross_product_1 = m.evaluate(cross(ver[vec_1], ver[vec_2])[0] == 0)
-                        cross_product_2 = m.evaluate(cross(ver[vec_1], ver[vec_2])[1] == 0)
-                        cross_product_3 = m.evaluate(cross(ver[vec_1], ver[vec_2])[2] == 0)
-                        if cross_product_1 and cross_product_2 and cross_product_3:
-                            colinear_verify = False
-            if colinear_verify:
-                print ("every pair of non-adjacent vertices has corresponding noncolinear vectors")
-            if dot_product_verify and colinear_verify:
-                print ("verified")
-            else:
-                print ("NOT VERIFIED, LOGGING CANDIDATE TO FILE")
-                with open("not_embed_verified.log", "w+") as f2:
-                    f2.write(g + "\n")
+                        dot_prod = dot(ver[vec_1], ver[vec_2]) 
+                        if m.evaluate(dot_prod * dot_prod == norm2(ver[vec_1]) * norm2(ver[vec_2])):
+                            print ("vectors are colinear, verification failed")
+                            return
+            #check orthgonality between all connected vertices
+            for vec in g:
+                for adj_vec in g[vec]:
+                    real_dot = (m.evaluate(dot(ver[vec], ver[adj_vec]) == 0))
+                    if not real_dot:
+                        print ("connected vertices are not orthogonal, verification failed")
+                        return
+            #check if u is orthogonal to v and w, then u cross (v cross w) = 0
+            for vec in g:
+                for vec_1 in g[vec]:
+                    for vec_2 in g[vec]:
+                        if vec_1 != vec_2:
+                            cross_prod_1 = cross(ver[vec_1], ver[vec_2])
+                            cross_prod_2 = cross(ver[vec], cross_prod_1)
+                            if (not m.evaluate(cross_prod_2[0]==0)) or (not m.evaluate(cross_prod_2[1]==0)) or (not m.evaluate(cross_prod_2[2]==0)):
+                                print ("mutually orthogonal vectors does not satisfy cross product constraint")
+                                return
 
 #graph in sat labeling format
 

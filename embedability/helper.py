@@ -5,7 +5,13 @@ def crossc(v,w):
     return ((v[1]*w[2]-v[2]*w[1]).conjugate(), (v[2]*w[0]-v[0]*w[2]).conjugate(), (v[0]*w[1]-v[1]*w[0]).conjugate())
 
 def dotc(v,w):
-    return (v[0] * w[0].conjugate() + v[1] * w[1].conjugate() + v[2] * w[2].conjugate())
+    return (v[0] * (w[0].conjugate()) + v[1] * (w[1].conjugate()) + v[2] * (w[2].conjugate()))
+
+def normc2(v):
+    return (v[0].r*v[0].r + v[0].i*v[0].i + v[1].r*v[1].r + v[1].i*v[1].i + v[2].r*v[2].r + v[2].i*v[2].i)
+
+def norm2(v):
+    return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
 
 
 #Real Functions
