@@ -33,11 +33,15 @@ else
     cd ..
 fi
 
-if pip3 list | grep networkx
-then
-    echo "networkx package installed"
-else 
-    pip3 install networkx
+required_version="2.5"
+installed_version=$(pip3 show networkx | grep Version | awk '{print $2}')
+
+if [[ "$(printf '%s\n' "$installed_version" "$required_version" | sort -V | head -n1)" != "$required_version" ]]; then
+    echo "need to install networkx version newer than $required_version"
+    pip3 install --upgrade networkx
+    echo "networkx has been successfully updated."
+else
+    echo "networkx version $installed_version is already installed and newer than $required_version"
 fi
 
 if pip3 list | grep z3-solver
