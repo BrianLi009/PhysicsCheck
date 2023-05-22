@@ -18,18 +18,6 @@ def cross(v,w):
 def dot(v,w):
     return (v[0]*w[0] + v[1]*w[1] + v[2]*w[2])
 
-def nested_crossc(x):
-    if isinstance(x, tuple):
-        return 'crossc({},{})'.format(*map(nested_crossc, x))
-    str = 'v{}'.format(x)
-    return str
-
-def nested_cross(x):
-    if isinstance(x, tuple):
-        return 'cross({},{})'.format(*map(nested_cross, x))
-    str = 'v{}'.format(x)
-    return str
-
 def _to_complex(a):
     if isinstance(a, ComplexExpr):
         return a
