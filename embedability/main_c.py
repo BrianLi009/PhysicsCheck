@@ -280,7 +280,7 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
                             cross_prod_1 = crossc(ver[vec_1], ver[vec_2])
                             cross_prod_2 = crossc(ver[vec], cross_prod_1)
                             if (not m.evaluate(cross_prod_2[0].r==0)) or (not m.evaluate(cross_prod_2[0].i==0)) or (not m.evaluate(cross_prod_2[1].r==0)) or (not m.evaluate(cross_prod_2[1].i==0)) or (not m.evaluate(cross_prod_2[2].r==0)) or (not m.evaluate(cross_prod_2[2].i==0)):
-                                print ("mutually orthogonal vectors does not satisfy cross product constraint")
+                                print ("mutually orthogonal vectors does not satisfy cross product constraint, verification failed")
                                 return
 
                         
