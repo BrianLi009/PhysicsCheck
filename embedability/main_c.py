@@ -12,7 +12,6 @@ from collections import defaultdict
 
 from networkx.algorithms.isomorphism.isomorph import is_isomorphic
 from networkx.generators.classic import cycle_graph
-from verify_sat_c import verify_sat_c
 from helper import *
 
 import sys, getopt

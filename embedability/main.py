@@ -5,7 +5,6 @@ import collections
 from collections import defaultdict
 
 from helper import cross, dot
-from verify_sat import verify_sat
 from z3 import *
 
 import sys
