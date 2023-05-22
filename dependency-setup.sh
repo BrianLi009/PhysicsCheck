@@ -56,4 +56,13 @@ else
     cd -
 fi
 
+if [ -f drat-trim/drat-trim ]
+then
+    echo "drat-trim installed and binary file compiled"
+else
+    cd drat-trim
+    make
+    cd -
+fi
+
 echo "all dependency properly installed"
