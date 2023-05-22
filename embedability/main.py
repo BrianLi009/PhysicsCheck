@@ -4,11 +4,7 @@ import networkx as nx
 import collections
 from collections import defaultdict
 
-<<<<<<< HEAD
 from helper import *
-=======
-from helper import cross, dot
->>>>>>> d3efe6649de26f134b818cd5545dba2913f5e079
 from z3 import *
 
 import sys
