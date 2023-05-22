@@ -195,7 +195,6 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, normaliz
     for i in range(order):
         #now define every vertex
         ver[i] = (Real("ver{0}c1".format(i)), Real("ver{0}c2".format(i)), Real("ver{0}c3".format(i)))
-        s.add(ver[i][2] >= 0)
         if normalize:
             s.add(dot(ver[i], ver[i]) == 1)
     for i in range(order):
