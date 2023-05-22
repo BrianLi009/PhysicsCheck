@@ -24,7 +24,7 @@ f=$(basename "$f")
 # Simplify m seconds
 echo "simplifying for $m conflicts"
 i=1
-./cadical/build/cadical "$f_dir" "$f_dir.drat" --no-binary -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c $m | tee log/"$f".simp1
+./cadical/build/cadical "$f_dir" "$f_dir.drat" -o simp/"$f".simp1 -e simp/"$f".ext1 -n -c $m | tee log/"$f".simp1
 ./drat-trim/drat-trim "$f_dir" "$f_dir.drat" -f | tee log/"$f".simp1.verify
 if ! grep -E "s DERIVATION|s VERIFIED" -q log/"$f".simp1.verify
 then
