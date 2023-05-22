@@ -29,7 +29,7 @@ mkdir -p "$dir"
 i=$k # Subgraph order
 rm "$dir"/"$i"-solo.exhaust "$dir"/"$i"-solo.noncanonical "$dir"/subgraph-gen-solo-"$i".log 2>/dev/null
 start=$(date +%s.%N)
-command="./maplesat-ks/simp/maplesat_static -order=$n -max-exhaustive-var=$((i*(i-1)/2)) -skip-last=$((n-i)) -exhaustive=$dir/$i-solo.exhaust -no-pre $f -keep-blocking=2 -noncanonical-out=$dir/$i-solo.noncanonical -minclause $p | tee $dir/subgraph-gen-solo-$i.log"
+command="./maplesat-ks/simp/maplesat_static -order=$n -max-exhaustive-var=$((i*(i-1)/2)) -skip-last=$((n-i)) -exhaustive=$dir/$i-solo.exhaust -no-pre $f $f.drat -perm-out=$f.perm -keep-blocking=2 -noncanonical-out=$dir/$i-solo.noncanonical -minclause $p | tee $dir/subgraph-gen-solo-$i.log"
 echo "$command"
 eval "$command"
 end=$(date +%s.%N)
@@ -37,3 +37,16 @@ runtime=$( echo "$end - $start" | bc -l )
 sols=$( wc -l "$dir"/"$i"-solo.exhaust | cut -d' ' -f1 )
 noncanon=$( wc -l "$dir"/"$i"-solo.noncanonical | cut -d' ' -f1 )
 echo "Order $i: $sols canonical solutions and $noncanon noncanonical solutions in $runtime seconds"
+
+# Verify DRAT proof
+./drat-trim/drat-trim $f $f.drat -f | tee $dir/subgraph-gen-solo-$i.verify
+if ! grep -E "s DERIVATION|s VERIFIED" -q $dir/subgraph-gen-solo-$i.verify
+then
+	echo "ERROR: Proof not verified"
+fi
+# Verify trusted clauses
+grep 't' $f.drat | ./drat-trim/check-perm.py $k $f.perm | tee $f.permcheck
+if ! grep "VERIFIED" -q $f.permcheck
+then
+	echo "ERROR: Trusted clauses not verified"
+fi
