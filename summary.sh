@@ -55,7 +55,7 @@ then
 
 	run=0
 	max_time=0
-	for logfile in $dir/${n}-solve/*-solve.log; do
+	for logfile in $dir/simp/*.log; do
 		# Extract simptime from current logfile and add it to the total
 		#time=$(grep "CPU time" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d{3}')
