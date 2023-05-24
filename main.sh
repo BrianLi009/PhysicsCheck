@@ -86,19 +86,7 @@ then
     dir="${n}_${o}_${t}_${s}_${b}_${r}"
     ./3-cube-merge-solve.sh $p $m $n $r constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-ks/simp/maplesat_static constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.drat -perm-out=constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.perm -exhaustive=$n.exhaust -order=$n | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log
-    # Verify DRAT proof
-    ./drat-trim/drat-trim constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.drat | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.verify
-    if ! grep "s VERIFIED" -q constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.verify
-    then
-        echo "ERROR: Proof not verified"
-    fi
-    # Verify trusted clauses in proof
-    grep 't' constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.drat | ./drat-trim/check-perm.py $n constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.perm | tee constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.permcheck
-    if ! grep "VERIFIED" -q constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.permcheck
-    then
-        echo "ERROR: Trusted clauses not verified"
-    fi
+    ./maplesat-solve-verify.sh $n constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $n.exhaust
 fi
 
 #step 5.5: verify all constraints are satisfied

@@ -46,7 +46,8 @@ if [ "$o" == "c" ]
         ./simplification/simplify-by-var-removal.sh $n '$d/simp/$c$i.adj' $t
     fi
 
-command="./maplesat-ks/simp/maplesat_static $d/simp/$c$i.adj.simp -no-pre -exhaustive=$d/$n-solve/$i-solve.exhaust -order=$n -minclause"
+command="./maplesat-solve-verify.sh $n $d/simp/$c$i.adj.simp $d/$n-solve/$i-solve.exhaust"
+
 echo $command
 eval $command
 

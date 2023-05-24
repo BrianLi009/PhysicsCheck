@@ -83,7 +83,7 @@ do
         else
             command2="./simplification/simplify-by-var-removal.sh $n '$current_dir/simp/$cube_file$i.adj' $t >> $current_dir/$n-solve/$i-solve.log"
         fi
-    command3="./maplesat-ks/simp/maplesat_static $current_dir/simp/$cube_file$i.adj.simp -no-pre -exhaustive=$current_dir/$n-solve/$i-solve.exhaust -order=$n -minclause >> $current_dir/$n-solve/$i-solve.log"
+    command3="./maplesat-solve-verify.sh $n $current_dir/simp/$cube_file$i.adj.simp $current_dir/$n-solve/$i-solve.exhaust"
     command="$command1 && $command2 && $command3"
     echo $command >> $current_dir/$n-solve/solve.commands
     if [ "$p" != "-p" ]
