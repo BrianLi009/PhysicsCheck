@@ -251,9 +251,12 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             f.write(g_sat + "\n")
         if verify:
             m = s.model()
+            #normalize vectors
+            for vec in g:
+                ver[vec] = normalizec(ver[vec])
             #check all vectors are nonzero
             for vec in g:
-                if m.evaluate(ver[vec][0].r == 0) and m.evaluate(ver[vec][0].i == 0) and m.evaluate(ver[vec][1].r == 0) and m.evaluate(ver[vec][1].i == 0) and m.evaluate(ver[vec][2].r == 0) and m.evaluate(ver[vec][2].i == 0):
+                if m.evaluate(ver[vec][0] == 0) and m.evaluate(ver[vec][1] == 0) and m.evaluate(ver[vec][2] == 0):
                     print ("vector is the zero vector")
                     return
             #check non-colinear between all vertices
@@ -267,22 +270,22 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
             #check orthgonality between all connected vertices
             for vec in g:
                 for adj_vec in g[vec]:
-                    real_dot = (m.evaluate(dotc(ver[vec], ver[adj_vec]).r == 0))
-                    img_dot = (m.evaluate(dotc(ver[vec], ver[adj_vec]).i == 0))
-                    if not real_dot or not img_dot:
+                    real_dot = (m.evaluate(dotc(ver[vec], ver[adj_vec]) == 0))
+                    if not real_dot:
                         print ("connected vertices are not orthogonal, verification failed")
                         return
             #check three mutually connected vertices satisfy u=v cross w in some order
             for vec in g:
                 for vec_1 in g[vec]:
                     for vec_2 in g[vec]:
-                        if vec_1 != vec_2:
+                        if vec_1 in g[vec_2]:
                             cross_prod_1 = crossc(ver[vec_1], ver[vec_2])
-                            cross_prod_2 = crossc(ver[vec], cross_prod_1)
-                            if (not m.evaluate(cross_prod_2[0].r==0)) or (not m.evaluate(cross_prod_2[0].i==0)) or (not m.evaluate(cross_prod_2[1].r==0)) or (not m.evaluate(cross_prod_2[1].i==0)) or (not m.evaluate(cross_prod_2[2].r==0)) or (not m.evaluate(cross_prod_2[2].i==0)):
-                                print ("mutually orthogonal vectors does not satisfy cross product constraint, verification failed")
-                                return
-
+                            cross_prod_2 = crossc(ver[vec_2], ver[vec_1])
+                            cross_prod_1_check = m.evaluate(ver[vec][0] == cross_prod_1[0]) and m.evaluate(ver[vec][1] == cross_prod_1[1]) and m.evaluate(ver[vec][2] == cross_prod_1[2]) 
+                            cross_prod_2_check = m.evaluate(ver[vec][0] == cross_prod_2[0]) and m.evaluate(ver[vec][1] == cross_prod_2[1]) and m.evaluate(ver[vec][2] == cross_prod_2[2])
+                            if not cross_prod_1_check and not cross_prod_2_check:
+                                print ("mutually orthogonal vectors does not satisfy cross product constraint")
+                                return 
                         
 #graph in sat labeling format
 

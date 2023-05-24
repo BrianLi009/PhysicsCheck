@@ -13,11 +13,24 @@ def normc2(v):
 def norm2(v):
     return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
 
+def normalizer(v):
+    magnitude = z3.Sqrt(norm2(v))
+    return (v[0]/magnitude, v[1]/magnitude, v[2]/magnitude)
+
+def normalizec(v):
+    magnitude = z3.Sqrt(normc2(v))
+    v[0].r = v[0].r/magnitude
+    v[0].i = v[0].i/magnitude
+    v[1].r = v[1].r/magnitude
+    v[1].i = v[1].i/magnitude
+    v[2].r = v[2].r/magnitude
+    v[2].i = v[2].i/magnitude
+    return v
 
 #Real Functions
 
 def cross(v,w):
-    return ((v[1]*w[2]-v[2]*w[1]), v[2]*w[0]-v[0]*w[2], v[0]*w[1]-v[1]*w[0])
+    return ((v[1]*w[2]-v[2]*w[1]), (v[2]*w[0]-v[0]*w[2]), (v[0]*w[1]-v[1]*w[0]))
 
 #define new variable, pass 
 
