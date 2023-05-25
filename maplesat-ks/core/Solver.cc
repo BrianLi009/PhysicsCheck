@@ -32,6 +32,7 @@ FILE* exhaustfile = NULL;
 FILE* canonicaloutfile = NULL;
 FILE* noncanonicaloutfile = NULL;
 FILE* permoutfile = NULL;
+FILE* unitoutfile = NULL;
 #ifdef UNEMBED_SUBGRAPH_CHECK
 FILE* guboutfile = NULL;
 #endif
@@ -46,6 +47,7 @@ double noncanontime = 0;
 long canon_np[MAXORDER] = {};
 long noncanon_np[MAXORDER] = {};
 #endif
+long proofsize = 0;
 long canonarr[MAXORDER] = {};
 long noncanonarr[MAXORDER] = {};
 double canontimearr[MAXORDER] = {};
@@ -100,6 +102,7 @@ static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the c
 static StringOption  opt_canonical_out  (_cat, "canonical-out", "File to output canonical subgraphs found during search");
 static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to output the noncanonical subgraph blocking clauses");
 static StringOption  opt_perm_out       (_cat, "perm-out", "File to output the permutations that witness the noncanonicity of the noncanonical blocking clauses");
+static StringOption  opt_unit_out       (_cat, "unit-out", "File to output the learnt unit clauses");
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
 static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", true);
 #ifdef UNEMBED_SUBGRAPH_CHECK
@@ -112,6 +115,7 @@ static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of 
 static IntOption     opt_start_gub      (_cat, "unembeddable-check-start", "Starting unembeddable subgraphs to check for", 0, IntRange(0, 17));
 #endif
 static IntOption     opt_max_conflicts  (_cat, "max-conflicts", "Limit the number of conflicts (0=unlimited)", 0, IntRange(0, INT32_MAX));
+static IntOption     opt_max_proof_size (_cat, "max-proof-size", "File size limit (in MiB) of the generated proof (0=unlimited)", 0, IntRange(0, INT32_MAX));
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -167,6 +171,7 @@ Solver::Solver() :
   , canonicaloutstring (opt_canonical_out)
   , noncanonicaloutstring (opt_noncanonical_out)
   , permoutstring (opt_perm_out)
+  , unitoutstring (opt_unit_out)
 #ifdef UNEMBED_SUBGRAPH_CHECK
   , guboutstring (opt_gub_out)
 #endif
@@ -218,6 +223,9 @@ Solver::Solver() :
         if(permoutstring != NULL) {
             permoutfile = fopen(permoutstring, "w");
         }
+        if(unitoutstring != NULL) {
+            unitoutfile = fopen(unitoutstring, "w");
+        }
 #ifdef UNEMBED_SUBGRAPH_CHECK
         if(guboutstring != NULL) {
             guboutfile = fopen(guboutstring, "w");
@@ -244,6 +252,10 @@ Solver::~Solver()
     if(permoutfile != NULL)
     {   fclose(permoutfile);
         permoutfile = NULL;
+    }
+    if(unitoutfile != NULL)
+    {   fclose(unitoutfile);
+        unitoutfile = NULL;
     }
 #ifdef UNEMBED_SUBGRAPH_CHECK
     if(guboutfile != NULL)
@@ -292,6 +304,45 @@ Var Solver::newVar(bool sign, bool dvar)
     return v;
 }
 
+// Return the number of decimal digits in n + 1 (how variable n is represented in the proof output)
+int numdigits(Var n)
+{   if(n < 9)
+        return 1;
+    if(n < 99)
+        return 2;
+    if(n < 999)
+        return 3;
+    if(n < 9999)
+        return 4;
+    if(n < 99999)
+        return 5;
+    if(n < 999999)
+        return 6;
+}
+
+// Return the number of bytes used by the given clause in the proof output
+int clausestrlen(const vec<Lit>& clause)
+{   const int size = clause.size();
+    int res = 2+size;
+    for(int i=0; i<size; i++)
+    {   if(sign(clause[i]))
+            res++;
+        res += numdigits(var(clause[i]));
+    }
+    return res;
+}
+
+// Return the number of bytes used by the given clause in the proof output
+int clausestrlen(const Clause& clause)
+{   const int size = clause.size();
+    int res = 2+size;
+    for(int i=0; i<size; i++)
+    {   if(sign(clause[i]))
+            res++;
+        res += numdigits(var(clause[i]));
+    }
+    return res;
+}
 
 bool Solver::addClause_(vec<Lit>& ps)
 {
@@ -327,6 +378,11 @@ bool Solver::addClause_(vec<Lit>& ps)
       for (i = j = 0, p = lit_Undef; i < oc.size(); i++)
         fprintf(output, "%i ", (var(oc[i]) + 1) * (-2 * sign(oc[i]) + 1));
       fprintf(output, "0\n");
+    }
+
+    if(flag) {
+      proofsize += clausestrlen(ps);
+      proofsize += 2+clausestrlen(oc);
     }
 
     if (ps.size() == 0)
@@ -379,6 +435,8 @@ void Solver::removeClause(CRef cr) {
         fprintf(output, "%i ", (var(c[i]) + 1) * (-2 * sign(c[i]) + 1));
       fprintf(output, "0\n");
     }
+
+    proofsize += 2+clausestrlen(c);
 
     detachClause(cr);
     // Don't leave pointers to free'd memory!
@@ -1692,7 +1750,7 @@ lbool Solver::search(int nof_conflicts)
         if (confl != CRef_Undef){
             // CONFLICT
             conflicts++; conflictC++;
-            if (opt_max_conflicts > 0 && conflicts >= opt_max_conflicts) {
+            if ((opt_max_conflicts > 0 && conflicts >= opt_max_conflicts) || (opt_max_proof_size > 0 && proofsize > opt_max_proof_size * 1048576l)) {
                 interrupt();
             }
 #if BRANCHING_HEURISTIC == CHB || BRANCHING_HEURISTIC == LRB
@@ -1712,6 +1770,7 @@ lbool Solver::search(int nof_conflicts)
 
             if (learnt_clause.size() == 1){
                 uncheckedEnqueue(learnt_clause[0]);
+                if(unitoutfile) fprintf(unitoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
             }else{
                 CRef cr = ca.alloc(learnt_clause, true);
                 learnts.push(cr);
@@ -1730,6 +1789,7 @@ lbool Solver::search(int nof_conflicts)
                                   (-2 * sign(learnt_clause[i]) + 1) );
               fprintf(output, "0\n");
             }
+            proofsize += clausestrlen(learnt_clause);
 
 #if BRANCHING_HEURISTIC == VSIDS
             varDecayActivity();
@@ -1806,6 +1866,7 @@ lbool Solver::search(int nof_conflicts)
                                           (-2 * sign(conflict[i]) + 1) );
                       fprintf(output, "0\n");
                     }
+                    proofsize += clausestrlen(conflict);
 #if DATABASE_REDUCTION_EVERY_CUBE
                     reduceDB();
                     reductions++;
@@ -1843,6 +1904,7 @@ lbool Solver::search(int nof_conflicts)
                                               (-2 * sign(callbackLearntClauses[i][j]) + 1) );
                           fprintf(output, "0\n");
                         }
+                        proofsize += 2+clausestrlen(callbackLearntClauses[i]);
                         analyze(callbackLearntClauses[i], learnt_clause, curlevel);
                         if (output != NULL) {
                           for (int j = 0; j < learnt_clause.size(); j++)
@@ -1850,12 +1912,16 @@ lbool Solver::search(int nof_conflicts)
                                               (-2 * sign(learnt_clause[j]) + 1) );
                           fprintf(output, "0\n");
                         }
+                        proofsize += clausestrlen(learnt_clause);
                         if (output != NULL && opt_keep_blocking < 2) {
                           fprintf(output, "d ");
                           for (int j = 0; j < callbackLearntClauses[i].size(); j++)
                             fprintf(output, "%i " , (var(callbackLearntClauses[i][j]) + 1) *
                                               (-2 * sign(callbackLearntClauses[i][j]) + 1) );
                           fprintf(output, "0\n");
+                        }
+                        if(opt_keep_blocking < 2) {
+                            proofsize += 2+clausestrlen(callbackLearntClauses[i]);
                         }
                         if (curlevel == -1) {
                             return l_False;
@@ -1864,6 +1930,7 @@ lbool Solver::search(int nof_conflicts)
                         }
                         if (learnt_clause.size() == 1) {
                             units.push(learnt_clause[0]);
+                            if(unitoutfile) fprintf(unitoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
                         } else {
                             // Add the learned clause (after minimization) to the vector of original clauses if the 'keep blocking' option enabled
                             if(opt_keep_blocking==1)

@@ -315,9 +315,9 @@ int main(int argc, char** argv)
                 if (!assumptions){
                     fprintf(S.output, "0\n");
                 }
-            }else{
+            }/*else{
                 fprintf(S.output, "INDET\n");
-            }
+            }*/
             fclose(S.output);
         }
 
