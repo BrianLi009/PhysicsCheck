@@ -89,7 +89,7 @@ def verify_single(g, n):
         f.close()
     check_non_colorable(edge_lst, n)
     cnf_file = "non_colorable_check_" + str(n)
-    result = subprocess.call(["cadical/build/cadical", cnf_file])
+    result = subprocess.call(["cadical/build/cadical", cnf_file], stdout=subprocess.DEVNULL)
     
     if result != 20:
         with open(f"not_verified_{n}", "a") as file:
