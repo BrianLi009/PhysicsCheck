@@ -7,33 +7,42 @@ v=$4 #num of var to eliminate during each cubing stage
 t=$5 #num of conflicts for simplification
 s=$6 #amount of timeout for each solving
 a=$7 #amount of additional variables to remove for each cubing call
+b=${8:-0} #starting cubing depth, default is 0
+c=${9:-} #cube file to build on if exist
 
-mkdir -p $d/$n-solve
-mkdir -p $d/simp
-mkdir -p $d/log
+mkdir -p $d/$v/$n-solve
+mkdir -p $d/$v/simp
+mkdir -p $d/$v/log
+mkdir -p $d/$v/$n-cubes
 
-./gen_cubes/cube.sh -a $n $f $v $d
+if [ -n "$c" ]; then
+    echo "iterating $c..."
+    mv $c $d/$v/$n-cubes
+fi
 
-files=$(ls $d/$n-cubes/*.cubes)
+echo "Cubing starting at depth $b"
+di="$d/$v"
+./gen_cubes/cube.sh -a $n $f $v $di $b
+
+files=$(ls $d/$v/$n-cubes/*.cubes)
 highest_num=$(echo "$files" | awk -F '[./]' '{print $(NF-1)}' | sort -nr | head -n 1)
 echo "currently the cubing depth is $highest_num"
-cube_file=$d/$n-cubes/$highest_num.cubes
+cube_file=$d/$v/$n-cubes/$highest_num.cubes
 cp $(echo $cube_file) .
 cube_file=$(echo $cube_file | sed 's:.*/::')
+new_cube=$((highest_num + 1))
+new_cube_file=$d/$v/$n-cubes/$new_cube.cubes
 
 numline=$(< $cube_file wc -l)
 new_index=$((numline))
 
-mkdir -p $d/$n-solve/$v
-
 for i in $(seq 1 $new_index) #1-based indexing for cubes
     do 
-        command1="./gen_cubes/apply.sh $f $cube_file $i > $d/simp/$cube_file$i.adj"
-        command2="./simplification/simplify-by-conflicts.sh $d/simp/$cube_file$i.adj $n $t >> $d/$n-solve/$v/$i-solve.log"
-        #command3="./maplesat-solve.sh $n $d/simp/$cube_file$i.adj.simp $d/$n-solve/$v/$i-solve.exhaust
-        command3="./maplesat-ks/simp/maplesat_static $d/simp/$cube_file$i.adj.simp -no-pre -exhaustive=$d/$n-solve/$v/$i-solve.exhaust -order=$n -minclause >> $d/$n-solve/$v/$i-solve.log"
+        command1="./gen_cubes/apply.sh $f $cube_file $i > $d/$v/simp/$cube_file$i.adj"
+        command2="./simplification/simplify-by-conflicts.sh $d/$v/simp/$cube_file$i.adj $n $t >> $d/$v/$n-solve/$i-solve.log"
+        command3="./maplesat-solve-verify.sh $n $d/$v/simp/$cube_file$i.adj.simp $d/$v/$n-solve/$i-solve.exhaust"
         command="$command1 && $command2 && $command3"
-        echo $command >> $d/$n-solve/$v/solve.commands
+        echo $command >> $d/$v/$n-solve/solve.commands
         eval $command1
         eval $command2
         timeout ${s}s bash -c "eval $command3"
@@ -41,7 +50,7 @@ for i in $(seq 1 $new_index) #1-based indexing for cubes
 
 for i in $(seq 1 $new_index)
     do
-        file="$d/$n-solve/$v/$i-solve.log"
+        file="$d/$v/$n-solve/$i-solve.log"
         if grep -q "UNSATISFIABLE" $file 
         then
                 #do something
@@ -52,8 +61,8 @@ for i in $(seq 1 $new_index)
                 continue
         else
                 echo $file is not solved
-                #command="./3-cube-merge-solve-extend-simp.sh $n $d/simp/${cube_file}${i}.adj.simp ${d}_${i} $((v+10)) $t $s"
-                command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $s $a"
+                sed -n "${i}p" $cube_file >> $new_cube_file
+                command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
                 echo $command
                 echo $command >> ${n}-iterative.commands
                 eval $command
