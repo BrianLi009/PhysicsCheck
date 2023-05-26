@@ -17,7 +17,7 @@ mkdir -p $d/$v/$n-cubes
 
 if [ -n "$c" ]; then
     echo "iterating $c..."
-    mv $c $d/$v/$n-cubes
+    cp $c $d/$v/$n-cubes
 fi
 
 echo "Cubing starting at depth $b"
@@ -40,7 +40,7 @@ for i in $(seq 1 $new_index) #1-based indexing for cubes
     do 
         command1="./gen_cubes/apply.sh $f $cube_file $i > $d/$v/simp/$cube_file$i.adj"
         command2="./simplification/simplify-by-conflicts.sh $d/$v/simp/$cube_file$i.adj $n $t >> $d/$v/$n-solve/$i-solve.log"
-        command3="./maplesat-solve-verify.sh $n $d/$v/simp/$cube_file$i.adj.simp $d/$v/$n-solve/$i-solve.exhaust"
+        command3="./maplesat-solve-verify.sh $n $d/$v/simp/$cube_file$i.adj.simp $d/$v/$n-solve/$i-solve.exhaust >> $d/$v/$n-solve/$i-solve.log"
         command="$command1 && $command2 && $command3"
         echo $command >> $d/$v/$n-solve/solve.commands
         eval $command1
@@ -48,6 +48,7 @@ for i in $(seq 1 $new_index) #1-based indexing for cubes
         timeout ${s}s bash -c "eval $command3"
     done
 
+all_solved="T"
 for i in $(seq 1 $new_index)
     do
         file="$d/$v/$n-solve/$i-solve.log"
@@ -60,11 +61,17 @@ for i in $(seq 1 $new_index)
                 #do something
                 continue
         else
+                all_solved="F"
                 echo $file is not solved
                 sed -n "${i}p" $cube_file >> $new_cube_file
-                command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
-                echo $command
-                echo $command >> ${n}-iterative.commands
-                eval $command
         fi
 done
+
+if [[ "$all_solved" == "T" ]]; then
+    echo "successfully solved all cubes, terminating"
+else
+    command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
+    echo $command
+    echo $command >> ${n}-iterative.commands
+    eval $command
+fi
