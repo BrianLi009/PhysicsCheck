@@ -3,7 +3,7 @@
 n=$1 #order
 f=$2 #instance file name
 d=$3 #directory to store into
-v=$4 #num of var to eliminate during each cubing stage
+v=$4 #num of var to eliminate during first cubing stage
 t=$5 #num of conflicts for simplification
 s=$6 #amount of timeout for each solving
 a=$7 #amount of additional variables to remove for each cubing call
