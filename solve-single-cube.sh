@@ -24,9 +24,11 @@ d=${5:-.} #directory to store into
 o=${6:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${7:-10000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 
-if [ ! -d "$d/simp" ]; then
-  echo "creating directory $d/simp"
-  mkdir -p "$d/simp"
+dir_path=$(dirname "$c")
+
+if [ ! -d "$d/simp/$dir_path" ]; then
+  echo "creating directory $d/simp/$dir_path"
+  mkdir -p "$d/simp/$dir_path"
 fi
 
 if [ ! -d "$d/$n-solve" ]; then
