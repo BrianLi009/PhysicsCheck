@@ -73,5 +73,6 @@ else
     command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
     echo $command
     echo $command >> ${n}-iterative.commands
+    #for parallization, simply submit the command below using sbatch
     eval $command
 fi
