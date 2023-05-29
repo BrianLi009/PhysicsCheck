@@ -13,14 +13,9 @@ mkdir -p $d/$v/simp
 mkdir -p $d/$v/log
 mkdir -p $d/$v/$n-cubes
 
-if [ -n "$c" ]; then
-    echo "iterating $c..."
-    cp $c $d/$v/$n-cubes
-fi
 
-echo "Cubing starting at depth $b"
 di="$d/$v"
-./gen_cubes/cube.sh -a $n $f $v $di $b
+./gen_cubes/cube.sh -a $n $f $v $di
 
 files=$(ls $d/$v/$n-cubes/*.cubes)
 highest_num=$(echo "$files" | awk -F '[./]' '{print $(NF-1)}' | sort -nr | head -n 1)
@@ -64,7 +59,7 @@ for i in $(seq 1 $new_index)
                 ./gen_cubes/concat.sh $child_instance $child_instance.noncanonical > $child_instance.temp
                 ./gen_cubes/concat.sh $child_instance.temp $child_instance.unit > $child_instance.learnt
                 rm $child_instance.temp
-                command="./3-cube-merge-solve-iterative-learnt.sh $n $child_instance.learnt "$d/$v-$i" $(($v + $a)) $t $s $a"
+                command="./3-cube-merge-solve-iterative-learnt.sh $n $child_instance.learnt "$d/$v-$i" $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
                 echo $command >> ${n}-iterative.commands
                 eval $command
         fi
