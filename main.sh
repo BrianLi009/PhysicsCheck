@@ -87,7 +87,7 @@ then
     dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
     ./3-cube-merge-solve.sh -m $d $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause > constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log certificate_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log
+    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause > constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log
 fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q
