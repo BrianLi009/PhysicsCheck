@@ -60,6 +60,7 @@ for i in $(seq 1 $new_index)
                 ./gen_cubes/concat.sh $child_instance.temp $child_instance.unit > $child_instance.learnt
                 rm $child_instance.temp
                 command="./3-cube-merge-solve-iterative-learnt.sh $n $child_instance.learnt "$d/$v-$i" $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
+                #for parallization, simply submit the command below using sbatch
                 echo $command >> ${n}-iterative.commands
                 eval $command
         fi
