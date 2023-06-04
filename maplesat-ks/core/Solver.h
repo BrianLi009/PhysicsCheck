@@ -17,6 +17,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
+#define UNEMBED_SUBGRAPH_CHECK
 
 #ifndef Minisat_Solver_h
 #define Minisat_Solver_h
@@ -107,11 +108,17 @@ public:
     void    checkGarbage(double gf);
     void    checkGarbage();
 
+
+    FILE*               output;
+
     // Extra results: (read-only member variable)
     //
     vec<lbool> model;             // If problem is satisfiable, this vector contains the model (if any).
     vec<Lit>   conflict;          // If problem is unsatisfiable (possibly under assumptions),
                                   // this vector represent the final conflict clause expressed in the assumptions.
+#ifdef REMOVE_UNAPPEARING_VARS
+    vec<bool>  appears;
+#endif
 
     // Mode of operation:
     //
@@ -153,7 +160,11 @@ public:
     const char* exhauststring;
     const char* canonicaloutstring;
     const char* noncanonicaloutstring;
+    const char* permoutstring;
+    const char* unitoutstring;
+#ifdef UNEMBED_SUBGRAPH_CHECK
     const char* guboutstring;
+#endif
     vec<uint64_t> lbd_seen;
     vec<uint64_t> picked;
     vec<uint64_t> conflicted;
@@ -179,8 +190,10 @@ public:
     long curRestart = 1;
     int reductions = 0;
     int nbclausesbeforereduce = firstReduceDB;
-    bool is_canonical(int k, int p[], int& x, int& y);
+    bool is_canonical(int k, int p[], int& x, int& y, int& i);
+#ifdef UNEMBED_SUBGRAPH_CHECK
     bool has_gub_subgraph(int k, int* P, int g);
+#endif
 
 protected:
 

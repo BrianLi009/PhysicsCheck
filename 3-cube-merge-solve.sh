@@ -35,7 +35,7 @@ r=$2 #number of variables to eliminate
 f=$3 #instance file name
 d=${4:-.} #directory to store into
 o=${5:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
-t=${6:-100000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+t=${6:-10000} #for the cube-instance, conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 
 if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
@@ -83,7 +83,7 @@ do
         else
             command2="./simplification/simplify-by-var-removal.sh $n '$current_dir/simp/$cube_file$i.adj' $t >> $current_dir/$n-solve/$i-solve.log"
         fi
-    command3="./maplesat-ks/simp/maplesat_static $current_dir/simp/$cube_file$i.adj.simp -no-pre -no-pseudo-test -order=$n -minclause >> $current_dir/$n-solve/$i-solve.log"
+    command3="./maplesat-solve-verify.sh $n $current_dir/simp/$cube_file$i.adj.simp $current_dir/$n-solve/$i-solve.exhaust"
     command="$command1 && $command2 && $command3"
     echo $command >> $current_dir/$n-solve/solve.commands
     if [ "$p" != "-p" ]

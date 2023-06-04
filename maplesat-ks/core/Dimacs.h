@@ -39,6 +39,12 @@ static void readClause(B& in, Solver& S, vec<Lit>& lits) {
         parsed_lit = parseInt(in);
         if (parsed_lit == 0) break;
         var = abs(parsed_lit)-1;
+#ifdef REMOVE_UNAPPEARING_VARS
+        if(var >= S.appears.size()) {
+            S.appears.growTo(var+1, false);
+        }
+        S.appears[var] = true;
+#endif
         while (var >= S.nVars()) S.newVar();
         lits.push( (parsed_lit > 0) ? mkLit(var) : ~mkLit(var) );
     }
@@ -60,6 +66,9 @@ static void parse_DIMACS_main(B& in, Solver& S) {
                 // SATRACE'06 hack
                 // if (clauses > 4000000)
                 //     S.eliminate(true);
+#ifdef REMOVE_UNAPPEARING_VARS
+                S.appears.growTo(vars, false);
+#endif
             }else{
                 printf("PARSE ERROR! Unexpected char: %c\n", *in), exit(3);
             }

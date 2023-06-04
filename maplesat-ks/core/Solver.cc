@@ -31,7 +31,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 FILE* exhaustfile = NULL;
 FILE* canonicaloutfile = NULL;
 FILE* noncanonicaloutfile = NULL;
+FILE* permoutfile = NULL;
+FILE* unitoutfile = NULL;
+#ifdef UNEMBED_SUBGRAPH_CHECK
 FILE* guboutfile = NULL;
+#endif
 long numsols = 0;
 long canon = 0;
 long noncanon = 0;
@@ -39,8 +43,11 @@ long gubcount = 0;
 long gubcounts[17] = {};
 double canontime = 0;
 double noncanontime = 0;
+#ifdef PERM_STATS
 long canon_np[MAXORDER] = {};
 long noncanon_np[MAXORDER] = {};
+#endif
+long proofsize = 0;
 long canonarr[MAXORDER] = {};
 long noncanonarr[MAXORDER] = {};
 double canontimearr[MAXORDER] = {};
@@ -81,24 +88,34 @@ static DoubleOption  opt_garbage_frac      (_cat, "gc-frac",     "The fraction o
 static DoubleOption  opt_reward_multiplier (_cat, "reward-multiplier", "Reward multiplier", 0.9, DoubleRange(0, true, 1, true));
 #endif
 static StringOption  opt_exhaustive(_cat, "exhaustive", "Output for exhaustive search");
-static IntOption     opt_keep_blocking     (_cat, "keep-blocking", "Never forget the blocking clauses that are learned during the exhaustive search (0=off, 1=keep clauses after minimization, 2=keep original clauses)", 1, IntRange(0, 2));
+static IntOption     opt_keep_blocking     (_cat, "keep-blocking", "Never forget the blocking clauses that are learned during the exhaustive search (0=off, 1=keep clauses after minimization, 2=keep original clauses)", 2, IntRange(0, 2));
 static IntOption     opt_max_exhaustive_var (_cat, "max-exhaustive-var", "Only perform exhaustive search over the variables up to and including this variable index (0=use all edge variables in graph)", 0, IntRange(0, INT32_MAX));
 //static BoolOption    opt_fixed_card     (_cat, "fixed-card", "Assume a fixed number of true variables in solution and only use negative literals in exhaustive blocking clauses", false);
+//static BoolOption    opt_trust_blocking (_cat, "trust-blocking", "Write proof with trusted blocking clauses", false);
 static IntOption     opt_order          (_cat, "order", "Number of vertices in the KS system searching for", 0, IntRange(0, MAXORDER));
 //static IntOption     opt_start_col      (_cat, "start-col", "Starting column for which to test for canonicity", 2, IntRange(0, MAXORDER));
+#ifdef CANON_CHECK_OPTIONS
 static IntOption     opt_inc_col        (_cat, "inc-col", "Check for canonicity every inc_col columns", 1, IntRange(1, MAXORDER));
 static IntOption     opt_lookahead      (_cat, "lookahead", "Ensure that this many additional columns have been completed before performing canonicity checking", 0, IntRange(0, MAXORDER));
+#endif
 static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the canonicity on the last skip_last columns", 0, IntRange(0, MAXORDER));
 static StringOption  opt_canonical_out  (_cat, "canonical-out", "File to output canonical subgraphs found during search");
 static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to output the noncanonical subgraph blocking clauses");
+static StringOption  opt_perm_out       (_cat, "perm-out", "File to output the permutations that witness the noncanonicity of the noncanonical blocking clauses");
+static StringOption  opt_unit_out       (_cat, "unit-out", "File to output the learnt unit clauses");
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
-static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", false);
+static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", true);
+#ifdef UNEMBED_SUBGRAPH_CHECK
 static StringOption  opt_gub_out        (_cat, "unembeddable-out", "File to output unembeddable subgraphs found during search");
 static IntOption     opt_check_gub      (_cat, "unembeddable-check", "Number of minimal unembeddable subgraphs to check for", 0, IntRange(0, 17));
+#else
+#define opt_check_gub 0
+#endif
 #ifdef OPT_START_GUB
 static IntOption     opt_start_gub      (_cat, "unembeddable-check-start", "Starting unembeddable subgraphs to check for", 0, IntRange(0, 17));
 #endif
 static IntOption     opt_max_conflicts  (_cat, "max-conflicts", "Limit the number of conflicts (0=unlimited)", 0, IntRange(0, INT32_MAX));
+static IntOption     opt_max_proof_size (_cat, "max-proof-size", "File size limit (in MiB) of the generated proof (0=unlimited)", 0, IntRange(0, INT32_MAX));
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -153,7 +170,11 @@ Solver::Solver() :
 
   , canonicaloutstring (opt_canonical_out)
   , noncanonicaloutstring (opt_noncanonical_out)
+  , permoutstring (opt_perm_out)
+  , unitoutstring (opt_unit_out)
+#ifdef UNEMBED_SUBGRAPH_CHECK
   , guboutstring (opt_gub_out)
+#endif
   , exhauststring (opt_exhaustive)
   , ok                 (true)
 #if ! LBD_BASED_CLAUSE_DELETION
@@ -179,7 +200,7 @@ Solver::Solver() :
     if(exhauststring != NULL)
     {   //if(opt_order == 0)
         //    printf("Need to provide order when using exhaustive search\n"), exit(1);
-        exhaustfile = fopen(exhauststring, "a");
+        exhaustfile = fopen(exhauststring, "w");
         opt_exhaustive = NULL;
         use_callback = true;
     }
@@ -194,14 +215,22 @@ Solver::Solver() :
         opt_order = 0;
         use_callback = true;
         if(canonicaloutstring != NULL) {
-            canonicaloutfile = fopen(canonicaloutstring, "a");
+            canonicaloutfile = fopen(canonicaloutstring, "w");
         }
         if(noncanonicaloutstring != NULL) {
-            noncanonicaloutfile = fopen(noncanonicaloutstring, "a");
+            noncanonicaloutfile = fopen(noncanonicaloutstring, "w");
         }
+        if(permoutstring != NULL) {
+            permoutfile = fopen(permoutstring, "w");
+        }
+        if(unitoutstring != NULL) {
+            unitoutfile = fopen(unitoutstring, "w");
+        }
+#ifdef UNEMBED_SUBGRAPH_CHECK
         if(guboutstring != NULL) {
-            guboutfile = fopen(guboutstring, "a");
+            guboutfile = fopen(guboutstring, "w");
         }
+#endif
     }
 }
 
@@ -220,10 +249,20 @@ Solver::~Solver()
     {   fclose(noncanonicaloutfile);
         noncanonicaloutfile = NULL;
     }
+    if(permoutfile != NULL)
+    {   fclose(permoutfile);
+        permoutfile = NULL;
+    }
+    if(unitoutfile != NULL)
+    {   fclose(unitoutfile);
+        unitoutfile = NULL;
+    }
+#ifdef UNEMBED_SUBGRAPH_CHECK
     if(guboutfile != NULL)
     {   fclose(guboutfile);
         guboutfile = NULL;
     }
+#endif
 }
 
 
@@ -265,6 +304,45 @@ Var Solver::newVar(bool sign, bool dvar)
     return v;
 }
 
+// Return the number of decimal digits in n + 1 (how variable n is represented in the proof output)
+int numdigits(Var n)
+{   if(n < 9)
+        return 1;
+    if(n < 99)
+        return 2;
+    if(n < 999)
+        return 3;
+    if(n < 9999)
+        return 4;
+    if(n < 99999)
+        return 5;
+    if(n < 999999)
+        return 6;
+}
+
+// Return the number of bytes used by the given clause in the proof output
+int clausestrlen(const vec<Lit>& clause)
+{   const int size = clause.size();
+    int res = 2+size;
+    for(int i=0; i<size; i++)
+    {   if(sign(clause[i]))
+            res++;
+        res += numdigits(var(clause[i]));
+    }
+    return res;
+}
+
+// Return the number of bytes used by the given clause in the proof output
+int clausestrlen(const Clause& clause)
+{   const int size = clause.size();
+    int res = 2+size;
+    for(int i=0; i<size; i++)
+    {   if(sign(clause[i]))
+            res++;
+        res += numdigits(var(clause[i]));
+    }
+    return res;
+}
 
 bool Solver::addClause_(vec<Lit>& ps)
 {
@@ -273,13 +351,39 @@ bool Solver::addClause_(vec<Lit>& ps)
 
     // Check if clause is satisfied and remove false/duplicate literals:
     sort(ps);
-    Lit p; int i, j;
+
+    vec<Lit>    oc;
+    oc.clear();
+
+    Lit p; int i, j, flag = 0;
+    for (i = j = 0, p = lit_Undef; i < ps.size(); i++) {
+        oc.push(ps[i]);
+        if (value(ps[i]) == l_True || ps[i] == ~p || value(ps[i]) == l_False)
+          flag = 1;
+    }
+
     for (i = j = 0, p = lit_Undef; i < ps.size(); i++)
         if (value(ps[i]) == l_True || ps[i] == ~p)
             return true;
         else if (value(ps[i]) != l_False && ps[i] != p)
             ps[j++] = p = ps[i];
     ps.shrink(i - j);
+
+    if (flag && (output != NULL)) {
+      for (i = j = 0, p = lit_Undef; i < ps.size(); i++)
+        fprintf(output, "%i ", (var(ps[i]) + 1) * (-2 * sign(ps[i]) + 1));
+      fprintf(output, "0\n");
+
+      fprintf(output, "d ");
+      for (i = j = 0, p = lit_Undef; i < oc.size(); i++)
+        fprintf(output, "%i ", (var(oc[i]) + 1) * (-2 * sign(oc[i]) + 1));
+      fprintf(output, "0\n");
+    }
+
+    if(flag) {
+      proofsize += clausestrlen(ps);
+      proofsize += 2+clausestrlen(oc);
+    }
 
     if (ps.size() == 0)
         return ok = false;
@@ -324,6 +428,16 @@ void Solver::detachClause(CRef cr, bool strict) {
 
 void Solver::removeClause(CRef cr) {
     Clause& c = ca[cr];
+
+    if (output != NULL) {
+      fprintf(output, "d ");
+      for (int i = 0; i < c.size(); i++)
+        fprintf(output, "%i ", (var(c[i]) + 1) * (-2 * sign(c[i]) + 1));
+      fprintf(output, "0\n");
+    }
+
+    proofsize += 2+clausestrlen(c);
+
     detachClause(cr);
     // Don't leave pointers to free'd memory!
     if (locked(c)) vardata[var(c[0])].reason = CRef_Undef;
@@ -429,17 +543,21 @@ Lit Solver::pickBranchLit()
 #define MAX(X,Y) ((X) > (Y)) ? (X) : (Y)
 #define MIN(X,Y) ((X) > (Y)) ? (Y) : (X)
 
+// The kth entry estimates the number of permuations needed to show canonicity in order (k+1)
+long perm_cutoff[MAXORDER] = {0, 0, 0, 0, 0, 0, 20, 50, 125, 313, 783, 1958, 4895, 12238, 30595, 76488, 191220, 478050, 1195125, 2987813, 7469533, 18673833, 46684583};
+
 // Returns true when the k-vertex subgraph (with adjacency matrix M) is canonical
 // M is determined by the current assignment to the first k*(k-1)/2 variables
 // If M is noncanonical, then p, x, and y will be updated so that
 // * p will be a permutation of the rows of M so that row[i] -> row[p[i]] generates a matrix smaller than M (and therefore demonstrates the noncanonicity of M)
 // * (x,y) will be the indices of the first entry in the permutation of M demonstrating that the matrix is indeed lex-smaller than M
-bool Solver::is_canonical(int k, int p[], int& x, int& y) {
+// * i will be the maximum defined index defined in p
+bool Solver::is_canonical(int k, int p[], int& x, int& y, int& i) {
     int pl[k]; // pl[k] contains the current list of possibilities for kth vertex (encoded bitwise)
     int pn[k+1]; // pn[k] contains the initial list of possibilities for kth vertex (encoded bitwise)
     pl[0] = (1 << k) - 1;
     pn[0] = (1 << k) - 1;
-    int i = 0;
+    i = 0;
     int last_x = 0;
     int last_y = 0;
 
@@ -447,8 +565,8 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
     int limit = INT32_MAX;
 
     // If pseudo-test enabled then stop test if it is taking over 10 times longer than average
-    if(opt_pseudo_test && noncanonarr[k] >= 5) {
-        limit = 10*noncanon_np[k]/noncanonarr[k];
+    if(opt_pseudo_test && k >= 7) {
+        limit = 10*perm_cutoff[k-1];
     }
 
     while(np < limit) {
@@ -462,7 +580,9 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
                 }
                 i--;
                 if(i==-1) {
-                    canon_np[k] += np;
+#ifdef PERM_STATS
+                    canon_np[k-1] += np;
+#endif
                     // No permutations produce a smaller matrix; M is canonical
                     return true;
                 }
@@ -507,7 +627,9 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
                 break;
             }
             if(assigns[j] == l_True && assigns[pj] == l_False) {
-                noncanon_np[k] += np;
+#ifdef PERM_STATS
+                noncanon_np[k-1] += np;
+#endif
                 // Permutation produces a smaller matrix; M is not canonical
                 return false;
             }
@@ -534,10 +656,13 @@ bool Solver::is_canonical(int k, int p[], int& x, int& y) {
     }
 
     // Pseudo-test return: Assume matrix is canonical if a noncanonical permutation witness not yet found
-    canon_np[k] += np;
+#ifdef PERM_STATS
+    canon_np[k-1] += np;
+#endif
     return true;
 }
 
+#ifdef UNEMBED_SUBGRAPH_CHECK
 // The 17 minimal unembeddable subgraphs on 10, 11, and 12 vertices
 const int gub[17][66] = {
     {1,1,1,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,1,1}, // I{O_ogI@W (10 vertices, 15 edges) originally ICOedPKL? or It?IQGiDO
@@ -626,6 +751,7 @@ bool Solver::has_gub_subgraph(int k, int* P, int g) {
         }
     }
 }
+#endif
 
 #include <set>
 
@@ -678,6 +804,7 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
         }
         colsuntouched[i] = true;
 
+#ifdef CANON_CHECK_OPTIONS
         // Ensure variables are defined for an additional opt_lookahead columns
         for(int j = i*(i+1)/2; j < (i+opt_lookahead)*(i+opt_lookahead+1)/2 && j < N; j++) {
             if(assigns[j]==l_Undef) {
@@ -688,88 +815,30 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
         // Only check canonicity every inc_col columns
         if ((n-1)%opt_inc_col != i%opt_inc_col)
             continue;
+#endif
 
         // Check if current graph hash has been seen
         if(canonical_hashes[i].find(hash)==canonical_hashes[i].end())
         {
-            // Run gub subgraph check
-            if (i >= 9)
-            {
-#ifdef OPT_START_GUB
-                for(int g=opt_start_gub; g<opt_check_gub; g++)
-#else
-                for(int g=0; g<opt_check_gub; g++)
-#endif
-                {
-                    if(i == 9 && g >= 2)
-                        break;
-                    if(i == 10 && g >= 7)
-                        break;
-
-                    int P[i+1];
-                    for(int j=0; j<i+1; j++) P[j] = -1;
-
-                    const double before = cpuTime();
-                    bool ret = has_gub_subgraph(i+1, P, g);
-                    const double after = cpuTime();
-                    gubtime += (after-before);
-
-                    // If graph has gub subgraph
-                    if (ret) {
-                        gubcount++;
-                        gubcounts[g]++;
-                        out_learnts.push();
-                        int c = 0;
-                        for(int jj=0; jj<i+1; jj++) {
-                            for(int ii=0; ii<jj; ii++) {
-                                if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
-                                    if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
-                                        out_learnts[0].push(mkLit(c, true));
-                                c++;
-                            }
-                        }
-                        /*for(int j = 0; j < i*(i+1)/2; j++) {
-                            if(assigns[j]==l_True)
-                                out_learnts[0].push(mkLit(j, true));
-                        }*/
-                        if(guboutfile != NULL) {
-                            //fprintf(guboutfile, "a ");
-                            int c = 0;
-                            for(int jj=0; jj<i+1; jj++) {
-                                for(int ii=0; ii<jj; ii++) {
-                                    if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
-                                        if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
-                                            fprintf(guboutfile, "-%d ", c+1);
-                                    c++;
-                                }
-                            }
-                            /*for(int j = 0; j < i*(i+1)/2; j++)
-                                if(assigns[j]==l_True)
-                                    fprintf(guboutfile, "%d ", j+1);
-                            */
-                            fprintf(guboutfile, "0\n");
-                            fflush(guboutfile);
-                        }
-                        return;
-                    }
-                }
-            }
 
             // Found a new subgraph of order i+1 to test for canonicity
             const double before = cpuTime();
             // Run canonicity check
             int p[i+1]; // Permutation on i+1 vertices
             int x, y;   // These will be the indices of first adjacency matrix entry that demonstrates noncanonicity (when such indices exist)
-            bool ret = (hash == 0) ? true : is_canonical(i+1, p, x, y);
+            int mi;     // This will be the index of the maximum defined entry of p
+            bool ret = (hash == 0) ? true : is_canonical(i+1, p, x, y, mi);
 #ifdef VERBOSE
-            printf("x: %d y: %d, ", x, y);
-            printf("p^(-1)(x): %d p^(-1)(y): %d, ", p[x], p[y]);
-            for(int j=0; j<i+1; j++) {
-                if(j != p[j]) {
-                    printf("%d ", p[j]);
-                } else printf("* ");
+            if(!ret) {
+                printf("x: %d y: %d, mi: %d, ", x, y, mi);
+                printf("p^(-1)(x): %d, p^(-1)(y): %d | ", p[x], p[y]);
+                for(int j=0; j<i+1; j++) {
+                    if(j != p[j]) {
+                        printf("%d ", p[j]);
+                    } else printf("* ");
+                }
+                printf("\n");
             }
-            printf("\n");
 #endif
             const double after = cpuTime();
 
@@ -854,6 +923,12 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
                     fflush(noncanonicaloutfile);
                 }
 
+                if(permoutfile != NULL) {
+                    for(int j = 0; j <= mi; j++)
+                        fprintf(permoutfile, "%s%d", j == 0 ? "" : " ", p[j]);
+                    fprintf(permoutfile, "\n");
+                }
+
                 // Add the learned clause to the vector of original clauses if the 'keep blocking' option enabled
                 if(opt_keep_blocking==2)
                 {
@@ -898,6 +973,65 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
         }
     }
 
+#ifdef UNEMBED_SUBGRAPH_CHECK
+#ifdef OPT_START_GUB
+    for(int g=opt_start_gub; g<opt_check_gub; g++)
+#else
+    for(int g=0; g<opt_check_gub; g++)
+#endif
+    {
+        int P[n];
+        for(int j=0; j<n; j++) P[j] = -1;
+
+        const double before = cpuTime();
+        bool ret = has_gub_subgraph(n, P, g);
+        const double after = cpuTime();
+        gubtime += (after-before);
+
+        // If graph has gub subgraph
+        if (ret) {
+            gubcount++;
+            gubcounts[g]++;
+            out_learnts.push();
+            int c = 0;
+            for(int jj=0; jj<n; jj++) {
+                for(int ii=0; ii<jj; ii++) {
+                    if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
+                        if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
+                            out_learnts[0].push(mkLit(c, true));
+                    c++;
+                }
+            }
+            /*for(int j = 0; j < n*(n-1)/2; j++) {
+                if(assigns[j]==l_True)
+                    out_learnts[0].push(mkLit(j, true));
+            }*/
+            if(guboutfile != NULL) {
+                //fprintf(guboutfile, "a ");
+                int c = 0;
+                for(int jj=0; jj<n; jj++) {
+                    for(int ii=0; ii<jj; ii++) {
+                        if(assigns[c]==l_True && P[jj] != -1 && P[ii] != -1)
+                            if((P[ii] < P[jj] && gub[g][P[ii] + P[jj]*(P[jj]-1)/2]) || (P[jj] < P[ii] && gub[g][P[jj] + P[ii]*(P[ii]-1)/2]))
+                                fprintf(guboutfile, "-%d ", c+1);
+                        c++;
+                    }
+                }
+                /*for(int j = 0; j < n*(n-1)/2; j++)
+                    if(assigns[j]==l_True)
+                        fprintf(guboutfile, "%d ", j+1);
+                */
+                fprintf(guboutfile, "0\n");
+                fflush(guboutfile);
+            }
+            if(permoutfile != NULL) {
+                fprintf(permoutfile, "Minimal unembeddable subgraph %d\n", g);
+            }
+            return;
+        }
+    }
+#endif
+
     // Verify that a complete solution has been found (and compute its hash)
     if(opt_skip_last > 0 || n == 0)
     {
@@ -922,6 +1056,10 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
             //if(opt_fixed_card && assigns[i]!=l_True)
             //    continue;
             out_learnts[0].push(mkLit(i, assigns[i]==l_True));
+        }
+
+        if(permoutfile != NULL) {
+            fprintf(permoutfile, "Complete solution\n");
         }
 
         // If this solution has not been seen before then output it
@@ -1612,7 +1750,7 @@ lbool Solver::search(int nof_conflicts)
         if (confl != CRef_Undef){
             // CONFLICT
             conflicts++; conflictC++;
-            if (opt_max_conflicts > 0 && conflicts >= opt_max_conflicts) {
+            if ((opt_max_conflicts > 0 && conflicts >= opt_max_conflicts) || (opt_max_proof_size > 0 && proofsize > opt_max_proof_size * 1048576l)) {
                 interrupt();
             }
 #if BRANCHING_HEURISTIC == CHB || BRANCHING_HEURISTIC == LRB
@@ -1632,6 +1770,7 @@ lbool Solver::search(int nof_conflicts)
 
             if (learnt_clause.size() == 1){
                 uncheckedEnqueue(learnt_clause[0]);
+                if(unitoutfile) fprintf(unitoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
             }else{
                 CRef cr = ca.alloc(learnt_clause, true);
                 learnts.push(cr);
@@ -1644,6 +1783,13 @@ lbool Solver::search(int nof_conflicts)
 #endif
                 uncheckedEnqueue(learnt_clause[0], cr);
             }
+            if (output != NULL) {
+              for (int i = 0; i < learnt_clause.size(); i++)
+                fprintf(output, "%i " , (var(learnt_clause[i]) + 1) *
+                                  (-2 * sign(learnt_clause[i]) + 1) );
+              fprintf(output, "0\n");
+            }
+            proofsize += clausestrlen(learnt_clause);
 
 #if BRANCHING_HEURISTIC == VSIDS
             varDecayActivity();
@@ -1714,6 +1860,13 @@ lbool Solver::search(int nof_conflicts)
                     analyzeFinal(~p, conflict);
                     cancelUntil(0);
                     addClause_(conflict);
+                    if (output != NULL) {
+                      for (int i = 0; i < conflict.size(); i++)
+                        fprintf(output, "%i " , (var(conflict[i]) + 1) *
+                                          (-2 * sign(conflict[i]) + 1) );
+                      fprintf(output, "0\n");
+                    }
+                    proofsize += clausestrlen(conflict);
 #if DATABASE_REDUCTION_EVERY_CUBE
                     reduceDB();
                     reductions++;
@@ -1744,7 +1897,32 @@ lbool Solver::search(int nof_conflicts)
                     for (int i = 0; i < callbackLearntClauses.size(); i++) {
                         int curlevel;
                         learnt_clause.clear();
+                        if (output != NULL /*&& opt_trust_blocking*/) {
+                          fprintf(output, "t ");
+                          for (int j = 0; j < callbackLearntClauses[i].size(); j++)
+                            fprintf(output, "%i " , (var(callbackLearntClauses[i][j]) + 1) *
+                                              (-2 * sign(callbackLearntClauses[i][j]) + 1) );
+                          fprintf(output, "0\n");
+                        }
+                        proofsize += 2+clausestrlen(callbackLearntClauses[i]);
                         analyze(callbackLearntClauses[i], learnt_clause, curlevel);
+                        if (output != NULL) {
+                          for (int j = 0; j < learnt_clause.size(); j++)
+                            fprintf(output, "%i " , (var(learnt_clause[j]) + 1) *
+                                              (-2 * sign(learnt_clause[j]) + 1) );
+                          fprintf(output, "0\n");
+                        }
+                        proofsize += clausestrlen(learnt_clause);
+                        if (output != NULL && opt_keep_blocking < 2) {
+                          fprintf(output, "d ");
+                          for (int j = 0; j < callbackLearntClauses[i].size(); j++)
+                            fprintf(output, "%i " , (var(callbackLearntClauses[i][j]) + 1) *
+                                              (-2 * sign(callbackLearntClauses[i][j]) + 1) );
+                          fprintf(output, "0\n");
+                        }
+                        if(opt_keep_blocking < 2) {
+                            proofsize += 2+clausestrlen(callbackLearntClauses[i]);
+                        }
                         if (curlevel == -1) {
                             return l_False;
                         } else if (curlevel < backtrack_level) {
@@ -1752,6 +1930,7 @@ lbool Solver::search(int nof_conflicts)
                         }
                         if (learnt_clause.size() == 1) {
                             units.push(learnt_clause[0]);
+                            if(unitoutfile) fprintf(unitoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
                         } else {
                             // Add the learned clause (after minimization) to the vector of original clauses if the 'keep blocking' option enabled
                             if(opt_keep_blocking==1)
@@ -1937,11 +2116,19 @@ lbool Solver::solve_()
         printf("Number of solutions   : %ld\n", numsols);
         printf("Canonical subgraphs   : %-12"PRIu64"   (%.0f /sec)\n", canon, canon/canontime);
         for(int i=2; i<n; i++) {
+#ifdef PERM_STATS
+            printf("          order %2d    : %-12"PRIu64"   (%.0f /sec) %.0f avg. perms\n", i+1, canonarr[i], canonarr[i]/canontimearr[i], canon_np[i]/(float)(canonarr[i] > 0 ? canonarr[i] : 1));
+#else
             printf("          order %2d    : %-12"PRIu64"   (%.0f /sec)\n", i+1, canonarr[i], canonarr[i]/canontimearr[i]);
+#endif
         }
         printf("Noncanonical subgraphs: %-12"PRIu64"   (%.0f /sec)\n", noncanon, noncanon/noncanontime);
         for(int i=2; i<n; i++) {
+#ifdef PERM_STATS
+            printf("          order %2d    : %-12"PRIu64"   (%.0f /sec) %.0f avg. perms\n", i+1, noncanonarr[i], noncanonarr[i]/noncanontimearr[i], noncanon_np[i]/(float)(noncanonarr[i] > 0 ? noncanonarr[i] : 1));
+#else
             printf("          order %2d    : %-12"PRIu64"   (%.0f /sec)\n", i+1, noncanonarr[i], noncanonarr[i]/noncanontimearr[i]);
+#endif
         }
         printf("Canonicity checking   : %g s\n", canontime);
         printf("Noncanonicity checking: %g s\n", noncanontime);

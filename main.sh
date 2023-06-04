@@ -1,15 +1,6 @@
 #!/bin/bash
 # Ensure parameters are specified on the command-line
 
-while getopts "apsbm" opt
-do
-	case $opt in
-        p) d="-p" ;;
-		s) s="-sp" ;;
-	esac
-done
-shift $((OPTIND-1))
-
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
     Updated on 2023-01-25
@@ -31,6 +22,17 @@ Options:
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
 " && exit
+
+while getopts "pm" opt
+do
+    case $opt in
+        p) d="-p" ;;
+        m) m="-m" ;;
+        *) echo "Invalid option: -$OPTARG. Only -p and -m are supported. Use -h or --help for help" >&2
+           exit 1 ;;
+    esac
+done
+shift $((OPTIND-1))
 
 #step 1: input parameters
 if [ -z "$1" ]
@@ -85,9 +87,9 @@ module load python/3.10
 if [ "$r" != "0" ]
 then
     dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-    ./3-cube-merge-solve.sh -m $d $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
+    ./3-cube-merge-solve.sh $d $m $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-ks/simp/maplesat_static constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp -no-pre -no-pseudo-test -order=$n -minclause > constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp.log
+    ./maplesat-solve-verify.sh $n -no-pre -no-pseudo-test -minclause constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
 fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q
@@ -96,9 +98,6 @@ echo "checking max clique size..."
 
 # to add: this section returns any unsat orders or smthg
 
-
-#output the number of KS system if there is any
-#echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
-#echo "$(wc -l < ks_solution_uniq_$n.exhaust) Kochen-Specker solutions were found."
-
-./summary.sh $n $p $q $o $t $s $b $r
+command="./summary.sh $n $p $q $o $t $s $b $r"
+echo $command
+eval $command
