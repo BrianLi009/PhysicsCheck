@@ -3,6 +3,9 @@
 # This script takes a list of trusted clauses in a DRAT proof and a list of permutations and verifies that
 # applying the ith permutation to the ith clause produces a clause blocking a lex-smaller object
 
+# It also verifies that a clause blocking the existence of minimal unemeddable graph (index 0) does in fact
+# block that graph by applying the corresponding permutation
+
 import sys
 import fileinput
 import time
@@ -67,6 +70,18 @@ def to_string_dual(M1, M2):
 		s += "\n"
 	return s[:-1]
 
+# Returns true if the edges of matrices M1 and M2 are equal (any unassigned entries ignored)
+# Only checks vertices up to the given order
+def matrix_edges_equal(M1, M2, order):
+	for i in range(order):
+		for j in range(i):
+			if (M1[i][j] == 1 or M2[i][j] == 1) and M1[i][j] != M2[i][j]:
+				if verbose:
+					print("Error: the edge ({},{}) is not shared by M1 and M2".format(i, j))
+					print(to_string_dual(M1, M2))
+				return False
+	return True
+
 # Returns true if M1 is strictly lexicographically smaller than M2
 def matrix_lex(M1, M2):
 	for i in range(n):
@@ -98,6 +113,9 @@ if len(sys.argv) <= 2:
 n = int(sys.argv[1])
 permfile = sys.argv[2]
 
+# The 10-vertex and 15-edge minimal unembeddble graph I{O_ogI@W
+unembeddable_graph_0 = [[-1, 1, 1, 1, 0, 0, 0, 0, 0, 0], [1, -1, 1, 0, 1, 0, 0, 0, 0, 0], [1, 1, -1, 0, 0, 1, 0, 0, 0, 0], [1, 0, 0, -1, 0, 0, 1, 1, 0, 0], [0, 1, 0, 0, -1, 0, 1, 0, 1, 0], [0, 0, 1, 0, 0, -1, 0, 1, 0, 1], [0, 0, 0, 1, 1, 0, -1, 0, 1, 0], [0, 0, 0, 1, 0, 1, 0, -1, 0, 1], [0, 0, 0, 0, 1, 0, 1, 0, -1, 1], [0, 0, 0, 0, 0, 1, 0, 1, 1, -1]]
+
 c = 1
 d_i = dict()
 d_j = dict()
@@ -110,6 +128,7 @@ for i in range(n):
 lines = sys.stdin.readlines()
 
 c = 0
+unembed = 0
 sols = 0
 for perm in fileinput.input(permfile):
 	line = lines[c]
@@ -122,6 +141,17 @@ for perm in fileinput.input(permfile):
 	if "Complete solution" in perm:
 		assert(len(line) == n*(n-1)/2)
 		sols += 1
+		c += 1
+		continue
+
+	if "Minimal unembeddable subgraph 0" in perm:
+		perm = perm.split(":")[1] # Discard all but the permutation
+		perm = list(map(int, perm.split()))
+		extend_perm(perm)
+		perm = inv(perm)
+		M2 = to_matrix_perm(line, perm)
+		assert(matrix_edges_equal(unembeddable_graph_0, M2, 10))
+		unembed += 1
 		c += 1
 		continue
 
@@ -142,6 +172,6 @@ for perm in fileinput.input(permfile):
 	c += 1
 
 if c == len(lines):
-	print("VERIFIED: All {} noncanonical blocking clauses verified with {} complete solutions found ({} sec)".format(len(lines), sols, round(time.time() - start, 2)))
+	print("VERIFIED: All {} blocking clauses verified with {} unembeddable blocking clauses and {} complete solutions found ({} sec)".format(len(lines), unembed, sols, round(time.time() - start, 2)))
 else:
-	print("Verified {} of {} noncanonical blocking clauses".format(c, len(lines)))
+	print("ERROR: Verified {} of {} total blocking clauses".format(c, len(lines)))
