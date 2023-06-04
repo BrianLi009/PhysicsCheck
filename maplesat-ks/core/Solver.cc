@@ -316,8 +316,9 @@ int numdigits(Var n)
         return 4;
     if(n < 99999)
         return 5;
-    if(n < 999999)
-        return 6;
+    // The loop in this function has been unrolled up to six iterations;
+    // the proof size will be off if there are over 10^6 variables
+    return 6;
 }
 
 // Return the number of bytes used by the given clause in the proof output
@@ -686,14 +687,13 @@ const int gub[17][66] = {
 
 // Returns true when the k-vertex subgraph (with adjacency matrix M) contains the gth minimal unembeddable graph
 // M is determined by the current assignment to the first k*(k-1)/2 variables
-// If the gub subgraph exists in M, P is set to the mapping from the rows of M to the rows of the lex greatest gub adjacency matrix
-bool Solver::has_gub_subgraph(int k, int* P, int g) {
+// If an unembeddable subgraph is found in M, P is set to the mapping from the rows of M to the rows of the lex greatest representation of the unembeddable adjacency matrix (and p is the inverse of P)
+bool Solver::has_gub_subgraph(int k, int* P, int* p, int g) {
     //const int gub[45] = {1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1};
     //const int gub_indices[16] = {0, 1, 2, 3, 6, 9, 11, 17, 24, 26, 32, 34, 41, 42, 43, 44};
     //const int gub_indices_y[16] = {0, 0, 1, 0, 0, 3, 1, 2, 3, 5, 4, 6, 5, 6, 7, 8};
     //const int gub_indices_by_col[11] = {0, 0, 1, 3, 4, 6, 7, 8, 10, 12, 16};
 
-    int p[12]; // Permutation on up to 12 vertices
     int pl[12]; // pl[k] contains the current list of possibilities for kth vertex (encoded bitwise)
     int pn[13]; // pn[k] contains the initial list of possibilities for kth vertex (encoded bitwise)
     pl[0] = (1 << k) - 1;
@@ -980,11 +980,12 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
     for(int g=0; g<opt_check_gub; g++)
 #endif
     {
+        int p[12]; // If an umembeddable subgraph is found, p will contain which rows of M correspond with the rows of the lex greatest representation of the unembeddable subgraph
         int P[n];
         for(int j=0; j<n; j++) P[j] = -1;
 
         const double before = cpuTime();
-        bool ret = has_gub_subgraph(n, P, g);
+        bool ret = has_gub_subgraph(n, P, p, g);
         const double after = cpuTime();
         gubtime += (after-before);
 
@@ -1025,7 +1026,16 @@ void Solver::callbackFunction(bool complete, vec<vec<Lit> >& out_learnts) {
                 fflush(guboutfile);
             }
             if(permoutfile != NULL) {
-                fprintf(permoutfile, "Minimal unembeddable subgraph %d\n", g);
+                fprintf(permoutfile, "Minimal unembeddable subgraph %d:", g);
+                int mii = 10;
+                if(g >= 2 && g < 7)
+                    mii = 11;
+                else if(g >= 7)
+                    mii = 12;
+                for(int ii=0; ii<mii; ii++) {
+                    fprintf(permoutfile, "%s%d", ii == 0 ? "" : " ", p[ii]);
+                }
+                fprintf(permoutfile, "\n");
             }
             return;
         }

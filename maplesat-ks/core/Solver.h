@@ -192,7 +192,7 @@ public:
     int nbclausesbeforereduce = firstReduceDB;
     bool is_canonical(int k, int p[], int& x, int& y, int& i);
 #ifdef UNEMBED_SUBGRAPH_CHECK
-    bool has_gub_subgraph(int k, int* P, int g);
+    bool has_gub_subgraph(int k, int* P, int * p, int g);
 #endif
 
 protected:
