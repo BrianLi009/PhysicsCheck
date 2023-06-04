@@ -5,9 +5,12 @@
 
 while getopts "apsbm" opt
 do
-        case $opt in
+    case $opt in
         p) d="-p" ;;
-                s) s="-sp" ;;
+        m) m="-m" ;;
+        *) echo "Invalid option: -$OPTARG. Only -p and -m are supported. Use -h or --help for help" >&2
+           exit 1 ;;
+
         esac
 done
 shift $((OPTIND-1))
