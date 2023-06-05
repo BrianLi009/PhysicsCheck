@@ -100,6 +100,7 @@ echo "checking embeddability of KS candidates using Z3..."
 echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
 echo "$(wc -l < $n.exhaust-embeddable.txt) Kochen-Specker solutions were found."
 
-command="./summary.sh $n $o $t $s $b $r"
+dir="${n}_${o}_${t}_${s}_${b}_${r}"
+command="./summary.sh $n $dir $r"
 echo $command
 eval $command
