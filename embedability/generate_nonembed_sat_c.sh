@@ -68,7 +68,7 @@ start=`date +%s.%N`
 index=0
 echo "running embeddability check on all graphs"
 
-python3 main_c.py $f "$n" "$index" ${n}_nonembed_c.txt ${n}_embed_c.txt $verify
+python3 main_c.py $f "$n" "$index" False ${n}_nonembed_c.txt ${n}_embed_c.txt $verify
 
 end=`date +%s.%N`
 runtime=$( echo "$end - $start" | bc -l )
