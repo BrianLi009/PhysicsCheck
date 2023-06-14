@@ -5,8 +5,7 @@ f=$2 #instance file name
 d=$3 #directory to store into
 v=$4 #num of var to eliminate during first cubing stage
 t=$5 #num of conflicts for simplification
-s=$6 #amount of timeout for each solving
-a=$7 #amount of additional variables to remove for each cubing call
+a=$6 #amount of additional variables to remove for each cubing call
 
 mkdir -p $d/$v/$n-solve
 mkdir -p $d/$v/simp
@@ -37,7 +36,7 @@ for i in $(seq 1 $new_index) #1-based indexing for cubes
         echo $command >> $d/$v/$n-solve/solve.commands
         eval $command1
         eval $command2
-        timeout ${s}s bash -c "eval $command3"
+        eval $command3
     done
 
 for i in $(seq 1 $new_index)
@@ -61,7 +60,7 @@ for i in $(seq 1 $new_index)
                 ./gen_cubes/concat.sh $child_instance.temp2 $child_instance.nonembed > $child_instance.learnt
                 rm $child_instance.temp
                 rm $child_instance.temp2
-                command="./3-cube-merge-solve-iterative-learnt.sh $n $child_instance.learnt "$d/$v-$i" $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
+                command="./3-cube-merge-solve-iterative-learnt.sh $n $child_instance.learnt "$d/$v-$i" $(($v + $a)) $t $a $(($highest_num+2)) $new_cube_file"
                 #for parallization, simply submit the command below using sbatch
                 echo $command >> ${n}-iterative.commands
                 eval $command
