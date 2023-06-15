@@ -82,7 +82,7 @@ int main (int argc, char** argv) {
       printf("   -p            plain / no cube mode\n");
 //      printf("   -c <file>     parse cube from <file>    (default:             no cube)\n");
       printf("   -d <int>      set a static cutoff depth (default: %4.0f, dynamic depth)\n", (float) cut_depth);
-      printf("   -n <int>      set a static cutoff vars  (default: %4.0f, dynamic depth)\n", (float) cut_var);
+      printf("   -n <int>      # of free vars to remove  (default: %4.0f, dynamic depth)\n", (float) cut_var);
       printf("   -e <float>    set a down exponent       (default: %4.2f,   fast cubing)\n", downexp);
       printf("   -f <float>    set a down fraction       (default: %4.2f,   fast cubing)\n", fraction);
       printf("   -m <int>      max variable to cube with (default: %4.0f,      no limit)\n", (float) maxvar);

@@ -1,9 +1,9 @@
 __pycache__/
 .ipynb_checkpoints
-cadical/
-
-embedability/nauty27r3
+*.log
+constraints*
+slurm*
+embedability/*
 dependency-tools/
 gen_cubes/cadical/
 gen_cubes/march_cu/
-embedability/test.py
