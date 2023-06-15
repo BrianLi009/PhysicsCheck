@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 3 ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -le 3 ] && echo "
 Description:
     Updated on 2023-01-11
     This script call the python file generate.py in gen_instance to generate the SAT encoding for Ramsey graphs R(n;p,q). Such candidate satisfies the following condition:
@@ -22,11 +22,13 @@ Options:
 n=$1 #order
 p=$2
 q=$3
+l=${4:-0}
+u=${5:-0}
+
 
 if [ -f constraints_${n}_${p}_${q} ]
 then
     echo "instance already generated"
 else
-    #source ENV/bin/activate
-    python3 gen_instance/generate.py $n $p $q #generate the instance of order n for p,q
+    python3 gen_instance/generate.py $n $p $q $l $u #generate the instance of order n for p,q
 fi
