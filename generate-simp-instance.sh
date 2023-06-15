@@ -35,7 +35,8 @@ t=${5:-100000} #conflicts for which to simplify each time CaDiCal is called, or 
 s=${6:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${7:-2} #by default we generate noncanonical blocking clauses in real tim
 r=${8:-0} #cubing parameter, for naming only
-
+lower=${9:-0}
+upper=${10:-0}
 
 if [ "$o" != "c" ] && [ "$o" != "v" ]
 then
@@ -50,7 +51,7 @@ then
 fi
 
 #step 3: generate instances
-./1-instance-generation.sh $n $p $q
+./1-instance-generation.sh $n $p $q $lower $upper
 
 instance_tracking=constraints_${n}_${p}_${q}
 
