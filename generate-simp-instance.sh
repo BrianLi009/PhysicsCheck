@@ -6,13 +6,12 @@ Description:
     This is a driver script that generates pre-processed SAT instance without cubing or solving it
 
 Usage:
-    ./generate-simp-instance.sh n o t s b
+    ./generate-simp-instance.sh n t s b
     If only parameter n is provided, default run ./main.sh n c 100000 2 2
 
 Options:
     <n>: the order of the instance/number of vertices in the graph
-    <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
-    <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
+    <t>: conflicts for which to simplify each time CaDiCal is called
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: cubing parameter, for naming only
@@ -25,19 +24,12 @@ then
 fi
 
 n=$1 #order
-o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
-t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
-s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
-b=${5:-2} #by default we generate noncanonical blocking clauses in real time
-r=${6:-0} #cubing parameter, for naming only
+t=${2:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+s=${3:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
+b=${4:-2} #by default we generate noncanonical blocking clauses in real time
+r=${5:-0} #cubing parameter, for naming only
 
-if [ "$o" != "c" ] && [ "$o" != "v" ]
-then
-    echo "Need simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated"
-    exit
-fi
-
-if [ -f constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp ]
+if [ -f constraints_${n}_${t}_${s}_${b}_${r}_final.simp ]
 then
     echo "instance with the same parameter has already been generated"
     exit 0
@@ -50,20 +42,15 @@ instance_tracking=constraints_$n
 
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
-    simp1=constraints_${n}_${o}_${t}_${s}_${b}_${r}_.simp1
-    cp $instance_tracking constraints_${n}_${o}_${t}_${s}_${b}_${r}
+    simp1=constraints_${n}_${t}_${s}_${b}_${r}_.simp1
+    cp $instance_tracking constraints_${n}_${t}_${s}_${b}_${r}
     if [ -f $simp1 ]
     then
         echo "$simp1 already exist, skip simplification"
     else
-        if [ "$o" == "c" ]
-        then
-            ./simplification/simplify-by-conflicts.sh constraints_${n}_${o}_${t}_${s}_${b}_${r} $n $t
-        else
-            ./simplification/simplify-by-var-removal.sh $n "constraints_${n}_${o}_${t}_${s}_${b}_${r}" $t
-        fi
-        mv constraints_${n}_${o}_${t}_${s}_${b}_${r}.simp $simp1
-        rm constraints_${n}_${o}_${t}_${s}_${b}_${r}
+        ./simplification/simplify-by-conflicts.sh constraints_${n}_${t}_${s}_${b}_${r} $n $t
+        mv constraints_${n}_${t}_${s}_${b}_${r}.simp $simp1
+        rm constraints_${n}_${t}_${s}_${b}_${r}
     instance_tracking=$simp1
     fi
 fi
@@ -74,7 +61,7 @@ fi
 
 #step 4: generate non canonical subgraph
 
-simp_non=constraints_${n}_${o}_${t}_${s}_${b}_${r}.noncanonical
+simp_non=constraints_${n}_${t}_${s}_${b}_${r}.noncanonical
 if [ "$b" -eq 2 ]
 then
     if [ -f $simp_non ]
@@ -108,18 +95,13 @@ then
 fi
 
 if [ "$s" -eq 2 ] || [ "$s" -eq 3 ]
-simp2=constraints_${n}_${o}_${t}_${s}_${b}_${r}.simp2
+simp2=constraints_${n}_${t}_${s}_${b}_${r}.simp2
 then
     if [ -f $simp2 ]
     then
         echo "$simp2 already exist, skip simplification"
     else
-        if [ "$o" == "c" ]
-        then
-            ./simplification/simplify-by-conflicts.sh $instance_tracking $n $t
-        else
-            ./simplification/simplify-by-var-removal.sh $n $instance_tracking $t
-        fi
+        ./simplification/simplify-by-conflicts.sh $instance_tracking $n $t
         mv $instance_tracking.simp $simp2
     fi
     instance_tracking=$simp2
@@ -129,6 +111,6 @@ then
     echo "skipping the second simplification"
 fi
 
-echo "preprocessing complete. final instance is $instance_tracking. Renaming it as constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp"
+echo "preprocessing complete. final instance is $instance_tracking. Renaming it as constraints_${n}_${t}_${s}_${b}_${r}_final.simp"
 
-mv $instance_tracking constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp
+mv $instance_tracking constraints_${n}_${t}_${s}_${b}_${r}_final.simp

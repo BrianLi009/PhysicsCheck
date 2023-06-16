@@ -9,15 +9,14 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh [-p] [-m] n o t s b r
+    ./main.sh [-p] [-m] n t s b r
     If only parameter n is provided, default run ./main.sh n c 100000 2 2 0
 
 Options:
     [-p]: cubing/solving in parallel
     [-m]: using -m parameter for cubing, calling solver on each cube for a small amount of time
     <n>: the order of the instance/number of vertices in the graph
-    <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
-    <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
+    <t>: conflicts for which to simplify each time CaDiCal is called
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
@@ -42,17 +41,10 @@ then
 fi
 
 n=$1 #order
-o=${2:-c} #simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated
 t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${5:-2} #by default we generate noncanonical blocking clauses in real time
 r=${6:-0} #number of variables to eliminate until the cubing terminates
-
-if [ "$o" != "c" ] && [ "$o" != "v" ]
-then
-    echo "Need simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated"
-    exit
-fi
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -61,13 +53,13 @@ fi
 
 dir="."
 
-if [ -f constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp.log ]
+if [ -f constraints_${n}_${t}_${s}_${b}_${r}_final.simp.log ]
 then
     echo "Instance with these parameters has already been solved."
     exit 0
 fi
 
-./generate-simp-instance.sh $n $o $t $s $b $r
+./generate-simp-instance.sh $n $t $s $b $r
 
 if [ -f "$n.exhaust" ]
 then
@@ -83,10 +75,10 @@ fi
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then
-    dir="${n}_${o}_${t}_${s}_${b}_${r}"
-    ./3-cube-merge-solve.sh $p $m $n $r constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
+    dir="${n}_${t}_${s}_${b}_${r}"
+    ./3-cube-merge-solve.sh $p $m $n $r constraints_${n}_${t}_${s}_${b}_${r}_final.simp $dir
 else
-    ./maplesat-solve-verify.sh $n constraints_${n}_${o}_${t}_${s}_${b}_${r}_final.simp $n.exhaust
+    ./maplesat-solve-verify.sh $n constraints_${n}_${t}_${s}_${b}_${r}_final.simp $n.exhaust
 fi
 
 #step 5.5: verify all constraints are satisfied
@@ -100,7 +92,7 @@ echo "checking embeddability of KS candidates using Z3..."
 echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
 echo "$(wc -l < $n.exhaust-embeddable.txt) Kochen-Specker solutions were found."
 
-dir="${n}_${o}_${t}_${s}_${b}_${r}"
+dir="${n}_${t}_${s}_${b}_${r}"
 command="./summary.sh $n $dir $r"
 echo $command
 eval $command
