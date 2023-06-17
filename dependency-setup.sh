@@ -1,4 +1,7 @@
 #!/bin/bash
+#SBATCH --account=def-vganesh
+#SBATCH --time=10:00:00
+#SBATCH --mem-per-cpu=4G
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
@@ -44,12 +47,12 @@ else
     echo "networkx version $installed_version is already installed and newer than $required_version"
 fi
 
-if pip3 list | grep z3-solver
-then
-    echo "z3-solver package installed"
-else 
-    pip3 install z3-solver
-fi
+#if pip3 list | grep z3-solver
+#then
+#    echo "z3-solver package installed"
+#else 
+#    pip3 install z3-solver
+#fi
 
 if [ -f gen_cubes/march_cu/march_cu ]
 then
