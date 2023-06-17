@@ -55,13 +55,13 @@ a=${6:-10} #amount of additional variables to remove for each cubing call
 
 dir="."
 
-if [ -f constraints_${n}_${t}_${s}_${b}_${r}_final.simp.log ]
+if [ -f constraints_${n}_${t}_${s}_${b}_${r}_${a}_final.simp.log ]
 then
     echo "Instance with these parameters has already been solved."
     exit 0
 fi
 
-./generate-simp-instance.sh $n $t $s $b $r
+./generate-simp-instance.sh $n $t $s $b $r $a
 
 if [ -f "$n.exhaust" ]
 then
@@ -77,8 +77,8 @@ fi
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ] 
 then
-    dir="${n}_${t}_${s}_${b}_${r}"
-    ./3-cube-merge-solve-iterative-learnt.sh $n constraints_${n}_${t}_${s}_${b}_${r}_final.simp $dir $r $t $a
+    dir="${n}_${t}_${s}_${b}_${r}_${a}"
+    ./3-cube-merge-solve-iterative-learnt.sh $p $n constraints_${n}_${t}_${s}_${b}_${r}_${a}_final.simp $dir $r $t $a
     command="./summary-iterative.sh $dir $r $a $n"
     echo $command
     eval $command
@@ -87,7 +87,7 @@ then
     ./verify.sh $dir/$n.exhaust $n
     ./4-check-embedability.sh $n $dir/$n.exhaust
 else
-    ./maplesat-solve-verify.sh $n constraints_${n}_${t}_${s}_${b}_${r}_final.simp $n.exhaust
+    ./maplesat-solve-verify.sh $n constraints_${n}_${t}_${s}_${b}_${r}_${a}_final.simp $n.exhaust
     #step 5.5: verify all constraints are satisfied
     ./verify.sh $n.exhaust $n
 
