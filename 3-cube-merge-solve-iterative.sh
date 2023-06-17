@@ -5,10 +5,9 @@ f=$2 #instance file name
 d=$3 #directory to store into
 v=$4 #num of var to eliminate during first cubing stage
 t=$5 #num of conflicts for simplification
-s=$6 #amount of timeout for each solving
-a=$7 #amount of additional variables to remove for each cubing call
-b=${8:-0} #starting cubing depth, default is 0
-c=${9:-} #cube file to build on if exist
+a=$6 #amount of additional variables to remove for each cubing call
+b=${7:-0} #starting cubing depth, default is 0
+c=${8:-} #cube file to build on if exist
 
 mkdir -p $d/$v/$n-solve
 mkdir -p $d/$v/simp
@@ -45,7 +44,7 @@ for i in $(seq 1 $new_index) #1-based indexing for cubes
         echo $command >> $d/$v/$n-solve/solve.commands
         eval $command1
         eval $command2
-        timeout ${s}s bash -c "eval $command3"
+        eval $command3
     done
 
 all_solved="T"
@@ -70,7 +69,7 @@ done
 if [[ "$all_solved" == "T" ]]; then
     echo "successfully solved all cubes, terminating"
 else
-    command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $s $a $(($highest_num+2)) $new_cube_file"
+    command="./3-cube-merge-solve-iterative.sh $n $f $d $(($v + $a)) $t $a $(($highest_num+2)) $new_cube_file"
     echo $command
     echo $command >> ${n}-iterative.commands
     #for parallization, simply submit the command below using sbatch

@@ -29,6 +29,7 @@ Options:
 if [ "$l" == "-l" ]
 then
     echo "MapleSAT will output learnt clause"
+<<<<<<< HEAD
     ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm  -order=$n -no-pre -minclause -unit-out=$f.unit -noncanonical-out=$f.noncanonical -max-proof-size=7168 | tee $f.log #removed exhaustive here
 else
     ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -order=$n -no-pre -minclause -max-proof-size=7168 | tee $f.log #removed exhaustive here

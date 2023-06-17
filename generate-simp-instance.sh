@@ -7,6 +7,7 @@ Description:
     This is a driver script that generates pre-processed SAT instance without cubing or solving it
 
 Usage:
+<<<<<<< HEAD
     ./generate-simp-instance.sh n p q o t s b
     If only parameter (n p q) is provided, default run ./generate-simp-instance.sh n p q c 100000 2 2
 
@@ -16,6 +17,14 @@ Options:
     <q>:
     <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
     <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
+=======
+    ./generate-simp-instance.sh n t s b
+    If only parameter n is provided, default run ./main.sh n c 100000 2 2
+
+Options:
+    <n>: the order of the instance/number of vertices in the graph
+    <t>: conflicts for which to simplify each time CaDiCal is called
+>>>>>>> upstream/master
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: cubing parameter, for naming only
@@ -45,6 +54,7 @@ then
 fi
 
 if [ -f constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp ]
+
 then
     echo "instance with the same parameter has already been generated"
     exit 0
@@ -86,6 +96,7 @@ fi
 
 simp_non=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.noncanonical
 echo $simp_non
+
 if [ "$b" -eq 2 ]
 then
     if [ -f $simp_non ]
@@ -120,17 +131,13 @@ fi
 
 if [ "$s" -eq 2 ] || [ "$s" -eq 3 ]
 simp2=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.simp2
+
 then
     if [ -f $simp2 ]
     then
         echo "$simp2 already exist, skip simplification"
     else
-        if [ "$o" == "c" ]
-        then
-            ./simplification/simplify-by-conflicts.sh $instance_tracking $n $t
-        else
-            ./simplification/simplify-by-var-removal.sh $n $instance_tracking $t
-        fi
+        ./simplification/simplify-by-conflicts.sh $instance_tracking $n $t
         mv $instance_tracking.simp $simp2
     fi
     instance_tracking=$simp2

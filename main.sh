@@ -8,8 +8,8 @@ Description:
     simplify instance using CaDiCaL, solve the instance using maplesat-ks, then finally determine if a KS system exists for a certain order.
 
 Usage:
-    ./main.sh [-d] n o t s b r
-    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0 0
+    ./main.sh [-p] [-m] n t s b r
+    If only parameter n is provided, default run ./main.sh n c 100000 2 2 0
 
 Options:
     [-d]: cubing/solving in parallel
@@ -17,7 +17,7 @@ Options:
     <p>:
     <q>:
     <o>: simplification option, option c means simplifying for t conflicts, option v means simplify until t% of variables are eliminated
-    <t>: conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate, depending on the <o> option
+    <t>: conflicts for which to simplify each time CaDiCal is called
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
@@ -50,13 +50,6 @@ s=${6:-2} #by default we only simplify the instance using CaDiCaL after adding n
 b=${7:-2} #by default we generate noncanonical blocking clauses in real time
 r=${8:-0} #number of variables to eliminate until the cubing terminates
 
-
-if [ "$o" != "c" ] && [ "$o" != "v" ]
-then
-    echo "Need simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated"
-    exit
-fi
-
 #step 2: setp up dependencies
 dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
 ./dependency-setup.sh
@@ -69,6 +62,7 @@ then
     echo "Instance with these parameters has already been solved."
     exit 0
 fi
+
 module load python/3.10
 ./generate-simp-instance.sh $n $p $q $o $t $s $b $r
 
@@ -86,11 +80,11 @@ module load python/3.10
 #step 5: cube and conquer if necessary, then solve
 if [ "$r" != "0" ]
 then
+
     dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
     ./3-cube-merge-solve.sh $d $m $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
     ./maplesat-solve-verify.sh $n -no-pre -no-pseudo-test -minclause constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
-fi
 
 #step 6: checking if there exist clique sizes>=p or independent set >=q
 echo "checking max clique size..."
@@ -98,6 +92,7 @@ echo "checking max clique size..."
 
 # to add: this section returns any unsat orders or smthg
 
-command="./summary.sh $n $p $q $o $t $s $b $r"
+dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
+command="./summary.sh $n $dir $r"
 echo $command
 eval $command
