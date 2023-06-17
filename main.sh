@@ -58,8 +58,8 @@ then
 fi
 
 #step 2: setp up dependencies
-#dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-#./dependency-setup.sh
+dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
+./dependency-setup.sh
  
 #step 3 and 4: generate pre-processed instance
 dir="."

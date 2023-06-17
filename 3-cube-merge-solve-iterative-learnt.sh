@@ -32,7 +32,7 @@ for i in $(seq 1 $new_index) #1-based indexing for cubes
     do 
         command1="./gen_cubes/apply.sh $f $cube_file $i > $d/$v/simp/$cube_file$i.adj"
         command2="./simplification/simplify-by-conflicts.sh $d/$v/simp/$cube_file$i.adj $n $t >> $d/$v/$n-solve/$i-solve.log"
-        command3="./maplesat-solve-verify.sh -l $n $d/$v/simp/$cube_file$i.adj.simp $d/$v/$n-solve/$i-solve.exhaust >> $d/$v/$n-solve/$i-solve.log"
+        command3="./maplesat-solve-verify.sh -l $n $d/$v/simp/$cube_file$i.adj.simp >> $d/$v/$n-solve/$i-solve.log" #removed exhaust here
         command="$command1 && $command2 && $command3"
         echo $command >> $d/$v/$n-solve/solve.commands
         eval $command1

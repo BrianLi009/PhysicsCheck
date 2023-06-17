@@ -10,7 +10,7 @@ shift $((OPTIND-1))
 
 n=$1 #order
 f=$2 #instance file name
-e=$3 #exhaustive file name
+#e=$3 #exhaustive file name
 
 [ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 3 ] && echo "
 Description:

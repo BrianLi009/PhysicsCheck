@@ -1,7 +1,4 @@
 #!/bin/bash
-#SBATCH --account=def-vganesh
-#SBATCH --time=00:30:00
-#SBATCH --mem-per-cpu=4G
 
 [ "$1" = "-h" -o "$1" = "--help" ] && echo "
 Description:
