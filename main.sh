@@ -20,6 +20,7 @@ Options:
     <s>: option for simplification, takes in argument 1 (before adding noncanonical clauses), 2 (after), 3(both)
     <b>: option for noncanonical blocking clauses, takes in argument 1 (pre-generated), 2 (real-time-generation), 3 (no blocking clauses)
     <r>: number of variable to remove in cubing, if not passed in, assuming no cubing needed
+    <a>: amount of additional variables to remove for each cubing call
 " && exit
 
 while getopts "pm" opt
@@ -41,10 +42,11 @@ then
 fi
 
 n=$1 #order
-t=${2:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+t=${2:-10000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
 s=${3:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${4:-2} #by default we generate noncanonical blocking clauses in real time
-r=${5:-0} #number of variables to eliminate until the cubing terminates
+r=${5:-0} #num of var to eliminate during first cubing stage
+a=${6:-10} #amount of additional variables to remove for each cubing call
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
@@ -76,23 +78,24 @@ fi
 if [ "$r" != "0" ] 
 then
     dir="${n}_${t}_${s}_${b}_${r}"
-    ./3-cube-merge-solve.sh $p $m $n $r constraints_${n}_${t}_${s}_${b}_${r}_final.simp $dir
+    ./3-cube-merge-solve-iterative-learnt.sh $n constraints_${n}_${t}_${s}_${b}_${r}_final.simp $dir $r $t $a
+    command="./summary-iterative.sh $dir $r $a $n"
+    echo $command
+    eval $command
+    #join all exhaust file together and check embeddability
+    find "$dir" -type f -name "*.exhaust" -exec cat {} + > "$dir/$n.exhaust"
+    ./verify.sh $dir/$n.exhaust $n
+    ./4-check-embedability.sh $n $dir/$n.exhaust
 else
     ./maplesat-solve-verify.sh $n constraints_${n}_${t}_${s}_${b}_${r}_final.simp $n.exhaust
+    #step 5.5: verify all constraints are satisfied
+    ./verify.sh $n.exhaust $n
+
+    #step 6: checking if there exist embeddable solution
+    echo "checking embeddability of KS candidates using Z3..."
+    ./4-check-embedability.sh $n $n.exhaust
+
+    #output the number of KS system if there is any
+    echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
+    echo "$(wc -l < $n.exhaust-embeddable.txt) Kochen-Specker solutions were found."
 fi
-
-#step 5.5: verify all constraints are satisfied
-./verify.sh $n.exhaust $n
-
-#step 6: checking if there exist embeddable solution
-echo "checking embeddability of KS candidates using Z3..."
-./4-check-embedability.sh $n
-
-#output the number of KS system if there is any
-echo "$(wc -l < $n.exhaust) Kochen-Specker candidates were found."
-echo "$(wc -l < $n.exhaust-embeddable.txt) Kochen-Specker solutions were found."
-
-dir="${n}_${t}_${s}_${b}_${r}"
-command="./summary.sh $n $dir $r"
-echo $command
-eval $command
