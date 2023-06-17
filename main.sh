@@ -41,10 +41,10 @@ then
 fi
 
 n=$1 #order
-t=${3:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
-s=${4:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
-b=${5:-2} #by default we generate noncanonical blocking clauses in real time
-r=${6:-0} #number of variables to eliminate until the cubing terminates
+t=${2:-100000} #conflicts for which to simplify each time CaDiCal is called, or % of variables to eliminate
+s=${3:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
+b=${4:-2} #by default we generate noncanonical blocking clauses in real time
+r=${5:-0} #number of variables to eliminate until the cubing terminates
 
 #step 2: setp up dependencies
 ./dependency-setup.sh
