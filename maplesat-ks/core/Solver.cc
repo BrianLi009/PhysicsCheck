@@ -32,7 +32,7 @@ FILE* exhaustfile = NULL;
 FILE* canonicaloutfile = NULL;
 FILE* noncanonicaloutfile = NULL;
 FILE* permoutfile = NULL;
-FILE* unitoutfile = NULL;
+FILE* shortoutfile = NULL;
 #ifdef UNEMBED_SUBGRAPH_CHECK
 FILE* guboutfile = NULL;
 #endif
@@ -102,7 +102,7 @@ static IntOption     opt_skip_last      (_cat, "skip-last", "Skip checking the c
 static StringOption  opt_canonical_out  (_cat, "canonical-out", "File to output canonical subgraphs found during search");
 static StringOption  opt_noncanonical_out  (_cat, "noncanonical-out", "File to output the noncanonical subgraph blocking clauses");
 static StringOption  opt_perm_out       (_cat, "perm-out", "File to output the permutations that witness the noncanonicity of the noncanonical blocking clauses");
-static StringOption  opt_unit_out       (_cat, "unit-out", "File to output the learnt unit clauses");
+static StringOption  opt_short_out       (_cat, "short-out", "File to output the short learnt clauses");
 static BoolOption    opt_pseudo_test    (_cat, "pseudo-test",  "Use a pseudo-canonicity test that is faster but may incorrectly label matrices as canonical", true);
 static BoolOption    opt_minclause      (_cat, "minclause",   "Minimize learned programmatic clause", true);
 #ifdef UNEMBED_SUBGRAPH_CHECK
@@ -171,7 +171,7 @@ Solver::Solver() :
   , canonicaloutstring (opt_canonical_out)
   , noncanonicaloutstring (opt_noncanonical_out)
   , permoutstring (opt_perm_out)
-  , unitoutstring (opt_unit_out)
+  , shortoutstring (opt_short_out)
 #ifdef UNEMBED_SUBGRAPH_CHECK
   , guboutstring (opt_gub_out)
 #endif
@@ -223,8 +223,8 @@ Solver::Solver() :
         if(permoutstring != NULL) {
             permoutfile = fopen(permoutstring, "w");
         }
-        if(unitoutstring != NULL) {
-            unitoutfile = fopen(unitoutstring, "w");
+        if(shortoutstring != NULL) {
+            shortoutfile = fopen(shortoutstring, "w");
         }
 #ifdef UNEMBED_SUBGRAPH_CHECK
         if(guboutstring != NULL) {
@@ -253,9 +253,9 @@ Solver::~Solver()
     {   fclose(permoutfile);
         permoutfile = NULL;
     }
-    if(unitoutfile != NULL)
-    {   fclose(unitoutfile);
-        unitoutfile = NULL;
+    if(shortoutfile != NULL)
+    {   fclose(shortoutfile);
+        shortoutfile = NULL;
     }
 #ifdef UNEMBED_SUBGRAPH_CHECK
     if(guboutfile != NULL)
@@ -1778,9 +1778,9 @@ lbool Solver::search(int nof_conflicts)
             action = trail.size();
 #endif
 
-            if (learnt_clause.size() == 1){
+            if (learnt_clause.size() <= 2){
                 uncheckedEnqueue(learnt_clause[0]);
-                if(unitoutfile) fprintf(unitoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+                if(shortoutfile) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
             }else{
                 CRef cr = ca.alloc(learnt_clause, true);
                 learnts.push(cr);
@@ -1938,9 +1938,9 @@ lbool Solver::search(int nof_conflicts)
                         } else if (curlevel < backtrack_level) {
                             backtrack_level = curlevel;
                         }
-                        if (learnt_clause.size() == 1) {
+                        if (learnt_clause.size() <= 2) {
                             units.push(learnt_clause[0]);
-                            if(unitoutfile) fprintf(unitoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+                            if(shortoutfile) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
                         } else {
                             // Add the learned clause (after minimization) to the vector of original clauses if the 'keep blocking' option enabled
                             if(opt_keep_blocking==1)

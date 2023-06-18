@@ -161,7 +161,7 @@ public:
     const char* canonicaloutstring;
     const char* noncanonicaloutstring;
     const char* permoutstring;
-    const char* unitoutstring;
+    const char* shortoutstring;
 #ifdef UNEMBED_SUBGRAPH_CHECK
     const char* guboutstring;
 #endif
