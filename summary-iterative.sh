@@ -12,11 +12,13 @@ simptime2=$(find . -type f -name "*.log" -exec grep -h "c total process time sin
 solvetime=$(find . -type f -name "*.log" -exec grep -h "CPU time * *[0-9]*\.*[0-9]*" {} + | awk '{total += $(NF-1)} END {print total}')
 verifytime=$(find . -type f -name "*.log" -exec grep -h "verification time: * *[0-9]*\.*[0-9]*" {} + | awk '{total += $(NF-1)} END {print total}')
 conflicts=$(find . -type f -name "*.log" -exec grep -h "conflicts             : * *[0-9]*\.*[0-9]*" {} + | awk '{total += $(NF-2)} END {print total}')
+total_cubes=$(find . -type f -name "*.cubes" -exec cat {} + | wc -l)
 
 printf "%-15s %-15s %-15s %-15s %-15s\n" "cubing time" "cube simp time" "solve simp time" "solve time" "verify time"
 printf "%-15s %-15s %-15s %-15s %-15s\n" "${cubetime} secs" "${simptime} secs" "${simptime2} secs" "${solvetime} secs" "${verifytime} secs"
 
 printf "total number of conflicts: $conflicts"
+printf "total number of cubes: $total_cubes"
 
 cd -
 
