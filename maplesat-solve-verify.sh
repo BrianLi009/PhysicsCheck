@@ -12,7 +12,7 @@ n=$1 #order
 f=$2 #instance file name
 #e=$3 #exhaustive file name
 
-[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 3 ] && echo "
+[ "$1" = "-h" -o "$1" = "--help" -o "$#" -ne 2 ] && echo "
 Description:
     Script for solving and generating drat proof for instance
 
@@ -29,10 +29,9 @@ Options:
 if [ "$l" == "-l" ]
 then
     echo "MapleSAT will output learnt clause"
-<<<<<<< HEAD
-    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm  -order=$n -no-pre -minclause -unit-out=$f.unit -noncanonical-out=$f.noncanonical -max-proof-size=7168 | tee $f.log #removed exhaustive here
+    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -no-pseudo-test -order=$n -no-pre -minclause -unit-out=$f.unit -noncanonical-out=$f.noncanonical | tee $f.log #removed exhaustive here, -max-proof-size=3072
 else
-    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -order=$n -no-pre -minclause -max-proof-size=7168 | tee $f.log #removed exhaustive here
+    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -order=$n -no-pre -no-pseudo-test -minclause | tee $f.log #removed exhaustive here
 fi
 
 # Verify DRAT proof

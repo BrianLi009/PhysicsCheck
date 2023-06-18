@@ -85,7 +85,7 @@ then
     ./3-cube-merge-solve.sh $d $m $n $r constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp $dir
 else
     echo "solving"
-    ./maplesat-solve-verify.sh $n -no-pre -no-pseudo-test -minclause constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
+    ./maplesat-solve-verify.sh $n constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}_final.simp
 fi
 #step 6: checking if there exist clique sizes>=p or independent set >=q
 echo "checking max clique size..."
