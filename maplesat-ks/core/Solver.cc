@@ -1778,9 +1778,9 @@ lbool Solver::search(int nof_conflicts)
             action = trail.size();
 #endif
 
-            if (learnt_clause.size() <= 2){
+            if(shortoutfile && learnt_clause.size() <= 2) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+            if (learnt_clause.size() <= 1){
                 uncheckedEnqueue(learnt_clause[0]);
-                if(shortoutfile) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
             }else{
                 CRef cr = ca.alloc(learnt_clause, true);
                 learnts.push(cr);
@@ -1938,9 +1938,9 @@ lbool Solver::search(int nof_conflicts)
                         } else if (curlevel < backtrack_level) {
                             backtrack_level = curlevel;
                         }
-                        if (learnt_clause.size() <= 2) {
+                        if(shortoutfile && learnt_clause.size() <= 2) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+                        if (learnt_clause.size() <= 1) {
                             units.push(learnt_clause[0]);
-                            if(shortoutfile) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
                         } else {
                             // Add the learned clause (after minimization) to the vector of original clauses if the 'keep blocking' option enabled
                             if(opt_keep_blocking==1)
