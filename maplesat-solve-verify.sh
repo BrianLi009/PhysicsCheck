@@ -34,15 +34,4 @@ else
     ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -exhaustive=$e -order=$n -no-pre -minclause -max-proof-size=7168 -unembeddable-check=1 -unembeddable-out="$f.nonembed" | tee $f.log
 fi
 
-# Verify DRAT proof
-./drat-trim/drat-trim $f $f.drat | tee $f.verify
-if ! grep "s VERIFIED" -q $f.verify
-then
-    echo "ERROR: Proof not verified"
-fi
-# Verify trusted clauses in proof
-grep 't' $f.drat | ./drat-trim/check-perm.py $n $f.perm | tee $f.permcheck
-if ! grep "VERIFIED" -q $f.permcheck
-then
-    echo "ERROR: Trusted clauses not verified"
-fi
+./proof-module.sh $n $f $f.verify

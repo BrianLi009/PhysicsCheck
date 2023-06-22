@@ -38,15 +38,4 @@ sols=$( wc -l "$dir"/"$i"-solo.exhaust | cut -d' ' -f1 )
 noncanon=$( wc -l "$dir"/"$i"-solo.noncanonical | cut -d' ' -f1 )
 echo "Order $i: $sols canonical solutions and $noncanon noncanonical solutions in $runtime seconds"
 
-# Verify DRAT proof
-./drat-trim/drat-trim $f $f.drat -f | tee $dir/subgraph-gen-solo-$i.verify
-if ! grep -E "s DERIVATION|s VERIFIED" -q $dir/subgraph-gen-solo-$i.verify
-then
-	echo "ERROR: Proof not verified"
-fi
-# Verify trusted clauses
-grep 't' $f.drat | ./drat-trim/check-perm.py $k $f.perm | tee $f.permcheck
-if ! grep "VERIFIED" -q $f.permcheck
-then
-	echo "ERROR: Trusted clauses not verified"
-fi
+./proof-module.sh $k $f $dir/subgraph-gen-solo-$i.verify
