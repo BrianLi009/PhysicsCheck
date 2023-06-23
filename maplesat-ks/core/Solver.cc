@@ -1778,7 +1778,8 @@ lbool Solver::search(int nof_conflicts)
             action = trail.size();
 #endif
 
-            if(shortoutfile && learnt_clause.size() <= 2) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+            if(shortoutfile && learnt_clause.size() == 1) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+            else if(shortoutfile && learnt_clause.size() == 2) fprintf(shortoutfile, "%i %i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1), (var(learnt_clause[1]) + 1) * (-2 * sign(learnt_clause[1]) + 1));
             if (learnt_clause.size() <= 1){
                 uncheckedEnqueue(learnt_clause[0]);
             }else{
@@ -1938,7 +1939,8 @@ lbool Solver::search(int nof_conflicts)
                         } else if (curlevel < backtrack_level) {
                             backtrack_level = curlevel;
                         }
-                        if(shortoutfile && learnt_clause.size() <= 2) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+                        if(shortoutfile && learnt_clause.size() == 1) fprintf(shortoutfile, "%i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1));
+                        else if(shortoutfile && learnt_clause.size() == 2) fprintf(shortoutfile, "%i %i 0\n", (var(learnt_clause[0]) + 1) * (-2 * sign(learnt_clause[0]) + 1), (var(learnt_clause[1]) + 1) * (-2 * sign(learnt_clause[1]) + 1));
                         if (learnt_clause.size() <= 1) {
                             units.push(learnt_clause[0]);
                         } else {
@@ -2150,6 +2152,7 @@ lbool Solver::solve_()
             }
             printf("Total unembed. graphs : %ld\n", gubcount);
         }
+        printf("Proof size            : %ld bytes\n", proofsize);
     }
 
 
