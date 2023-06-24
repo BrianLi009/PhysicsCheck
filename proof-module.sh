@@ -11,8 +11,10 @@ then
 	echo "ERROR: Proof not verified"
 fi
 # Verify trusted clauses
-grep 't' $f.drat | ./drat-trim/check-perm.py $n $f.perm | tee $f.permcheck
-if ! grep "VERIFIED" -q $f.permcheck
-then
-	echo "ERROR: Trusted clauses not verified"
+if [ -f "$f.perm" ]; then
+	grep 't' $f.drat | ./drat-trim/check-perm.py $n $f.perm | tee $f.permcheck
+	if ! grep "VERIFIED" -q $f.permcheck
+	then
+		echo "ERROR: Trusted clauses not verified"
+	fi
 fi
