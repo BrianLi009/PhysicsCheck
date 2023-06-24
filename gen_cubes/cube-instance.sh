@@ -111,12 +111,9 @@ then
 	unsat=1
 
 	echo "$dir/$((i-1)).cubes$c is solved by CaDiCaL, thus verifying..."
-	./drat-trim/drat-trim "$dir/$((i-1)).cubes$c" "$dir/$((i-1)).cubes$c.drat" -f | tee log/$((i-1)).cubes$c.verify
-	echo "log/$((i-1)).cubes$c.verify"
-	if ! grep -E "s DERIVATION|s VERIFIED" -q log/$((i-1)).cubes$c.verify
-	then
-		echo "ERROR: Proof not verified"
-	fi
+	
+ 	./proof-module.sh $n $dir/$((i-1)).cubes$c log/$((i-1)).cubes$c.verify
+  	
 	rm $dir/$((i-1)).cubes$c
 	rm "$dir/$((i-1)).cubes$c.drat"
 else
