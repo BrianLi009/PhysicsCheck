@@ -31,7 +31,7 @@ echo "Processing $cubeline..."
 if [ -z $s ] || [ "$s" == "-m" ] || (( i == 1 ))
 then
 	# Adjoin the literals in the current cube to the instance and simplify the resulting instance with CaDiCaL
-	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c > $dir/$((i-1)).cubes$c && ./cadical/build/cadical $dir/$((i-1)).cubes$c $dir/$((i-1)).cubes$c.drat -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 
@@ -70,7 +70,7 @@ else
 	l=$(grep -n "$parentcube" $dir/$((i-2)).cubes | cut -d':' -f1)
 
 	# Adjoin the literals in the current cube to the simplified parent instance and simplify the resulting instance with CaDiCaL
-	command="./gen_cubes/concat-edge-and-apply.sh $n $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c | ./cadical/build/cadical -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
+	command="./gen_cubes/concat-edge-and-apply.sh $n $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c > $dir/$((i-1)).cubes && ./cadical/build/cadical $dir/$((i-1)).cubes $dir/$((i-1)).cubes.drat -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
 
@@ -110,12 +110,12 @@ then
 	sed 's/a/u/' $dir/$i-$c.cubes -i # Mark cubes that have been shown to be unsatisfiable with 'u'
 	unsat=1
 
-	echo "$dir/$((i-1)).cubes$c is solved by CaDiCaL, thus verifying..."
+	echo "$dir/$((i-1)).cubes$c.simp is solved by CaDiCaL, thus verifying..."
 	
  	./proof-module.sh $n $dir/$((i-1)).cubes$c log/$((i-1)).cubes$c.verify
   	
-	rm $dir/$((i-1)).cubes$c
-	rm "$dir/$((i-1)).cubes$c.drat"
+	#rm $dir/$((i-1)).cubes$c.simp
+	#rm "$dir/$((i-1)).cubes$c.drat"
 else
 	# Determine how many edge variables were removed
 	removedvars=$(sed -E 's/.* 0 [-]*([0-9]*) 0$/\1/' < $dir/$((i-1)).cubes$c.ext | awk "\$0<=$m" | sort | uniq | wc -l)
