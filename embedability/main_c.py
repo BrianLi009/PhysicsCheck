@@ -167,7 +167,8 @@ def find_assignments(g):
 def not_zero_c(a):
     return Or(Not(a[0].r==0), Not(a[1].r==0), Not(a[2].r==0), Not(a[0].i==0), Not(a[1].i==0), Not(a[2].i==0))
 
-def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f, verify):
+def determine_embed(g, assignments, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f, verify):
+    assignment = assignments[int(index)]
     s = Solver()
     ver = {}
     assign_inv = defaultdict(list)
@@ -241,8 +242,8 @@ def determine_embed(g, assignment, g_sat, order, index, using_subgraph, output_u
     if result == unknown:
         print("Timeout reached: Embeddability unknown, checking next intepretation")
         index = int(index) + 1
-        s.reset()
         main_single_graph(g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f, verify)
+        determine_embed(g, assignments, g_sat, order, index, using_subgraph, output_unsat_f, output_sat_f, verify)
     if result == unsat:
         with open(output_unsat_f, "a+") as f:
             f.write(g_sat + "\n")
@@ -330,14 +331,14 @@ def main_single_graph(g, order, index, using_subgraph, output_unsat_f, output_sa
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f, verify) #write the file
+        determine_embed(graph_dict, assignments, g, order, index, using_subgraph, output_unsat_f, output_sat_f, verify) #write the file
     else:
         graph_dict = {}
         for v in list(G.nodes()):
             graph_dict[v] = (list(G.neighbors(v)))
         assignments = find_assignments(graph_dict)
         assignment = assignments[int(index)]
-        determine_embed(graph_dict, assignment, g, order, index, using_subgraph, output_unsat_f, output_sat_f, verify) #write the file
+        determine_embed(graph_dict, assignments, g, order, index, using_subgraph, output_unsat_f, output_sat_f, verify) #write the file
         
 def main(file_to_solve, order, index, using_subgraph, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=True):
     with open(file_to_solve) as f:
