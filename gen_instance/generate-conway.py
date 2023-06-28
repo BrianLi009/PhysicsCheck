@@ -44,11 +44,10 @@ def generate(n):
     var_count, c_count = cubic(n, count, cnf_file) 
     clause_count += c_count
     print ("isomorphism blocking applied")
-    var_count, c_count = conway(n, edge_dict, tri_dict, 1, 3, cnf_file, var_count)
+    #var_count = count
+    var_count, c_count = conway(n, edge_dict, tri_dict, 3, 3, cnf_file, var_count) #at least 3 vertices that are in 3 triangles
     clause_count += c_count
-    var_count, c_count = conway(n, edge_dict, tri_dict, 2, 4, cnf_file, var_count)
-    clause_count += c_count
-    var_count, c_count = conway(n, edge_dict, tri_dict, 3, 4, cnf_file, var_count)
+    var_count, c_count = conway(n, edge_dict, tri_dict, 2, 4, cnf_file, var_count) #at least 2 vertices that are in 4 triangles
     clause_count += c_count
     print ("conway constraint")
     firstline = 'p cnf ' + str(var_count) + ' ' + str(clause_count)
