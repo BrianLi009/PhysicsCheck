@@ -34,6 +34,7 @@ then
 	command="./gen_cubes/apply.sh $f $dir/$((i-1)).cubes $c > $dir/$((i-1)).cubes$c && ./cadical/build/cadical $dir/$((i-1)).cubes$c $dir/$((i-1)).cubes$c.drat -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
+	./proof-module.sh $n $dir/$((i-1)).cubes$c log/$((i-1)).cubes$c.verify
 
 	if [ "$s" == "-m" ]
 	then
@@ -73,6 +74,7 @@ else
 	command="./gen_cubes/concat-edge-and-apply.sh $n $dir/$((i-2)).cubes$l.simp $dir/$((i-2)).cubes$l.ext $dir/$((i-1)).cubes $c > $dir/$((i-1)).cubes && ./cadical/build/cadical $dir/$((i-1)).cubes $dir/$((i-1)).cubes.drat -o $dir/$((i-1)).cubes$c.simp -e $dir/$((i-1)).cubes$c.ext -n -c 10000 > $logdir/$((i-1)).cubes$c.simp"
 	echo $command
 	eval $command
+	./proof-module.sh $n $dir/$((i-1)).cubes$c log/$((i-1)).cubes$c.verify
 
 	if [ "$s" == "-b" ]
 	then
@@ -110,7 +112,7 @@ then
 	sed 's/a/u/' $dir/$i-$c.cubes -i # Mark cubes that have been shown to be unsatisfiable with 'u'
 	unsat=1
 
-	echo "$dir/$((i-1)).cubes$c.simp is solved by CaDiCaL, thus verifying..."
+	echo "$dir/$((i-1)).cubes$c.simp is solved by CaDiCaL"
 	
  	./proof-module.sh $n $dir/$((i-1)).cubes$c log/$((i-1)).cubes$c.verify
   	
