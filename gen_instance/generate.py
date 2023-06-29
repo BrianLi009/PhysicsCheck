@@ -18,6 +18,9 @@ def generate(n):
     extra variables from cubic
     """
     cnf_file = "constraints_" + str(n)
+    if os.path.exists(cnf_file):
+        print(f"File '{cnf_file}' already exists. Terminating...")
+        sys.exit()
     edge_dict = {}
     tri_dict = {}
     count = 0
