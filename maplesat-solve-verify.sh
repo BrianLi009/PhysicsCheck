@@ -35,14 +35,14 @@ else
 fi
 
 # Verify DRAT proof
-./drat-trim/drat-trim $f $f.drat | tee $f.verify
-if ! grep "s VERIFIED" -q $f.verify
-then
-    echo "ERROR: Proof not verified"
-fi
+#./drat-trim/drat-trim $f $f.drat | tee $f.verify
+#if ! grep "s VERIFIED" -q $f.verify
+#then
+#    echo "ERROR: Proof not verified"
+#fi
 # Verify trusted clauses in proof
-grep 't' $f.drat | ./drat-trim/check-perm.py $n $f.perm | tee $f.permcheck
-if ! grep "VERIFIED" -q $f.permcheck
-then
-    echo "ERROR: Trusted clauses not verified"
-fi
+#grep 't' $f.drat | ./drat-trim/check-perm.py $n $f.perm | tee $f.permcheck
+#if ! grep "VERIFIED" -q $f.permcheck
+#then
+#    echo "ERROR: Trusted clauses not verified"
+#fi

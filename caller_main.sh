@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-vganesh
-#SBATCH --time=50:00:00
-#SBATCH --mem-per-cpu=10G
+#SBATCH --time=60:00:00
+#SBATCH --mem-per-cpu=4G
+#SBATCH --constraint=broadwell
 
 while getopts "apsbm" opt
 do
@@ -23,5 +24,7 @@ t=${5:-100000} #conflicts for which to simplify each time CaDiCal is called, or 
 s=${6:-2} #by default we only simplify the instance using CaDiCaL after adding noncanonical blocking clauses
 b=${7:-2} #by default we generate noncanonical blocking clauses in real time
 r=${8:-0} #number of variables to eliminate until the cubing terminates
+lower=${9:-0}
+upper=${10:-0}
 
-./main.sh $d $n $p $q $o $t $s $b $r
+./main.sh $d $n $p $q $o $t $s $b $r $lower $upper
