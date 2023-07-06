@@ -38,6 +38,10 @@ def generate(n):
     print ("graph is squarefree")
     clause_count += triangle(n, edge_dict, tri_dict, cnf_file)
     print ("all vertices are part of a triangle")
+    clause_count += noncolorable(n,  edge_dict, tri_dict, cnf_file)
+    print ("graph is noncolorable")
+    clause_count += mindegree(n, 3, edge_dict, cnf_file)
+    print ("minimum degree of each vertex is 3")
     var_count, c_count = cubic(n, count, cnf_file) 
     clause_count += c_count
     print ("isomorphism blocking applied")
