@@ -16,6 +16,8 @@ Options:
     [-v]: verify satisfiable embeddability result
     <n>: the order of the instance/number of vertices in the graph
     <f>: file to check embedability on
+    <s>: optional parameter to specify starting index of f
+    <e>: optional parameter to specify ending index of f. If s is provided, e must be provided.
 " && exit
 
 while getopts "spv" opt
@@ -50,6 +52,8 @@ if [ "$v" == "-v" ]
 
 n=$1
 f=$2
+s=${3:-none}
+e=${4:-none}
 
 index=0
 
@@ -62,7 +66,7 @@ if [ ! -s "$f" ]; then
     exit 1
 fi
 
-python3 embedability/main.py "$f" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $verify
+python3 embedability/main.py "$f" "$n" "$index" $using_subgraph False $f-nonembeddable.txt $f-embeddable.txt $verify $s $e
 
 noncount=`wc -l "$f-nonembeddable.txt" | awk '{print $1}'`
 count=`wc -l "$f-embeddable.txt" | awk '{print $1}'`

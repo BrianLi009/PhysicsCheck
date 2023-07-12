@@ -348,11 +348,14 @@ def main_single_graph(g, order, index, using_subgraph, normalize=False, output_u
         determine_embed(graph_dict, assignments, g, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify) #write the file
 
 
-def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=True):
+def main(file_to_solve, order, index, using_subgraph, normalize=False, output_unsat_f="output_unsat_f", output_sat_f="output_sat_f", verify=True, start=None, end=None):
     with open(file_to_solve) as f:
+        if start.isdigit() and end.isdigit():
+            print ("checking from graph " + str(start) + " to graph " + str(end))
+            f = f.readlines()[int(start) - 1:int(end)]
         for line in f:
             line = line.rstrip()
             main_single_graph(line, order, index, using_subgraph, normalize, output_unsat_f, output_sat_f, verify)
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5]=="True", sys.argv[6], sys.argv[7], sys.argv[8]=="True")
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]=="True", sys.argv[5]=="True", sys.argv[6], sys.argv[7], sys.argv[8]=="True", sys.argv[9], sys.argv[10])
