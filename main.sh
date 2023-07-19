@@ -10,7 +10,7 @@ Description:
 
 Usage:
     ./main.sh [-p] [-m] n t s b r
-    If only parameter n is provided, default run ./main.sh n c 10000 2 2 0
+    If only parameter n is provided, default run ./main.sh n 10000 2 2 0 10
 
 Options:
     [-p]: cubing/solving in parallel
