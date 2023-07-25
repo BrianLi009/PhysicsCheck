@@ -150,6 +150,3 @@ then
 	rm $dir/$((i-1)).cubes$c.simp 2> /dev/null
 	rm $dir/$((i-1)).cubes$c.ext 2> /dev/null
 fi
-
-#grep -r "total process time since initialization" $logdir/*.simp | cut -d' ' -f15 | awk '{s+=$1} END {print s}' >> simp_times.log
-#rm $logdir/*.simp

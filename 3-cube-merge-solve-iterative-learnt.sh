@@ -1,5 +1,13 @@
 #!/bin/bash
 
+while getopts "p" opt
+do
+	case $opt in
+        p) p="-p" ;;
+	esac
+done
+shift $((OPTIND-1))
+
 n=$1 #order
 f=$2 #instance file name
 d=$3 #directory to store into
@@ -14,7 +22,19 @@ mkdir -p $d/$v/$n-cubes
 
 
 di="$d/$v"
-./gen_cubes/cube.sh -a $n $f $v $di
+
+if [ "$p" == "-p" ]
+then
+    echo "cubing in parallel..."
+    ./gen_cubes/cube.sh -p -a $n $f $v $di
+fi
+
+if [ "$p" != "-p" ]
+then
+    echo "cubing sequentially..."
+    ./gen_cubes/cube.sh -a $n $f $v $di
+    echo "cubing complete"
+fi
 
 files=$(ls $d/$v/$n-cubes/*.cubes)
 highest_num=$(echo "$files" | awk -F '[./]' '{print $(NF-1)}' | sort -nr | head -n 1)

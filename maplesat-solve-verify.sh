@@ -28,21 +28,11 @@ Options:
 
 if [ "$l" == "-l" ]
 then
-    echo "MapleSAT will output learnt clause"
-    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -no-pseudo-test -order=$n -no-pre -minclause -unit-out=$f.unit -noncanonical-out=$f.noncanonical | tee $f.log #removed exhaustive here, -max-proof-size=3072
+    echo "MapleSAT will output short learnt clause"
+    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -no-pseudo-test -order=$n -no-pre -minclause -short-out=$f.unit -noncanonical-out=$f.noncanonical | tee $f.log #removed exhaustive here, -max-proof-size=3072
 else
     ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -order=$n -no-pre -no-pseudo-test -minclause | tee $f.log #removed exhaustive here
 fi
 
 # Verify DRAT proof
-#./drat-trim/drat-trim $f $f.drat | tee $f.verify
-#if ! grep "s VERIFIED" -q $f.verify
-#then
-#    echo "ERROR: Proof not verified"
-#fi
-# Verify trusted clauses in proof
-#grep 't' $f.drat | ./drat-trim/check-perm.py $n $f.perm | tee $f.permcheck
-#if ! grep "VERIFIED" -q $f.permcheck
-#then
-#    echo "ERROR: Trusted clauses not verified"
-#fi
+./proof-module.sh $n $f $f.verify

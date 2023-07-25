@@ -60,7 +60,7 @@ then
 	for logfile in $dir/simp/*.log; do
 		# Extract simptime from current logfile and add it to the total
 		#time=$(grep "CPU time" "$logfile" | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
-		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d{3}')
+		time=$(grep "CPU time" "$logfile" | grep -oP '\d+\.\d+')
 		time=$(echo "($time)/60" | bc -l)
 		run=$(echo "$run + $time" | bc)
 		max_time=$(awk -v t=$time -v max=$max_time 'BEGIN{print (t>max)?t:max}')
@@ -83,7 +83,7 @@ else
 	readtime "run" "constraints_${dir}_final.simp.log"
 	simptime=$(grep "total process time since initialization" log/constraints_${dir}.noncanonical.simp* | awk '{$1=$1};1' | cut -d' ' -f7 | paste -sd+)
 	simptime=$(echo "($simptime)/60" | bc -l)
-	#run=$(grep "CPU time" log/constraints_${dir}.noncanonical.simp* | grep -oP '\d+\.\d{3}')
+	#run=$(grep "CPU time" log/constraints_${dir}.noncanonical.simp* | grep -oP '\d+\.\d+')
 fi
 
 
