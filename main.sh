@@ -55,8 +55,8 @@ upper=${10:-0}
 
 
 #step 2: setp up dependencies
-dir="${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}"
-./dependency-setup.sh
+dir="${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}"
+#./dependency-setup.sh
  
 #step 3 and 4: generate pre-processed instance
 dir="."
@@ -77,13 +77,13 @@ module load python/3.10
 if [ "$r" != "0" ]
 then
     dir="${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}"
-    ./3-cube-merge-solve-iterative-learnt.sh $d $n constraints_${n}_${t}_${s}_${b}_${r}_${a}_final.simp $dir $r $t $a
+    ./3-cube-merge-solve-iterative-learnt.sh $d $n constraints_${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}_final.simp $dir $r $t $a
     command="./summary-iterative.sh $dir $r $a $n"
     echo $command
     eval $command
     
 else
-    ./maplesat-solve-verify.sh $n constraints_${n}_${t}_${s}_${b}_${r}_${a}_final.simp
+    ./maplesat-solve-verify.sh $n constraints_${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}_final.simp
     #step 5.5: verify all constraints are satisfied
     ./verify.sh $n
 

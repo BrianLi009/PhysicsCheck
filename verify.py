@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import itertools
 import math
 import networkx as nx
@@ -51,44 +50,3 @@ def verify(n,p,q):
 
 if __name__ == "__main__":
     verify(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
-=======
-        return False
-
-def maple_to_edges(input, v):
-    str_lst = input.split()[1:-1]
-    edge_lst = []
-    for j in range(0, v):
-        for i in range(0, j):
-            edge_lst.append((i,j))
-    actual_edges = []
-    for i in str_lst:
-        indicator = int(i)
-        if indicator > 0:
-            actual_edges.append(edge_lst[int(i)-1])
-    return actual_edges
-
-def verify_single(g, n):
-    edge_lst = maple_to_edges(g, int(n))
-    G = nx.Graph()
-    G.add_edges_from(edge_lst)
-    if not check_minimum_degree(G) or not check_squarefree(G) or not check_triangle(G):
-        f = open("not_verified_"+str(n), "a")
-        f.write(g + "\n")
-        f.close()
-    check_non_colorable(edge_lst, n)
-    cnf_file = "non_colorable_check_" + str(n)
-    result = subprocess.call(["cadical/build/cadical", cnf_file], stdout=subprocess.DEVNULL)
-    
-    if result != 20:
-        with open(f"not_verified_{n}", "a") as file:
-            file.write(g + " \n")
-
-def verify(file_to_verify, n):
-    with open(file_to_verify) as f:
-        for line in f:
-            line = line.rstrip()
-            verify_single(line, n)
-            
-if __name__ == "__main__":
-    verify(sys.argv[1], sys.argv[2])
->>>>>>> upstream/master

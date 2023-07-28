@@ -39,12 +39,6 @@ a=${8:-10} #for naming only
 lower=${9:-0}
 upper=${10:-0}
 
-if [ "$o" != "c" ] && [ "$o" != "v" ]
-then
-    echo "Need simplification option, option "c" means simplifying for t conflicts, option "v" means simplify until t% of variables are eliminated"
-    exit
-fi
-
 if [ -f constraints_${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}_final.simp ]
 then
     echo "instance with the same parameter has already been generated"
@@ -60,7 +54,7 @@ echo $instance_tracking
 
 if [ "$s" -eq 1 ] || [ "$s" -eq 3 ]
 then
-    simp1=constraints_${n}_${p}_${q}_${o}_${t}_${s}_${b}_${r}.simp1
+    simp1=constraints_${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}.simp1 #################fix
     cp $instance_tracking constraints_${n}_${p}_${q}_${t}_${s}_${b}_${r}_${a}
 
     if [ -f $simp1 ]
