@@ -29,9 +29,9 @@ Options:
 if [ "$l" == "-l" ]
 then
     echo "MapleSAT will output short learnt clause"
-    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -no-pseudo-test -order=$n -no-pre -minclause -short-out=$f.unit -noncanonical-out=$f.noncanonical | tee $f.log #removed exhaustive here, -max-proof-size=3072
+    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -no-pseudo-test -max-proof-size=3072 -order=$n -no-pre -minclause -short-out=$f.unit -noncanonical-out=$f.noncanonical | tee $f.log #removed exhaustive here, -max-proof-size=3072
 else
-    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -order=$n -no-pre -no-pseudo-test -minclause | tee $f.log #removed exhaustive here
+    ./maplesat-ks/simp/maplesat_static $f $f.drat -perm-out=$f.perm -order=$n -no-pre -no-pseudo-test -max-proof-size=3072 -minclause | tee $f.log #removed exhaustive here
 fi
 
 # Verify DRAT proof
