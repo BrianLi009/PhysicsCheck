@@ -14,10 +14,9 @@ def generate(n, p, q,lower=0,upper=0):
     edge_counter=0
 
     for j in range(1, n+1):             #generating the edge variables
-        for i in range(1, n+1):
-            if i < j:
-                edge_counter += 1
-                edge_dict[(i,j)] = edge_counter
+        for i in range(1, j):
+            edge_counter += 1
+            edge_dict[(i,j)] = edge_counter
 
     for clique in itertools.combinations(vertices,p):
         constraint=""
