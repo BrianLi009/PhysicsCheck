@@ -38,7 +38,7 @@ def generate(n, p, q,lower=0,upper=0):
     
     if lower>0:
         for i in range(1,n+1):
-            deg_count,deg_clause=generate_degree_clauses([edge_dict[key] for key in edge_dict if i in key],lower,upper,count+1,f"constraints_temp_{n}_{p}_{q}")
+            deg_count,deg_clause=generate_degree_clauses([edge_dict[key] for key in edge_dict if i in key],lower,upper,count,f"constraints_temp_{n}_{p}_{q}")
             print(deg_count)
             clause_count +=deg_clause
             count=deg_count #+= built into generate_degree_clauses
